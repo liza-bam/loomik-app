@@ -7,22 +7,65 @@ interface Message {
   content: string;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+// Canned replies used to simulate a streaming AI response. Chosen based on
+// keywords in the user's message so answers still feel contextual.
+const CANNED_REPLIES: Array<{ match: RegExp; reply: string }> = [
+  {
+    match: /risk|blocker|concern|worried|red flag/i,
+    reply:
+      "Looking at your active pipeline, the biggest risk right now is TechFlow Solutions — a key stakeholder has gone quiet for 11 days and the alignment score dropped 8 points this week. I'd prioritize a low-pressure re-engagement touch: send the ROI one-pager the CFO asked for last month and offer three 15-minute slots. Two secondary risks to watch: procurement stall on CloudScale (mitigate by looping in Legal early) and a shifting champion at RetailMax (validate with a discovery call).",
+  },
+  {
+    match: /action|next step|do next|todo|priority/i,
+    reply:
+      "Your top three actions today, ranked by expected win-probability lift:\n\n1. **Send the ROI summary to Sarah Chen at CloudScale** — she flagged budget concerns; a concrete payback story will unblock the align stage.\n2. **Book a working session with the RetailMax buying committee** — three stakeholders are still 'neutral'; a group review of the pilot results should shift at least two.\n3. **Follow up on the SecureBank Holdings NDA** — the deal has been in validate for 14 days; a nudge on paperwork keeps momentum without pressuring.\n\nWant me to draft the first email?",
+  },
+  {
+    match: /forecast|revenue|value|pipeline|close/i,
+    reply:
+      "Current pipeline: **$8.0M across 7 active deals**. Weighted forecast for this quarter is $4.6M — the two biggest levers are CloudScale ($1.8M, 62% probability) and SecureBank Holdings ($2.1M, 55% probability). Best-case close if both land: $5.2M. To move the needle, focus on getting SecureBank past validate this week — every day in that stage costs about 2 points of probability.",
+  },
+  {
+    match: /stakeholder|champion|contact|buyer|decision maker/i,
+    reply:
+      "Across your deals, you have strong alignment with 4 champions but three critical decision-makers are still in 'neutral' territory. Priority to convert: the VP of Finance at CloudScale (blocks the deal but hasn't been engaged in 3 weeks) and the CTO at SecureBank (currently 'silent' — needs a technical deep-dive). I'd draft a peer-introduction from your existing champion to warm up the finance conversation before you reach out directly.",
+  },
+];
+
+const DEFAULT_REPLY =
+  "Based on what I'm seeing across your pipeline, alignment is trending up 5 points week-over-week — that's a good signal that your recent multi-threading is working. Win probability dipped 3 points because two neutral stakeholders on CloudScale have gone quiet. I'd focus this week on re-engaging them with a value-focused touch (case study, ROI model) rather than a status check. Want me to help draft the outreach?";
+
+const pickReply = (input: string): string => {
+  const match = CANNED_REPLIES.find(({ match }) => match.test(input));
+  return match?.reply ?? DEFAULT_REPLY;
+};
+
+// Split a reply into small chunks so the response streams word-by-word.
+const chunkReply = (reply: string): string[] => {
+  const tokens: string[] = [];
+  const words = reply.split(/(\s+)/);
+  for (const word of words) {
+    if (word.length === 0) continue;
+    tokens.push(word);
+  }
+  return tokens;
+};
 
 export function useAIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  
-  const { signals, getPendingRisks, getPendingSignals } = useSignalsStore();
 
-  // Build context from current app state
+  const { getPendingRisks, getPendingSignals } = useSignalsStore();
+
+  // Not sent anywhere anymore, but kept because the panel UI reads deal state
+  // via this hook to render "AI is aware of…" hints.
   const buildDealContext = useCallback(() => {
     const pendingRisks = getPendingRisks();
     const pendingSignals = getPendingSignals();
     const allActions = getAllActions();
-    
+
     return {
       deals: deals.map(d => ({
         company: getCompanyById(d.companyId)?.name || d.name,
@@ -61,12 +104,14 @@ export function useAIChat() {
     setIsLoading(true);
     setError(null);
 
-    // Create abort controller for this request
     abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
+    const reply = pickReply(userMessage.content);
+    const chunks = chunkReply(reply);
 
     let assistantContent = '';
-
-    const upsertAssistant = (chunk: string) => {
+    const appendChunk = (chunk: string) => {
       assistantContent += chunk;
       setMessages(prev => {
         const last = prev[prev.length - 1];
@@ -77,102 +122,33 @@ export function useAIChat() {
       });
     };
 
-    try {
-      const response = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-          dealContext: buildDealContext(),
-        }),
-        signal: abortControllerRef.current.signal,
+    const wait = (ms: number) =>
+      new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(resolve, ms);
+        signal.addEventListener('abort', () => {
+          clearTimeout(timer);
+          reject(new DOMException('Aborted', 'AbortError'));
+        }, { once: true });
       });
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error('Rate limit exceeded. Please try again in a moment.');
-        }
-        if (response.status === 402) {
-          throw new Error('Usage limit reached. Please add credits to continue.');
-        }
-        throw new Error(`Request failed: ${response.status}`);
+    try {
+      // Small startup delay so the "thinking" state is visible.
+      await wait(280);
+      for (const chunk of chunks) {
+        await wait(24);
+        appendChunk(chunk);
       }
-
-      if (!response.body) {
-        throw new Error('No response body');
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let textBuffer = '';
-      let streamDone = false;
-
-      while (!streamDone) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-
-        // Process line-by-line
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-
-          if (line.endsWith('\r')) line = line.slice(0, -1);
-          if (line.startsWith(':') || line.trim() === '') continue;
-          if (!line.startsWith('data: ')) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') {
-            streamDone = true;
-            break;
-          }
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) upsertAssistant(content);
-          } catch {
-            // Incomplete JSON, put back and wait for more data
-            textBuffer = line + '\n' + textBuffer;
-            break;
-          }
-        }
-      }
-
-      // Final flush
-      if (textBuffer.trim()) {
-        for (let raw of textBuffer.split('\n')) {
-          if (!raw) continue;
-          if (raw.endsWith('\r')) raw = raw.slice(0, -1);
-          if (raw.startsWith(':') || raw.trim() === '') continue;
-          if (!raw.startsWith('data: ')) continue;
-          const jsonStr = raw.slice(6).trim();
-          if (jsonStr === '[DONE]') continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) upsertAssistant(content);
-          } catch { /* ignore partial leftovers */ }
-        }
-      }
-
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        // Request was cancelled
+      if (err instanceof DOMException && err.name === 'AbortError') {
         return;
       }
       const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
       setError(errorMessage);
-      console.error('Chat error:', err);
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  }, [messages, isLoading, buildDealContext]);
+  }, [isLoading, buildDealContext]);
 
   const cancelRequest = useCallback(() => {
     if (abortControllerRef.current) {
