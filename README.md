@@ -8,7 +8,8 @@ AI-assisted sales alignment platform. A dashboard for sales teams to track deals
 - Tailwind CSS + shadcn/ui (Radix primitives)
 - Zustand for client state
 - React Router
-- Supabase (edge functions + auth) — optional; the UI runs on mock data by default
+
+No external services at runtime. All data (deals, stakeholders, signals, activity, assets) comes from local mock modules in `src/data/`. The AI chat and deal-analysis features return scripted responses generated locally.
 
 ## Local setup
 
@@ -18,16 +19,10 @@ Requires Node.js 18+ and npm.
 git clone https://github.com/liza-bam/loomik-app.git
 cd loomik-app
 npm install
+npm run dev
 ```
 
-Create a `.env.local` in the project root:
-
-```
-VITE_SUPABASE_URL=https://placeholder.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=placeholder-anon-key
-```
-
-Placeholder values are enough for the dashboard to render — the Assets page is the only screen that queries Supabase at runtime, and it will show empty data. Swap in real values from your Supabase project settings if you want that page to work.
+That's it — no env vars, no API keys.
 
 ## Scripts
 
@@ -50,12 +45,8 @@ src/
   stores/        Zustand stores (deals, signals, actions, activity, assets, ui, search)
   contexts/      React contexts for global popups (stakeholder, event)
   data/          Mock data for demo/simulation
-  integrations/  Supabase client + generated types
-  hooks/         Custom hooks (use-mobile, use-toast, etc.)
+  hooks/         Custom hooks (use-mobile, use-toast, use-ai-chat, use-ai-analysis)
   lib/           Utilities including the simulation engine
-supabase/
-  functions/     Edge functions (chat, generate-actions, generate-signal, analyze-deal)
-  migrations/    SQL migrations
 ```
 
 ## Design system
