@@ -10,7 +10,13 @@ import sh6 from "@/assets/stakeholders/sh6.jpg";
 import sh7 from "@/assets/stakeholders/sh7.jpg";
 import sh8 from "@/assets/stakeholders/sh8.jpg";
 import sh9 from "@/assets/stakeholders/sh9.jpg";
+import salesforceLogo from "@/assets/logos/salesforce.svg";
+import stripeLogo from "@/assets/logos/stripe.svg";
+import shopifyLogo from "@/assets/logos/shopify.svg";
 import hubspotLogo from "@/assets/logos/hubspot-sprocket.svg";
+import slackLogo from "@/assets/logos/slack.svg";
+import notionLogo from "@/assets/logos/notion.svg";
+import figmaLogo from "@/assets/logos/figma.svg";
 
 // ==================== TYPES ====================
 
@@ -187,19 +193,19 @@ export const companies: Company[] = [
   {
     id: 1,
     name: "Salesforce",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/1280px-Salesforce.com_logo.svg.png",
+    logo: salesforceLogo,
     industry: "Enterprise Software"
   },
   {
     id: 2,
     name: "Stripe",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1280px-Stripe_Logo%2C_revised_2016.svg.png",
+    logo: stripeLogo,
     industry: "Financial Technology"
   },
   {
     id: 3,
     name: "Shopify",
-    logo: "https://cdn.worldvectorlogo.com/logos/shopify.svg",
+    logo: shopifyLogo,
     industry: "E-commerce"
   },
   {
@@ -211,19 +217,19 @@ export const companies: Company[] = [
   {
     id: 5,
     name: "Slack",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/1024px-Slack_icon_2019.svg.png",
+    logo: slackLogo,
     industry: "Collaboration"
   },
   {
     id: 6,
     name: "Notion",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Notion-logo.svg/1024px-Notion-logo.svg.png",
+    logo: notionLogo,
     industry: "Productivity"
   },
   {
     id: 7,
     name: "Figma",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Figma-logo.svg/1024px-Figma-logo.svg.png",
+    logo: figmaLogo,
     industry: "Design Tools"
   }
 ];

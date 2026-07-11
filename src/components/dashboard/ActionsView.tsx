@@ -34,19 +34,25 @@ import {
   deals,
   getCompanyById,
 } from "@/data/dealData";
+import salesforceLogo from "@/assets/logos/salesforce.svg";
+import stripeLogo from "@/assets/logos/stripe.svg";
+import shopifyLogo from "@/assets/logos/shopify.svg";
+import hubspotLogo from "@/assets/logos/hubspot-sprocket.svg";
+import slackLogo from "@/assets/logos/slack.svg";
+import notionLogo from "@/assets/logos/notion.svg";
+import figmaLogo from "@/assets/logos/figma.svg";
 
 const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
 
-// Deal metadata for display
 // Company logos for display (keyed by company name)
 const companyLogos: Record<string, string> = {
-  "Salesforce": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/1280px-Salesforce.com_logo.svg.png",
-  "Stripe": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1280px-Stripe_Logo%2C_revised_2016.svg.png",
-  "Shopify": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Shopify_logo_2018.svg/1280px-Shopify_logo_2018.svg.png",
-  "HubSpot": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/HubSpot_Logo.svg/1280px-HubSpot_Logo.svg.png",
-  "Slack": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/1024px-Slack_icon_2019.svg.png",
-  "Notion": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Notion-logo.svg/1024px-Notion-logo.svg.png",
-  "Figma": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Figma-logo.svg/1024px-Figma-logo.svg.png",
+  "Salesforce": salesforceLogo,
+  "Stripe": stripeLogo,
+  "Shopify": shopifyLogo,
+  "HubSpot": hubspotLogo,
+  "Slack": slackLogo,
+  "Notion": notionLogo,
+  "Figma": figmaLogo,
 };
 
 // Map centralized data to display format (static actions only)

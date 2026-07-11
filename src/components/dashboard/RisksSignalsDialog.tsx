@@ -35,22 +35,29 @@ import { useSignalProcessor } from "@/hooks/useSignalProcessor";
 import { deals, getCompanyById, getStakeholderById } from "@/data/dealData";
 import { toast } from "@/hooks/use-toast";
 import { CRITICAL_EVENT_LABELS } from "@/data/signalsData";
+import salesforceLogo from "@/assets/logos/salesforce.svg";
+import stripeLogo from "@/assets/logos/stripe.svg";
+import shopifyLogo from "@/assets/logos/shopify.svg";
+import hubspotLogo from "@/assets/logos/hubspot-sprocket.svg";
+import slackLogo from "@/assets/logos/slack.svg";
+import notionLogo from "@/assets/logos/notion.svg";
+import figmaLogo from "@/assets/logos/figma.svg";
 
 // Dashboard deals with logos
 const dashboardDeals = [
-  { name: "TechFlow Solutions", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/1280px-Salesforce.com_logo.svg.png" },
-  { name: "CloudScale Inc", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1280px-Stripe_Logo%2C_revised_2016.svg.png" },
-  { name: "SecureBank Holdings", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Shopify_logo_2018.svg/1280px-Shopify_logo_2018.svg.png" },
-  { name: "RetailMax Corp", logo: "/assets/logos/hubspot-sprocket.svg" },
-  { name: "GlobalTech Industries", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/1024px-Slack_icon_2019.svg.png" },
-  { name: "Acme Corp", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Notion-logo.svg/1024px-Notion-logo.svg.png" },
-  { name: "Salesforce", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/1280px-Salesforce.com_logo.svg.png" },
-  { name: "Stripe", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1280px-Stripe_Logo%2C_revised_2016.svg.png" },
-  { name: "Shopify", logo: "https://cdn.worldvectorlogo.com/logos/shopify.svg" },
-  { name: "HubSpot", logo: "/assets/logos/hubspot-sprocket.svg" },
-  { name: "Slack", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/1024px-Slack_icon_2019.svg.png" },
-  { name: "Notion", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Notion-logo.svg/1024px-Notion-logo.svg.png" },
-  { name: "Figma", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Figma-logo.svg/1024px-Figma-logo.svg.png" },
+  { name: "TechFlow Solutions", logo: salesforceLogo },
+  { name: "CloudScale Inc", logo: stripeLogo },
+  { name: "SecureBank Holdings", logo: shopifyLogo },
+  { name: "RetailMax Corp", logo: hubspotLogo },
+  { name: "GlobalTech Industries", logo: slackLogo },
+  { name: "Acme Corp", logo: notionLogo },
+  { name: "Salesforce", logo: salesforceLogo },
+  { name: "Stripe", logo: stripeLogo },
+  { name: "Shopify", logo: shopifyLogo },
+  { name: "HubSpot", logo: hubspotLogo },
+  { name: "Slack", logo: slackLogo },
+  { name: "Notion", logo: notionLogo },
+  { name: "Figma", logo: figmaLogo },
 ];
 
 const getDealLogo = (dealName: string) => {
