@@ -45,7 +45,7 @@ interface AssetsStore {
   permanentlyDeleteAsset: (assetId: string) => void;
 }
 
-// Sample assets data with real PDF URLs
+// Sample assets data (demo — no external file URLs)
 const sampleAssets: Asset[] = [
   {
     id: "asset-1",
@@ -57,7 +57,6 @@ const sampleAssets: Asset[] = [
     tags: ["sales", "quarterly"],
     uploadedBy: "Sarah Chen",
     uploadedAt: new Date("2024-01-14"),
-    url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/img/table-word.pdf",
   },
   {
     id: "asset-2",
@@ -91,7 +90,6 @@ const sampleAssets: Asset[] = [
     tags: ["security", "soc2"],
     uploadedBy: "Alex Rodriguez",
     uploadedAt: new Date("2024-01-09"),
-    url: "https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf",
   },
   {
     id: "asset-5",
@@ -103,7 +101,6 @@ const sampleAssets: Asset[] = [
     tags: ["brand", "guidelines"],
     uploadedBy: "Emma Thompson",
     uploadedAt: new Date("2024-01-08"),
-    url: "https://www.africau.edu/images/default/sample.pdf",
   },
   {
     id: "asset-6",
@@ -115,7 +112,6 @@ const sampleAssets: Asset[] = [
     tags: ["case study", "fintech"],
     uploadedBy: "Sarah Chen",
     uploadedAt: new Date("2024-01-06"),
-    url: "https://www.clickdimensions.com/links/TestPDFfile.pdf",
   },
   {
     id: "asset-7",
@@ -127,7 +123,6 @@ const sampleAssets: Asset[] = [
     tags: ["api", "docs"],
     uploadedBy: "James Lee",
     uploadedAt: new Date("2024-01-05"),
-    url: "https://www.orimi.com/pdf-test.pdf",
   },
   {
     id: "asset-8",
@@ -150,7 +145,6 @@ const sampleAssets: Asset[] = [
     tags: ["legal", "contract"],
     uploadedBy: "Lisa Park",
     uploadedAt: new Date("2024-01-03"),
-    url: "https://www.africau.edu/images/default/sample.pdf",
   },
   {
     id: "asset-10",
@@ -173,7 +167,6 @@ const sampleAssets: Asset[] = [
     tags: ["security", "architecture"],
     uploadedBy: "Alex Rodriguez",
     uploadedAt: new Date("2024-01-01"),
-    url: "https://www.clickdimensions.com/links/TestPDFfile.pdf",
   },
   {
     id: "asset-12",
@@ -185,7 +178,6 @@ const sampleAssets: Asset[] = [
     tags: ["onboarding", "guide"],
     uploadedBy: "Emma Thompson",
     uploadedAt: new Date("2023-12-28"),
-    url: "https://www.orimi.com/pdf-test.pdf",
   },
 ];
 
