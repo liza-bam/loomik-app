@@ -30,8 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAssetsStore, Asset, AssetType, ASSET_CATEGORIES } from "@/stores/assetsStore";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { deals as dealData, getCompanyById } from "@/data/dealData";
 
 // Get icon and color based on asset type
 const getAssetIcon = (type: AssetType) => {
@@ -97,18 +96,17 @@ const Assets = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
 
-  // Fetch deals for filtering
-  const { data: deals = [] } = useQuery({
-    queryKey: ['deals-for-assets'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('deals')
-        .select('id, company')
-        .order('company');
-      if (error) throw error;
-      return data;
-    },
-  });
+  // Deal filter list — derived from local mock deal data.
+  const deals = useMemo(
+    () =>
+      dealData
+        .map(d => ({
+          id: d.id.toString(),
+          company: getCompanyById(d.companyId)?.name ?? d.name,
+        }))
+        .sort((a, b) => a.company.localeCompare(b.company)),
+    [],
+  );
 
   useEffect(() => {
     const handleScroll = () => {
