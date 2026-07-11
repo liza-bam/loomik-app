@@ -1,73 +1,63 @@
-# Welcome to your Lovable project
+# Loomik
 
-## Project info
+AI-assisted sales alignment platform. A dashboard for sales teams to track deals, spot risk signals, and get suggested next actions.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Stack
 
-## How can I edit this code?
+- Vite + React 18 + TypeScript
+- Tailwind CSS + shadcn/ui (Radix primitives)
+- Zustand for client state
+- React Router
+- Supabase (edge functions + auth) — optional; the UI runs on mock data by default
 
-There are several ways of editing your application.
+## Local setup
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Requires Node.js 18+ and npm.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+git clone https://github.com/liza-bam/loomik-app.git
+cd loomik-app
+npm install
 ```
 
-**Edit a file directly in GitHub**
+Create a `.env.local` in the project root:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+VITE_SUPABASE_URL=https://placeholder.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=placeholder-anon-key
+```
 
-**Use GitHub Codespaces**
+Placeholder values are enough for the dashboard to render — the Assets page is the only screen that queries Supabase at runtime, and it will show empty data. Swap in real values from your Supabase project settings if you want that page to work.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Scripts
 
-## What technologies are used for this project?
+```sh
+npm run dev        # start dev server on http://localhost:8080
+npm run build      # production build
+npm run build:dev  # development-mode build
+npm run preview    # preview the production build locally
+npm run lint       # run ESLint
+npm run test       # run Vitest once
+npm run test:watch # Vitest in watch mode
+```
 
-This project is built with:
+## Project structure
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```
+src/
+  pages/          Routes: Dashboard, DealGPS, ActionHub, Calendar, History, Assets
+  components/    UI components — dashboard, deal-gps, calendar, stakeholder, shadcn ui/
+  stores/        Zustand stores (deals, signals, actions, activity, assets, ui, search)
+  contexts/      React contexts for global popups (stakeholder, event)
+  data/          Mock data for demo/simulation
+  integrations/  Supabase client + generated types
+  hooks/         Custom hooks (use-mobile, use-toast, etc.)
+  lib/           Utilities including the simulation engine
+supabase/
+  functions/     Edge functions (chat, generate-actions, generate-signal, analyze-deal)
+  migrations/    SQL migrations
+```
 
-## How can I deploy this project?
+## Design system
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Design tokens live in `src/index.css` as HSL CSS variables and are exposed to Tailwind via `tailwind.config.ts`. Both light and dark themes are defined. Palette: purple (primary), plus orange, green, yellow, red — each with a matching `-light` tint.
