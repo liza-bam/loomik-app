@@ -152,17 +152,9 @@ const AlignmentIntelligenceModal = ({
                     { label: "Message Fit", value: messageFitPct },
                     { label: "Value Translation", value: valueTranslationPct },
                   ].map((m) => (
-                    <div key={m.label}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-muted-foreground">{m.label}</span>
-                        <span className={`text-xs font-medium ${getTextColor(m.value)}`}>{m.value}%</span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${getBarColor(m.value)}`}
-                          style={{ width: `${m.value}%` }}
-                        />
-                      </div>
+                    <div key={m.label} className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">{m.label}</span>
+                      <span className={`text-xs font-semibold ${getTextColor(m.value)}`}>{m.value}%</span>
                     </div>
                   ))}
                 </div>

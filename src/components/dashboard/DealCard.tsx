@@ -100,39 +100,19 @@ const DealCard = ({ deal }: DealCardProps) => {
         </div>
       </div>
 
-      {/* Progress Bars - compact mode shows only scores */}
+      {/* Scores */}
       <div className="space-y-2 mb-4">
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xxs text-muted-foreground uppercase tracking-wide">Win Probability</span>
-            <span className={`text-xs font-semibold ${getProgressColor(deal.winProbability).replace('bg-', 'text-')}`}>
-              {deal.winProbability}%
-            </span>
-          </div>
-          {!isCompactMode && (
-            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-              <div 
-                className={`h-full rounded-full transition-all ${getProgressColor(deal.winProbability)}`}
-                style={{ width: `${deal.winProbability}%` }}
-              />
-            </div>
-          )}
+        <div className="flex items-center justify-between">
+          <span className="text-xxs text-muted-foreground uppercase tracking-wide">Win Probability</span>
+          <span className={`text-xs font-semibold ${getProgressColor(deal.winProbability).replace('bg-', 'text-')}`}>
+            {deal.winProbability}%
+          </span>
         </div>
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xxs text-muted-foreground uppercase tracking-wide">Alignment</span>
-            <span className={`text-xs font-semibold ${getProgressColor(deal.alignment).replace('bg-', 'text-')}`}>
-              {deal.alignment}%
-            </span>
-          </div>
-          {!isCompactMode && (
-            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-              <div 
-                className={`h-full rounded-full transition-all ${getProgressColor(deal.alignment)}`}
-                style={{ width: `${deal.alignment}%` }}
-              />
-            </div>
-          )}
+        <div className="flex items-center justify-between">
+          <span className="text-xxs text-muted-foreground uppercase tracking-wide">Alignment</span>
+          <span className={`text-xs font-semibold ${getProgressColor(deal.alignment).replace('bg-', 'text-')}`}>
+            {deal.alignment}%
+          </span>
         </div>
       </div>
 

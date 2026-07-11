@@ -443,15 +443,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className={cn("h-full rounded-full", getScoreColor(item.score))}
-                          style={{ width: `${item.score}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-medium">{item.score}%</span>
-                    </div>
+                    <span className={cn("text-sm font-semibold", getScoreColor(item.score).replace('bg-', 'text-'))}>{item.score}%</span>
                   </td>
                   <td className="px-4 py-3">
                     {getStatusBadge(item.status)}

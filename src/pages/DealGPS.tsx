@@ -703,40 +703,25 @@ const DealGPS = () => {
                             <TrendIndicator value={winProbTrend} size="md" />
                           </div>
                           <div className="flex-1 space-y-3">
-                            <div>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-muted-foreground">Alignment</span>
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-medium ${getScoreColor(alignmentPct)}`}>{alignmentPct}%</span>
-                                  <TrendIndicator value={alignmentTrend} size="sm" />
-                                </div>
-                              </div>
-                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${getProgressColor(alignmentPct)}`} style={{ width: `${alignmentPct}%` }} />
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-muted-foreground">Alignment</span>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm font-semibold ${getScoreColor(alignmentPct)}`}>{alignmentPct}%</span>
+                                <TrendIndicator value={alignmentTrend} size="sm" />
                               </div>
                             </div>
-                            <div>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-muted-foreground">Consensus</span>
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-medium ${getScoreColor(consensusPct)}`}>{consensusPct}%</span>
-                                  <TrendIndicator value={consensusTrend} size="sm" />
-                                </div>
-                              </div>
-                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${getProgressColor(consensusPct)}`} style={{ width: `${consensusPct}%` }} />
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-muted-foreground">Consensus</span>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm font-semibold ${getScoreColor(consensusPct)}`}>{consensusPct}%</span>
+                                <TrendIndicator value={consensusTrend} size="sm" />
                               </div>
                             </div>
-                            <div>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-muted-foreground">Sentiment</span>
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-medium ${getScoreColor(sentimentPct)}`}>{sentimentPct}%</span>
-                                  <TrendIndicator value={sentimentTrend} size="sm" />
-                                </div>
-                              </div>
-                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${getProgressColor(sentimentPct)}`} style={{ width: `${sentimentPct}%` }} />
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-muted-foreground">Sentiment</span>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm font-semibold ${getScoreColor(sentimentPct)}`}>{sentimentPct}%</span>
+                                <TrendIndicator value={sentimentTrend} size="sm" />
                               </div>
                             </div>
                           </div>
@@ -884,31 +869,28 @@ const DealGPS = () => {
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-sm text-muted-foreground flex items-center gap-1">Capability<Info className="w-3 h-3 opacity-60" /></span>
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-medium ${getScoreColor(capabilityPct)}`}>{capabilityPct}%</span>
+                                  <span className={`text-sm font-semibold ${getScoreColor(capabilityPct)}`}>{capabilityPct}%</span>
                                   <TrendIndicator value={capabilityTrend} size="sm" />
                                 </div>
                               </div>
-                              <div className="h-1.5 bg-muted rounded-full overflow-hidden"><div className={`h-full rounded-full ${getProgressColor(capabilityPct)}`} style={{ width: `${capabilityPct}%` }} /></div>
                             </div>
                             <div>
-                              <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground flex items-center gap-1">Message Fit<Info className="w-3 h-3 opacity-60" /></span>
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-medium ${getScoreColor(messageFitPct)}`}>{messageFitPct}%</span>
+                                  <span className={`text-sm font-semibold ${getScoreColor(messageFitPct)}`}>{messageFitPct}%</span>
                                   <TrendIndicator value={messageFitTrend} size="sm" />
                                 </div>
                               </div>
-                              <div className="h-1.5 bg-muted rounded-full overflow-hidden"><div className={`h-full rounded-full ${getProgressColor(messageFitPct)}`} style={{ width: `${messageFitPct}%` }} /></div>
                             </div>
                             <div>
-                              <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground flex items-center gap-1">Value Translation<Info className="w-3 h-3 opacity-60" /></span>
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-medium ${getScoreColor(valueTranslationPct)}`}>{valueTranslationPct}%</span>
+                                  <span className={`text-sm font-semibold ${getScoreColor(valueTranslationPct)}`}>{valueTranslationPct}%</span>
                                   <TrendIndicator value={valueTranslationTrend} size="sm" />
                                 </div>
                               </div>
-                              <div className="h-1.5 bg-muted rounded-full overflow-hidden"><div className={`h-full rounded-full ${getProgressColor(valueTranslationPct)}`} style={{ width: `${valueTranslationPct}%` }} /></div>
                             </div>
                           </div>
                         </div>
@@ -1495,37 +1477,19 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
           </span>
         </div>
 
-        {/* Progress Bars - Priority > Sentiment > Engagement */}
+        {/* Scores */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground w-20">Priority</span>
-            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full ${getProgressColor(stakeholder.priority)} transition-all duration-500`}
-                style={{ width: `${stakeholder.priority}%` }}
-              />
-            </div>
-            <span className="text-xs font-medium w-8 text-right">{stakeholder.priority}%</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Priority</span>
+            <span className={`text-xs font-semibold ${getProgressColor(stakeholder.priority).replace('bg-', 'text-')}`}>{stakeholder.priority}%</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground w-20">Sentiment</span>
-            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full ${getProgressColor(stakeholder.sentiment)} transition-all duration-500`}
-                style={{ width: `${stakeholder.sentiment}%` }}
-              />
-            </div>
-            <span className="text-xs font-medium w-8 text-right">{stakeholder.sentiment}%</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Sentiment</span>
+            <span className={`text-xs font-semibold ${getProgressColor(stakeholder.sentiment).replace('bg-', 'text-')}`}>{stakeholder.sentiment}%</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground w-20">Engagement</span>
-            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full ${getProgressColor(stakeholder.engagement)} transition-all duration-500`}
-                style={{ width: `${stakeholder.engagement}%` }}
-              />
-            </div>
-            <span className="text-xs font-medium w-8 text-right">{stakeholder.engagement}%</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Engagement</span>
+            <span className={`text-xs font-semibold ${getProgressColor(stakeholder.engagement).replace('bg-', 'text-')}`}>{stakeholder.engagement}%</span>
           </div>
         </div>
 

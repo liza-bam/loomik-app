@@ -313,9 +313,9 @@ const DealsTable = () => {
 
                         {/* Deal info - flexible width */}
                         <div className="min-w-0 overflow-hidden">
-                          <p className="font-medium text-foreground truncate">{deal.name}</p>
+                          <p className="text-sm font-medium text-foreground truncate">{deal.name}</p>
                           <div className="flex items-center gap-1.5">
-                            <p className="text-sm text-muted-foreground truncate">{company?.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{company?.name}</p>
                             {/* Stage dot - only on smaller screens */}
                             <div className={`xl:hidden shrink-0 w-2 h-2 rounded-full ${stageInfo.dotColor}`} title={stageInfo.label} />
                           </div>
@@ -346,26 +346,14 @@ const DealsTable = () => {
                         </div>
 
                         {/* Win Probability */}
-                        <div className="flex items-center gap-1">
-                          <div className="hidden xl:block w-9 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full transition-all ${getProgressColor(deal.winProbability)}`}
-                              style={{ width: `${deal.winProbability}%` }}
-                            />
-                          </div>
+                        <div>
                           <span className={`text-xs font-semibold ${getProgressColor(deal.winProbability).replace('bg-', 'text-')}`}>
                             {deal.winProbability}%
                           </span>
                         </div>
 
                         {/* Alignment */}
-                        <div className="flex items-center gap-1">
-                          <div className="hidden xl:block w-9 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full transition-all ${getProgressColor(deal.alignment)}`}
-                              style={{ width: `${deal.alignment}%` }}
-                            />
-                          </div>
+                        <div>
                           <span className={`text-xs font-semibold ${getProgressColor(deal.alignment).replace('bg-', 'text-')}`}>
                             {deal.alignment}%
                           </span>

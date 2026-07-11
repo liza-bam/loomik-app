@@ -560,37 +560,17 @@ const WinProbabilityIntelligenceModal = ({
                               <p className="text-xs text-muted-foreground">{row.role}</p>
                             </div>
                           </td>
-                          <td className="p-3">
-                            <div className="flex flex-col items-center gap-1">
-                              <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${getBarColor(row.cost)}`} style={{ width: `${row.cost}%` }} />
-                              </div>
-                              <span className={`text-xs font-medium ${getTextColor(row.cost)}`}>{row.cost}%</span>
-                            </div>
+                          <td className="p-3 text-center">
+                            <span className={`text-xs font-semibold ${getTextColor(row.cost)}`}>{row.cost}%</span>
                           </td>
-                          <td className="p-3">
-                            <div className="flex flex-col items-center gap-1">
-                              <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${getBarColor(row.technical)}`} style={{ width: `${row.technical}%` }} />
-                              </div>
-                              <span className={`text-xs font-medium ${getTextColor(row.technical)}`}>{row.technical}%</span>
-                            </div>
+                          <td className="p-3 text-center">
+                            <span className={`text-xs font-semibold ${getTextColor(row.technical)}`}>{row.technical}%</span>
                           </td>
-                          <td className="p-3">
-                            <div className="flex flex-col items-center gap-1">
-                              <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${getBarColor(row.timeline)}`} style={{ width: `${row.timeline}%` }} />
-                              </div>
-                              <span className={`text-xs font-medium ${getTextColor(row.timeline)}`}>{row.timeline}%</span>
-                            </div>
+                          <td className="p-3 text-center">
+                            <span className={`text-xs font-semibold ${getTextColor(row.timeline)}`}>{row.timeline}%</span>
                           </td>
-                          <td className="p-3">
-                            <div className="flex flex-col items-center gap-1">
-                              <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${getBarColor(row.risk)}`} style={{ width: `${row.risk}%` }} />
-                              </div>
-                              <span className={`text-xs font-medium ${getTextColor(row.risk)}`}>{row.risk}%</span>
-                            </div>
+                          <td className="p-3 text-center">
+                            <span className={`text-xs font-semibold ${getTextColor(row.risk)}`}>{row.risk}%</span>
                           </td>
                           <td className="p-3">
                             <div className="flex flex-col items-center gap-1">
@@ -642,14 +622,9 @@ const WinProbabilityIntelligenceModal = ({
                       <p className="text-xs text-muted-foreground mb-2">
                         Support ({area.supporters.length}): {area.supporters.join(", ")}
                       </p>
-                      <div className="mb-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-muted-foreground">Consensus Level</span>
-                          <span className={`text-xs font-medium ${getTextColor(area.consensusLevel)}`}>{area.consensusLevel}%</span>
-                        </div>
-                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${getBarColor(area.consensusLevel)}`} style={{ width: `${area.consensusLevel}%` }} />
-                        </div>
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Consensus Level</span>
+                        <span className={`text-xs font-semibold ${getTextColor(area.consensusLevel)}`}>{area.consensusLevel}%</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Last activity: {area.lastActivity}</span>
@@ -711,14 +686,9 @@ const WinProbabilityIntelligenceModal = ({
                         )}
                       </div>
 
-                      <div className="mb-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-muted-foreground">Consensus Progress</span>
-                          <span className={`text-xs font-medium ${getTextColor(area.consensusProgress)}`}>{area.consensusProgress}%</span>
-                        </div>
-                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${getBarColor(area.consensusProgress)}`} style={{ width: `${area.consensusProgress}%` }} />
-                        </div>
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Consensus Progress</span>
+                        <span className={`text-xs font-semibold ${getTextColor(area.consensusProgress)}`}>{area.consensusProgress}%</span>
                       </div>
 
                       <div className="flex items-center justify-between">
@@ -765,14 +735,9 @@ const WinProbabilityIntelligenceModal = ({
                       </div>
                     </div>
                     
-                    <div className="mb-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-muted-foreground">Progress</span>
-                        <span className={`text-xs font-medium ${getTextColor(driver.progress)}`}>{driver.progress}%</span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${getBarColor(driver.progress)}`} style={{ width: `${driver.progress}%` }} />
-                      </div>
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Progress</span>
+                      <span className={`text-xs font-semibold ${getTextColor(driver.progress)}`}>{driver.progress}%</span>
                     </div>
 
                     {driver.blockers.length > 0 && (

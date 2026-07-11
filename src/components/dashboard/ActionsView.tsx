@@ -874,37 +874,19 @@ const ActionStakeholderCard = ({ stakeholder }: ActionStakeholderCardProps) => {
         </span>
       </div>
 
-      {/* Progress Bars - Only Priority, Sentiment, Engagement */}
+      {/* Scores */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground w-20">Priority</span>
-          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full ${getProgressColor(stakeholder.priority)}`}
-              style={{ width: `${stakeholder.priority}%` }}
-            />
-          </div>
-          <span className="text-xs font-medium w-8 text-right">{stakeholder.priority}%</span>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Priority</span>
+          <span className={`text-xs font-semibold ${getProgressColor(stakeholder.priority).replace('bg-', 'text-')}`}>{stakeholder.priority}%</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground w-20">Sentiment</span>
-          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full ${getProgressColor(stakeholder.sentiment)}`}
-              style={{ width: `${stakeholder.sentiment}%` }}
-            />
-          </div>
-          <span className="text-xs font-medium w-8 text-right">{stakeholder.sentiment}%</span>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Sentiment</span>
+          <span className={`text-xs font-semibold ${getProgressColor(stakeholder.sentiment).replace('bg-', 'text-')}`}>{stakeholder.sentiment}%</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground w-20">Engagement</span>
-          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full ${getProgressColor(stakeholder.engagement)}`}
-              style={{ width: `${stakeholder.engagement}%` }}
-            />
-          </div>
-          <span className="text-xs font-medium w-8 text-right">{stakeholder.engagement}%</span>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Engagement</span>
+          <span className={`text-xs font-semibold ${getProgressColor(stakeholder.engagement).replace('bg-', 'text-')}`}>{stakeholder.engagement}%</span>
         </div>
       </div>
 
