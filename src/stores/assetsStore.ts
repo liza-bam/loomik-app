@@ -45,7 +45,11 @@ interface AssetsStore {
   permanentlyDeleteAsset: (assetId: string) => void;
 }
 
-// Sample assets data (demo — no external file URLs)
+// Sample assets — all point at a shared demo PDF hosted in public/samples/.
+// Kept only assets whose preview works; the video/xlsx/docx entries were
+// removed because the demo file is a PDF.
+const SAMPLE_PDF_URL = "/samples/loomik-sample.pdf";
+
 const sampleAssets: Asset[] = [
   {
     id: "asset-1",
@@ -57,28 +61,7 @@ const sampleAssets: Asset[] = [
     tags: ["sales", "quarterly"],
     uploadedBy: "Sarah Chen",
     uploadedAt: new Date("2024-01-14"),
-  },
-  {
-    id: "asset-2",
-    name: "Product Demo Video",
-    description: "Product demonstration for clients",
-    type: "VIDEO",
-    size: "45.2 MB",
-    category: "Marketing",
-    tags: ["demo", "product"],
-    uploadedBy: "Mike Johnson",
-    uploadedAt: new Date("2024-01-13"),
-  },
-  {
-    id: "asset-3",
-    name: "Pricing Calculator",
-    description: "Interactive pricing calculator",
-    type: "XLSX",
-    size: "856 KB",
-    category: "Tools",
-    tags: ["pricing", "calculator"],
-    uploadedBy: "David Wilson",
-    uploadedAt: new Date("2024-01-11"),
+    url: SAMPLE_PDF_URL,
   },
   {
     id: "asset-4",
@@ -90,6 +73,7 @@ const sampleAssets: Asset[] = [
     tags: ["security", "soc2"],
     uploadedBy: "Alex Rodriguez",
     uploadedAt: new Date("2024-01-09"),
+    url: SAMPLE_PDF_URL,
   },
   {
     id: "asset-5",
@@ -101,6 +85,7 @@ const sampleAssets: Asset[] = [
     tags: ["brand", "guidelines"],
     uploadedBy: "Emma Thompson",
     uploadedAt: new Date("2024-01-08"),
+    url: SAMPLE_PDF_URL,
   },
   {
     id: "asset-6",
@@ -112,6 +97,7 @@ const sampleAssets: Asset[] = [
     tags: ["case study", "fintech"],
     uploadedBy: "Sarah Chen",
     uploadedAt: new Date("2024-01-06"),
+    url: SAMPLE_PDF_URL,
   },
   {
     id: "asset-7",
@@ -123,17 +109,7 @@ const sampleAssets: Asset[] = [
     tags: ["api", "docs"],
     uploadedBy: "James Lee",
     uploadedAt: new Date("2024-01-05"),
-  },
-  {
-    id: "asset-8",
-    name: "Proposal Template",
-    description: "Enterprise proposal template",
-    type: "DOCX",
-    size: "1.2 MB",
-    category: "Templates",
-    tags: ["proposal", "template"],
-    uploadedBy: "Mike Johnson",
-    uploadedAt: new Date("2024-01-04"),
+    url: SAMPLE_PDF_URL,
   },
   {
     id: "asset-9",
@@ -145,17 +121,7 @@ const sampleAssets: Asset[] = [
     tags: ["legal", "contract"],
     uploadedBy: "Lisa Park",
     uploadedAt: new Date("2024-01-03"),
-  },
-  {
-    id: "asset-10",
-    name: "Revenue Forecast",
-    description: "Q1 revenue projections",
-    type: "XLSX",
-    size: "2.1 MB",
-    category: "Financial",
-    tags: ["revenue", "forecast"],
-    uploadedBy: "David Wilson",
-    uploadedAt: new Date("2024-01-02"),
+    url: SAMPLE_PDF_URL,
   },
   {
     id: "asset-11",
@@ -167,6 +133,7 @@ const sampleAssets: Asset[] = [
     tags: ["security", "architecture"],
     uploadedBy: "Alex Rodriguez",
     uploadedAt: new Date("2024-01-01"),
+    url: SAMPLE_PDF_URL,
   },
   {
     id: "asset-12",
@@ -178,6 +145,7 @@ const sampleAssets: Asset[] = [
     tags: ["onboarding", "guide"],
     uploadedBy: "Emma Thompson",
     uploadedAt: new Date("2023-12-28"),
+    url: SAMPLE_PDF_URL,
   },
 ];
 
@@ -231,6 +199,9 @@ export const useAssetsStore = create<AssetsStore>()(
     }),
     {
       name: 'assets-storage',
+      // Bumped when the demo seed changes so cached state is discarded.
+      version: 2,
+      migrate: () => ({ assets: sampleAssets, trashedAssets: [] }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           // Hydrate dates
