@@ -1,13 +1,14 @@
 # Design tokens
 
-Loomik's look is driven entirely by CSS variables in `src/index.css`. Components use **semantic** Tailwind classes only, so the app can be re-skinned without touching component code.
+Loomik's look is driven entirely by CSS variables in `src/index.css`. `tailwind.config.ts` **replaces** Tailwind's default colour, type, spacing, radius, shadow and motion scales with these tokens, so every class (`p-4`, `text-sm`, `rounded-lg`, `shadow-md`, `bg-primary`, `duration-200`) resolves to a token and the default palette (`bg-blue-500`, `bg-white`...) doesn't exist. The app can be fully re-skinned without touching component code.
 
 ## Layers (mirrors Figma Variables)
 
 | Layer | Figma collection | Example | Used by components? |
 |---|---|---|---|
 | Primitives | `Primitives` | `--violet-500`, `--gray-200` | No |
-| Semantic | `Semantic` (modes: Light, Dark) | `--primary`, `--success-subtle` | Yes, via Tailwind |
+| Foundations | `Typography`, `Spacing`, `Radius`, `Elevation`, `Motion` | `--text-sm`, `--spacing`, `--radius-lg`, `--shadow-md`, `--duration-fast` | Yes, via Tailwind |
+| Semantic colours | `Semantic` (modes: Light, Dark) | `--primary`, `--success-subtle` | Yes, via Tailwind |
 
 Naming maps 1:1: Figma `color/success/subtle` → CSS `--success-subtle` → Tailwind `bg-success-subtle`.
 
@@ -23,13 +24,27 @@ Naming maps 1:1: Figma `color/success/subtle` → CSS `--success-subtle` → Tai
 | Status | `success`, `warning`, `danger`, `info` — each with `-foreground` and `-subtle` | `text-danger`, `bg-success-subtle` |
 | Stages | `stage-diagnose`, `stage-validate`, `stage-align`, `stage-commit` | `bg-stage-commit` (dots only) |
 | Charts | `chart-1` … `chart-5` | `hsl(var(--chart-1))` in Recharts |
-| Type / shape | `font-sans`, `radius` | `font-sans`, `rounded-lg` |
+| Logo | `logo-wordmark`, `logo-mark` | `<Logo />` (inline SVG) |
+
+## Foundation tokens
+
+| Group | Tokens | Tailwind |
+|---|---|---|
+| Font | `font-sans`, `font-weight-{normal,medium,semibold,bold}` | `font-sans`, `font-semibold` |
+| Type scale | `text-{xxs,xs,sm,base,lg,xl,2xl,3xl,4xl}` + `-leading` | `text-sm` |
+| Line height / tracking | `leading-*`, `tracking-*` | `leading-tight`, `tracking-wide` |
+| Spacing | `spacing` (base unit; every step is a multiple) | `p-4`, `gap-2`, `w-10` |
+| Radius | `radius` → `radius-{sm,md,lg,xl,2xl}` | `rounded-lg` |
+| Elevation | `shadow-color`, `shadow-{sm,…,xl}` | `shadow-md` |
+| Motion | `duration-{fast,normal,slow,slower,slowest}` | `duration-200` |
+
+Charts use `chartTooltip` / `chartTick` from `src/lib/tone.ts`, which are built from the same tokens.
 
 `destructive` is kept as an alias of `danger` for shadcn components.
 
 ## Usage rules
 
-1. **Never** use raw palette classes (`text-green-600`, `bg-blue-100`, `bg-white`, `text-black`) or hex / `rgb()` literals in components.
+1. **Never** use raw values in components: no hex / `rgb()` literals, and no arbitrary style values like `text-[13px]`, `rounded-[6px]` or `shadow-[...]`. (The default palette classes no longer exist.) Arbitrary values are only for layout dimensions such as column widths.
 2. **Colour means something.** Scores and numbers are `text-foreground`; only at-risk values are highlighted. Use the helpers in `src/lib/tone.ts` (`scoreText`, `scoreFill`, `scoreColor`, `trendText`, `sentimentBadge`, `priorityDot`, ...).
 3. **Categories are neutral.** Tags such as asset type or value primitive use `categoryBadge` (`bg-muted text-muted-foreground`), not a rainbow of colours.
 4. **Status badges are subtle:** `bg-{status}-subtle text-{status}`. Solid `bg-{status} text-{status}-foreground` is only for small counters.
@@ -48,8 +63,11 @@ Override semantic tokens under a selector placed after the default tokens in `sr
   --primary-subtle: 210 90% 96%;
   --brand-accent: 160 70% 40%;
   --ring: 210 90% 45%;
-  --font-sans: "Manrope", sans-serif;
+  --logo-wordmark: 210 90% 30%;
+  --logo-mark: 160 70% 40%;
+  --font-sans: "Manrope", sans-serif;  /* also load the font in index.html */
   --radius: 0.75rem;
+  --spacing: 0.3rem;                   /* roomier density */
 }
 ```
 

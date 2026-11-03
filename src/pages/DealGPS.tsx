@@ -103,7 +103,8 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import { scoreText, scoreColor, trendText, sentimentBadge, priorityDot, categoryBadge, avatarFallback, selectedChip } from "@/lib/tone";
+import { scoreText, scoreColor, trendText, sentimentBadge, priorityDot, categoryBadge, avatarFallback, selectedChip, chartTooltip, chartTick } from "@/lib/tone";
+import Logo from "@/components/Logo";
 
 // Format value as compact currency ($580K, $2.4M)
 const formatCompactValue = (value: number): string => {
@@ -477,7 +478,7 @@ const DealGPS = () => {
             <div className={`flex items-center gap-2 px-2 md:px-4 border-l border-border transition-all duration-200 ${isAIPanelOpen ? "w-64 md:w-80" : "w-10 md:w-12"}`}>
               {isAIPanelOpen && (
                 <>
-                  <img src={`${import.meta.env.BASE_URL}assets/loomik-icon.svg`} alt="Loomik" className="h-4 md:h-5 w-auto" />
+                  <Logo className="h-4 md:h-5" />
                   <div className="w-2 h-2 bg-success rounded-full" />
                 </>
               )}
@@ -719,9 +720,9 @@ const DealGPS = () => {
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={winProbTrendData}>
                               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                              <XAxis dataKey="date" tick={chartTick} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                               <YAxis hide domain={[0, 100]} />
-                              <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px' }} />
+                              <RechartsTooltip contentStyle={chartTooltip} />
                               <Area type="natural" dataKey="alignment" name="Alignment" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                               <Area type="natural" dataKey="consensus" name="Consensus" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                               <Area type="natural" dataKey="sentiment" name="Sentiment" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
@@ -850,9 +851,9 @@ const DealGPS = () => {
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={alignmentTrendData}>
                               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                              <XAxis dataKey="date" tick={chartTick} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                               <YAxis hide domain={[0, 100]} />
-                              <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px' }} />
+                              <RechartsTooltip contentStyle={chartTooltip} />
                               <Area type="natural" dataKey="capability" name="Capability" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                               <Area type="natural" dataKey="messageFit" name="Message Fit" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                               <Area type="natural" dataKey="valueTranslation" name="Value Translation" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
@@ -1420,19 +1421,13 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
               <AreaChart data={trendsData}>
                 <XAxis 
                   dataKey="date" 
-                  tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} 
+                  tick={chartTick} 
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis hide domain={[0, 100]} />
                 <RechartsTooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    padding: '6px 10px',
-                  }} 
+                  contentStyle={chartTooltip} 
                 />
                 <Area 
                   type="natural" 

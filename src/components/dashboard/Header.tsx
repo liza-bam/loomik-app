@@ -3,8 +3,7 @@ import { Bell, AlertTriangle, History, RefreshCw, FolderOpen } from "lucide-reac
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
-import loomikLogo from "@/assets/loomik-logo.svg";
-import loomikLogoSmall from "@/assets/loomik-logo-small.svg";
+import Logo from "@/components/Logo";
 import userAvatar from "@/assets/user-avatar.jpg";
 import RisksSignalsDialog from "./RisksSignalsDialog";
 import { useSignalsStore } from "@/stores/signalsStore";
@@ -53,8 +52,8 @@ const Header = ({ isScrolled = false }: HeaderProps) => {
     <>
       <header className="bg-card border-b border-border px-3 py-1.5 flex items-center justify-between">
         <div className="flex items-center gap-3 text-xs">
-          <img src={loomikLogo} alt="Loomik" className="h-6 hidden lg:block" />
-          <img src={loomikLogoSmall} alt="Loomik" className="h-5 lg:hidden" />
+          <Logo variant="wordmark" className="h-6 hidden lg:inline-flex" />
+          <Logo className="h-5 lg:hidden" />
           
           {/* Mobile: Show deal count and value */}
           {isMobile && (

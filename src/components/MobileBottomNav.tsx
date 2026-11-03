@@ -5,7 +5,7 @@ import { executePullSignals } from "@/lib/simulation/pullSignals";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
-import loomikIcon from "@/assets/loomik-icon.svg";
+import Logo from "@/components/Logo";
 
 const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const MobileBottomNav = () => {
           onClick={() => setIsAIPanelOpen(true)} 
           className={`flex flex-col items-center gap-1 p-2 transition-colors ${isAIPanelOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
         >
-          <img src={loomikIcon} alt="Loomik" className="w-5 h-5" />
+          <Logo className="h-5" />
           <span className="text-xs">Ask Loomik</span>
         </button>
       </nav>

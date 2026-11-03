@@ -46,3 +46,13 @@ export const avatarFallback = "bg-primary-subtle text-primary";
 /** Selected state for filter chips, tabs and segmented controls. */
 export const selectedChip = "bg-primary-subtle text-primary";
 export const unselectedChip = "text-muted-foreground hover:bg-muted hover:text-foreground";
+
+/** Shared Recharts styling, built only from tokens. */
+export const chartTooltip = {
+  backgroundColor: "hsl(var(--card))",
+  border: "1px solid hsl(var(--border))",
+  borderRadius: "var(--radius-lg)",
+  fontSize: "var(--text-xs)",
+  padding: "calc(var(--spacing) * 2) calc(var(--spacing) * 3)",
+};
+export const chartTick = { fontSize: "var(--text-xxs)", fill: "hsl(var(--muted-foreground))" };

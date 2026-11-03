@@ -27,7 +27,7 @@ import {
 
 import { ValuePrimitiveBadge } from "@/components/value-primitives/ValuePrimitiveBadge";
 import { getPrimitiveById } from "@/lib/value-primitives/types";
-import { scoreText, sentimentBadge, priorityDot, avatarFallback, selectedChip, categoryBadge } from "@/lib/tone";
+import { scoreText, sentimentBadge, priorityDot, avatarFallback, selectedChip, categoryBadge, chartTooltip, chartTick } from "@/lib/tone";
 
 export const StakeholderPopup = () => {
   const { isOpen, stakeholder, closePopup } = useStakeholderPopup();
@@ -250,16 +250,10 @@ export const StakeholderPopup = () => {
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={trendsData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                      <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                      <XAxis dataKey="date" tick={chartTick} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                       <YAxis hide domain={[0, 100]} />
                       <RechartsTooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          padding: '8px 12px'
-                        }} 
+                        contentStyle={chartTooltip} 
                       />
                       <Area type="natural" dataKey="priority" name="Priority" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                       <Area type="natural" dataKey="sentiment" name="Sentiment" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />

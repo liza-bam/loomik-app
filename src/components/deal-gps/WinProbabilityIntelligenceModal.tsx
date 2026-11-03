@@ -33,7 +33,7 @@ import {
   Video,
 } from "lucide-react";
 import type { Stakeholder } from "@/data/dealData";
-import { scoreText, trendText, priorityDot, categoryBadge, selectedChip, unselectedChip } from "@/lib/tone";
+import { scoreText, trendText, priorityDot, categoryBadge, selectedChip, unselectedChip, chartTooltip, chartTick } from "@/lib/tone";
 
 interface WinProbabilityIntelligenceModalProps {
   open: boolean;
@@ -343,9 +343,9 @@ const SentimentTabContent = ({ sentimentPct }: { sentimentPct: number }) => {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={sentimentTimelineData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-              <YAxis domain={[50, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-              <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
+              <XAxis dataKey="month" tick={chartTick} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+              <YAxis domain={[50, 100]} tick={chartTick} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+              <RechartsTooltip contentStyle={chartTooltip} />
               <Line type="monotone" dataKey="sentiment" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-1))', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
             </LineChart>
           </ResponsiveContainer>

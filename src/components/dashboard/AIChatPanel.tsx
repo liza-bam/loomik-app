@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import type { CalendarEvent } from "@/contexts/EventPopupContext";
+import Logo from "@/components/Logo";
 
 interface AIChatPanelProps {
   hideHeader?: boolean;
@@ -124,7 +125,7 @@ Keep it concise and actionable.`;
       {!hideHeader && (
         <div className="px-4 py-1 border-b border-border bg-card flex-shrink-0">
           <div className="flex items-center gap-2">
-            <img src={`${import.meta.env.BASE_URL}assets/loomik-icon.svg`} alt="Loomik" className="h-5 w-auto" />
+            <Logo className="h-5" />
             <div className="w-2 h-2 bg-success rounded-full" />
           </div>
         </div>
