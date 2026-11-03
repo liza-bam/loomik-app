@@ -114,6 +114,13 @@ const formatCompactValue = (value: number): string => {
 };
 
 // Format date as MM.DD.YY
+// Compact score gauge: a ring filled to the score, number in the middle
+const ScoreRing = ({ value }: { value: number }) => (
+  <div className="w-20 h-20 rounded-full p-1.5" style={{ background: `conic-gradient(${scoreColor(value)} ${value}%, hsl(var(--muted)) 0)` }}>
+    <div className={`w-full h-full rounded-full bg-card flex items-center justify-center font-bold text-xl ${scoreText(value)}`}>{value}%</div>
+  </div>
+);
+
 const formatCompactDate = (dateStr: string): string => {
   const date = new Date(dateStr);
   const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -622,9 +629,7 @@ const DealGPS = () => {
                       </div>
                       <div className="flex flex-col items-center gap-3">
                         {/* Score Badge (Top) */}
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center bg-muted font-bold text-xl ${scoreText(winProb)}`}>
-                          {winProb}%
-                        </div>
+                        <ScoreRing value={winProb} />
                         
                         {/* Overall Trend */}
                         <TrendIndicator value={winProbTrend} size="md" />
@@ -741,9 +746,7 @@ const DealGPS = () => {
                       </div>
                       <div className="flex flex-col items-center gap-3">
                         {/* Score Badge (Top) */}
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center bg-muted font-bold text-xl ${scoreText(stakeholderAlignmentScore)}`}>
-                          {stakeholderAlignmentScore}%
-                        </div>
+                        <ScoreRing value={stakeholderAlignmentScore} />
                         
                         {/* Overall Trend */}
                         <TrendIndicator value={stakeholderAlignmentTrend} size="md" />

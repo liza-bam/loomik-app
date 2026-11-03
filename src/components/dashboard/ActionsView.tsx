@@ -506,7 +506,7 @@ const ActionsView = () => {
 
             {/* Count + View Toggle - hide toggle on tablet with AI panel open */}
             <div className="flex items-center gap-3">
-              <span className={`${isCompact ? "inline" : "hidden xl:inline"} text-sm text-muted-foreground`}>{sortedActions.length} actions</span>
+              <span className={`${isCompact ? "inline" : "hidden 2xl:inline"} text-sm text-muted-foreground whitespace-nowrap`}>{sortedActions.length} actions</span>
               {!isCompact && (
                 <div className="flex items-center border border-border rounded-lg overflow-hidden">
                   <button

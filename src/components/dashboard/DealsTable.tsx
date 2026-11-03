@@ -148,7 +148,7 @@ const DealsTable = () => {
             <div className="flex items-center gap-2">
               <div className="relative">
                 <button 
-                  className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg text-sm font-medium text-foreground"
+                  className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg text-sm font-medium text-foreground whitespace-nowrap"
                   onClick={() => setShowSortDropdown(!showSortDropdown)}
                 >
                   {sortLabels[sortBy]}
@@ -182,7 +182,7 @@ const DealsTable = () => {
             </div>
             
             {!isCompact && (
-              <span className="hidden xl:inline text-sm text-muted-foreground">Showing {sortedDeals.length} of {deals.length} deals</span>
+              <span className="hidden 2xl:inline text-sm text-muted-foreground">Showing {sortedDeals.length} of {deals.length} deals</span>
             )}
             {/* Hide view toggle on tablet when AI panel is open */}
             {!isCompact && (
@@ -208,7 +208,7 @@ const DealsTable = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button className="flex items-center gap-2 text-sm text-primary font-medium hover:underline">
-                    <span className="hidden xl:inline">Open CRM</span>
+                    <span className="hidden 2xl:inline">Open CRM</span>
                     <ExternalLink className="w-4 h-4" />
                   </button>
                 </TooltipTrigger>
@@ -224,11 +224,11 @@ const DealsTable = () => {
         {viewMode === "list" && (
           <>
             {/* Column Headers */}
-            <div className="grid grid-cols-[32px_48px_minmax(120px,1fr)_72px_80px_48px_48px_80px] xl:grid-cols-[32px_48px_minmax(120px,1fr)_80px_72px_80px_100px_100px_80px] gap-4 items-center px-4 py-2 bg-muted/50 text-xs text-muted-foreground tracking-wide border-b border-border">
+            <div className="grid grid-cols-[32px_48px_minmax(120px,1fr)_72px_80px_48px_48px_80px] 2xl:grid-cols-[32px_48px_minmax(120px,1fr)_80px_72px_80px_100px_100px_80px] gap-4 items-center px-4 py-2 bg-muted/50 text-xs text-muted-foreground tracking-wide border-b border-border">
               <div />
               <div />
               <div className="min-w-0 overflow-hidden truncate">Deal</div>
-              <div className="hidden xl:flex justify-center">Stage</div>
+              <div className="hidden 2xl:flex justify-center">Stage</div>
               <div>Value</div>
               <div>Close By</div>
               <div>Win</div>
@@ -271,7 +271,7 @@ const DealsTable = () => {
                     return (
                     <React.Fragment key={deal.id}>
                       <div 
-                        className={`grid grid-cols-[32px_48px_minmax(120px,1fr)_72px_80px_48px_48px_80px] xl:grid-cols-[32px_48px_minmax(120px,1fr)_80px_72px_80px_100px_100px_80px] gap-4 items-center px-4 py-3 interactive-card-subtle ${isExpanded ? "bg-muted/30" : ""}`}
+                        className={`grid grid-cols-[32px_48px_minmax(120px,1fr)_72px_80px_48px_48px_80px] 2xl:grid-cols-[32px_48px_minmax(120px,1fr)_80px_72px_80px_100px_100px_80px] gap-4 items-center px-4 py-3 interactive-card-subtle ${isExpanded ? "bg-muted/30" : ""}`}
                         onClick={() => toggleExpand(deal.id)}
                       >
                         {/* Expand button */}
@@ -299,12 +299,12 @@ const DealsTable = () => {
                           <div className="flex items-center gap-1.5">
                             <p className="text-xs text-muted-foreground truncate">{company?.name}</p>
                             {/* Stage dot - only on smaller screens */}
-                            <div className={`xl:hidden shrink-0 w-2 h-2 rounded-full ${stageInfo.dotColor}`} title={stageInfo.label} />
+                            <div className={`2xl:hidden shrink-0 w-2 h-2 rounded-full ${stageInfo.dotColor}`} title={stageInfo.label} />
                           </div>
                         </div>
 
                         {/* Stage badge - only on xl+ */}
-                        <div className="hidden xl:flex justify-center">
+                        <div className="hidden 2xl:flex justify-center">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xxs font-medium border ${stageInfo.colorClass} cursor-help`}>
