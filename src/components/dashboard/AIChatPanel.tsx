@@ -124,7 +124,7 @@ Keep it concise and actionable.`;
       {!hideHeader && (
         <div className="px-4 py-1 border-b border-border bg-card flex-shrink-0">
           <div className="flex items-center gap-2">
-            <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-5 w-auto" />
+            <img src={`${import.meta.env.BASE_URL}assets/loomik-icon.svg`} alt="Loomik" className="h-5 w-auto" />
             <div className="w-2 h-2 bg-success rounded-full" />
           </div>
         </div>

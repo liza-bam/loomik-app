@@ -44,7 +44,7 @@ const ActionHub = () => {
           <div className={`flex items-center gap-2 px-2 md:px-4 border-l border-border transition-all duration-200 ${isAIPanelOpen ? "w-64 md:w-80" : "w-10 md:w-12"}`}>
             {isAIPanelOpen && (
               <>
-                <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
+                <img src={`${import.meta.env.BASE_URL}assets/loomik-icon.svg`} alt="Loomik" className="h-4 md:h-5 w-auto" />
                 <div className="w-2 h-2 bg-success rounded-full" />
               </>
             )}
