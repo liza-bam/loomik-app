@@ -51,4 +51,4 @@ src/
 
 ## Design system
 
-Design tokens live in `src/index.css` as HSL CSS variables and are exposed to Tailwind via `tailwind.config.ts`. Both light and dark themes are defined. Palette: purple (primary), plus orange, green, yellow, red — each with a matching `-light` tint.
+All colours, the font and the corner radius come from semantic design tokens in `src/index.css` (primitives → semantic, light and dark modes), exposed to Tailwind in `tailwind.config.ts`. Shared colour rules live in `src/lib/tone.ts`. See [docs/design-tokens.md](docs/design-tokens.md) for the token list, usage rules and how to add a skin.

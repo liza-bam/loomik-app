@@ -2,98 +2,185 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Alignment Intelligence Platform Design System */
+/*
+ * Loomik design tokens
+ *
+ * Two layers, mirroring Figma Variables collections:
+ *   1. Primitives  — raw palette (Figma: "Primitives", e.g. violet/500).
+ *                    Never used directly in components.
+ *   2. Semantic    — what components use (Figma: "Semantic", modes Light / Dark,
+ *                    e.g. color/success/subtle  ->  --success-subtle  ->  bg-success-subtle).
+ *
+ * Values are HSL channels ("H S% L%") so Tailwind opacity modifiers work (bg-primary/10).
+ *
+ * Skinning: a new skin only overrides semantic tokens (and --font-sans / --radius)
+ * under its own selector, e.g. [data-theme="acme"] { --primary: ...; }.
+ * See docs/design-tokens.md.
+ */
 
 @layer base {
+  /* ---------- 1. Primitives ---------- */
   :root {
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    --white: 0 0% 100%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --gray-50: 220 20% 97%;
+    --gray-100: 220 14% 96%;
+    --gray-200: 220 13% 91%;
+    --gray-300: 216 12% 84%;
+    --gray-400: 218 11% 65%;
+    --gray-500: 220 9% 46%;
+    --gray-700: 217 19% 27%;
+    --gray-800: 217 33% 17%;
+    --gray-900: 222 47% 11%;
+    --gray-950: 222 47% 8%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --violet-50: 262 83% 96%;
+    --violet-300: 263 85% 72%;
+    --violet-500: 262 83% 58%;
+    --violet-900: 263 50% 20%;
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
+    --orange-500: 25 95% 53%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --green-50: 142 60% 95%;
+    --green-400: 142 60% 55%;
+    --green-500: 142 71% 45%;
+    --green-700: 142 72% 29%;
+    --green-900: 142 40% 16%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --amber-50: 40 90% 94%;
+    --amber-400: 38 92% 60%;
+    --amber-500: 38 92% 50%;
+    --amber-700: 26 90% 35%;
+    --amber-900: 30 50% 17%;
 
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 100%;
+    --red-50: 0 85% 96%;
+    --red-400: 0 85% 68%;
+    --red-500: 0 84% 60%;
+    --red-600: 0 72% 48%;
+    --red-900: 0 45% 18%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --blue-50: 214 95% 95%;
+    --blue-400: 213 94% 68%;
+    --blue-500: 217 91% 60%;
+    --blue-600: 221 83% 50%;
+    --blue-900: 220 50% 20%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 262 83% 58%;
-
-    --radius: 0.5rem;
-
-    /* Custom colors for the dashboard */
-    --purple: 262 83% 58%;
-    --purple-light: 262 83% 95%;
-    --orange: 25 95% 53%;
-    --orange-light: 25 95% 95%;
-    --green: 142 71% 45%;
-    --green-light: 142 71% 95%;
-    --yellow: 45 93% 47%;
-    --red: 0 84% 60%;
-    --red-light: 0 84% 95%;
-
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 262 83% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 262 83% 58%;
+    --pink-500: 330 81% 60%;
+    --teal-500: 173 80% 40%;
   }
 
+  /* ---------- 2. Semantic — Light mode ---------- */
+  :root {
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --radius: 0.5rem;
+
+    /* Surfaces & text */
+    --background: var(--gray-50);
+    --foreground: var(--gray-900);
+    --card: var(--white);
+    --card-foreground: var(--gray-900);
+    --popover: var(--white);
+    --popover-foreground: var(--gray-900);
+    --muted: var(--gray-100);
+    --muted-foreground: var(--gray-500);
+    --secondary: var(--gray-100);
+    --secondary-foreground: var(--gray-900);
+    --border: var(--gray-200);
+    --input: var(--gray-200);
+    --overlay: var(--gray-950);
+
+    /* Brand */
+    --primary: var(--violet-500);
+    --primary-foreground: var(--white);
+    --primary-subtle: var(--violet-50);
+    --brand-accent: var(--orange-500);
+    --gradient-brand: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--brand-accent)));
+    --ring: var(--violet-500);
+
+    /* Hover / selected surface (shadcn "accent") */
+    --accent: var(--violet-50);
+    --accent-foreground: var(--violet-500);
+
+    /* Status: solid = text/icons/fills, subtle = tinted background */
+    --success: var(--green-700);
+    --success-foreground: var(--white);
+    --success-subtle: var(--green-50);
+    --warning: var(--amber-700);
+    --warning-foreground: var(--white);
+    --warning-subtle: var(--amber-50);
+    --danger: var(--red-600);
+    --danger-foreground: var(--white);
+    --danger-subtle: var(--red-50);
+    --info: var(--blue-600);
+    --info-foreground: var(--white);
+    --info-subtle: var(--blue-50);
+    --destructive: var(--danger);
+    --destructive-foreground: var(--danger-foreground);
+
+    /* Deal stages (dots / markers only) */
+    --stage-diagnose: var(--blue-500);
+    --stage-validate: var(--amber-500);
+    --stage-align: var(--orange-500);
+    --stage-commit: var(--green-500);
+
+    /* Chart series */
+    --chart-1: var(--violet-500);
+    --chart-2: var(--blue-500);
+    --chart-3: var(--teal-500);
+    --chart-4: var(--amber-500);
+    --chart-5: var(--pink-500);
+
+    /* shadcn sidebar */
+    --sidebar-background: var(--white);
+    --sidebar-foreground: var(--gray-900);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--gray-100);
+    --sidebar-accent-foreground: var(--gray-900);
+    --sidebar-border: var(--gray-200);
+    --sidebar-ring: var(--ring);
+  }
+
+  /* ---------- 2. Semantic — Dark mode ---------- */
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: var(--gray-950);
+    --foreground: var(--gray-50);
+    --card: var(--gray-900);
+    --card-foreground: var(--gray-50);
+    --popover: var(--gray-900);
+    --popover-foreground: var(--gray-50);
+    --muted: var(--gray-800);
+    --muted-foreground: var(--gray-400);
+    --secondary: var(--gray-800);
+    --secondary-foreground: var(--gray-50);
+    --border: var(--gray-800);
+    --input: var(--gray-800);
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --primary: var(--violet-300);
+    --primary-foreground: var(--gray-950);
+    --primary-subtle: var(--violet-900);
+    --ring: var(--violet-300);
+    --accent: var(--violet-900);
+    --accent-foreground: var(--violet-300);
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --success: var(--green-400);
+    --success-foreground: var(--gray-950);
+    --success-subtle: var(--green-900);
+    --warning: var(--amber-400);
+    --warning-foreground: var(--gray-950);
+    --warning-subtle: var(--amber-900);
+    --danger: var(--red-400);
+    --danger-foreground: var(--gray-950);
+    --danger-subtle: var(--red-900);
+    --info: var(--blue-400);
+    --info-foreground: var(--gray-950);
+    --info-subtle: var(--blue-900);
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 262 83% 58%;
-
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 262 83% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-background: var(--gray-950);
+    --sidebar-foreground: var(--gray-50);
+    --sidebar-accent: var(--gray-800);
+    --sidebar-accent-foreground: var(--gray-50);
+    --sidebar-border: var(--gray-800);
   }
 }
 
@@ -107,7 +194,8 @@
   }
 
   body {
-    @apply bg-background text-foreground text-base;
+    @apply bg-background text-foreground text-base font-sans antialiased;
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -115,21 +203,13 @@
 @layer components {
   /* Full interactive card effect - for standalone cards */
   .interactive-card {
-    @apply relative transition-all duration-300 ease-out cursor-pointer;
-    @apply hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5;
+    @apply relative transition-all duration-200 ease-out cursor-pointer;
+    @apply hover:shadow-md hover:border-primary/30;
   }
-  
-  /* Gradient overlay for cards - add to elements that need the gradient effect */
-  .interactive-card-gradient {
-    @apply before:absolute before:inset-0 before:rounded-lg 
-           before:bg-gradient-to-br before:from-purple/5 before:to-transparent 
-           before:opacity-0 before:transition-opacity before:duration-300
-           hover:before:opacity-100 before:pointer-events-none;
-  }
-  
+
   /* Subtle effect for list items and table rows */
   .interactive-card-subtle {
-    @apply transition-all duration-200 ease-out cursor-pointer;
-    @apply hover:bg-purple/[0.08] hover:shadow-sm;
+    @apply transition-colors duration-150 ease-out cursor-pointer;
+    @apply hover:bg-muted/60;
   }
 }

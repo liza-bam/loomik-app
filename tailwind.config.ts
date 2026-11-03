@@ -13,8 +13,14 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-sans)"],
+      },
+      backgroundImage: {
+        "brand-gradient": "var(--gradient-brand)",
+      },
       fontSize: {
-        'xxs': ['0.8rem', { lineHeight: '1.2' }],
+        'xxs': ['0.6875rem', { lineHeight: '1rem' }],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -60,24 +66,41 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        purple: {
-          DEFAULT: "hsl(var(--purple))",
-          light: "hsl(var(--purple-light))",
+        "primary-subtle": "hsl(var(--primary-subtle))",
+        "brand-accent": "hsl(var(--brand-accent))",
+        overlay: "hsl(var(--overlay))",
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+          subtle: "hsl(var(--success-subtle))",
         },
-        orange: {
-          DEFAULT: "hsl(var(--orange))",
-          light: "hsl(var(--orange-light))",
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+          subtle: "hsl(var(--warning-subtle))",
         },
-        green: {
-          DEFAULT: "hsl(var(--green))",
-          light: "hsl(var(--green-light))",
+        danger: {
+          DEFAULT: "hsl(var(--danger))",
+          foreground: "hsl(var(--danger-foreground))",
+          subtle: "hsl(var(--danger-subtle))",
         },
-        yellow: {
-          DEFAULT: "hsl(var(--yellow))",
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+          subtle: "hsl(var(--info-subtle))",
         },
-        red: {
-          DEFAULT: "hsl(var(--red))",
-          light: "hsl(var(--red-light))",
+        stage: {
+          diagnose: "hsl(var(--stage-diagnose))",
+          validate: "hsl(var(--stage-validate))",
+          align: "hsl(var(--stage-align))",
+          commit: "hsl(var(--stage-commit))",
+        },
+        chart: {
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
         },
       },
       borderRadius: {
@@ -94,6 +117,10 @@ export default {
             height: "var(--radix-accordion-content-height)",
           },
         },
+        "fade-in": {
+          from: { opacity: "0", transform: "translateY(-2px)" },
+          to: { opacity: "1", transform: "none" },
+        },
         "accordion-up": {
           from: {
             height: "var(--radix-accordion-content-height)",
@@ -106,6 +133,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 0.15s ease-out",
       },
     },
   },

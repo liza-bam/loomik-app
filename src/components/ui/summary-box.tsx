@@ -7,7 +7,7 @@ interface SummaryBoxProps {
 
 export const SummaryBox = ({ children, className = "" }: SummaryBoxProps) => {
   return (
-    <div className={`bg-purple/5 border border-purple/20 rounded-lg p-4 ${className}`}>
+    <div className={`bg-muted/50 border border-border rounded-lg p-4 ${className}`}>
       <div className="text-base text-muted-foreground leading-relaxed">
         {children}
       </div>
