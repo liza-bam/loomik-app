@@ -22,6 +22,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { scoreText, categoryBadge, selectedChip } from "@/lib/tone";
 
 interface BuyerProfileSectionProps {
   dealId: number;
@@ -247,45 +248,29 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
     svmPage * ITEMS_PER_PAGE
   );
   
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "bg-gradient-to-r from-green to-green/80";
-    if (score >= 60) return "bg-gradient-to-r from-orange to-yellow-500";
-    return "bg-gradient-to-r from-red to-red/80";
-  };
-  
   const getStatusBadge = (status: "aligned" | "partial" | "gap") => {
     switch (status) {
       case "aligned":
         return (
-          <Badge className="bg-green/10 text-green border-green/20 gap-1">
+          <Badge variant="outline" className="border-transparent bg-success-subtle text-success gap-1">
             <CheckCircle2 className="w-3 h-3" />
             aligned
           </Badge>
         );
       case "partial":
         return (
-          <Badge className="bg-orange/10 text-orange border-orange/20 gap-1">
+          <Badge variant="outline" className="border-transparent bg-warning-subtle text-warning gap-1">
             <TrendingUp className="w-3 h-3" />
             partial
           </Badge>
         );
       case "gap":
         return (
-          <Badge className="bg-red/10 text-red border-red/20 gap-1">
+          <Badge variant="outline" className="border-transparent bg-danger-subtle text-danger gap-1">
             <AlertTriangle className="w-3 h-3" />
             gap
           </Badge>
         );
-    }
-  };
-  
-  const getCategoryDotColor = (color: string) => {
-    switch (color) {
-      case "green": return "bg-green";
-      case "blue": return "bg-blue-500";
-      case "yellow": return "bg-yellow-500";
-      case "red": return "bg-red";
-      default: return "bg-muted-foreground";
     }
   };
   
@@ -324,13 +309,10 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
             <Button
               key={page}
-              variant={page === currentPage ? "default" : "ghost"}
+              variant="ghost"
               size="sm"
               onClick={() => onPageChange(page)}
-              className={cn(
-                "w-8 h-8 p-0",
-                page === currentPage && "bg-foreground text-background"
-              )}
+              className={cn("w-8 h-8 p-0", page === currentPage && selectedChip)}
             >
               {page}
             </Button>
@@ -355,14 +337,14 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
       {/* Summary Box - matches Win Probability style */}
       <div className="space-y-3">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple" />
+          <Sparkles className="w-4 h-4 text-primary" />
           Summary
         </h3>
         <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-between">
           <p className="text-base text-foreground leading-relaxed">
             Review and manage BVM/SVM details, alignment status, and supporting proof.
           </p>
-          <Button size="sm" className="bg-orange hover:bg-orange/90 text-white gap-2 shrink-0 ml-4">
+          <Button size="sm" className="gap-2 shrink-0 ml-4">
             <Upload className="w-4 h-4" />
             Upload
           </Button>
@@ -396,13 +378,13 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
             </div>
           </div>
           <div className="flex items-center gap-2 mt-3">
-            <Badge variant="outline" className="bg-purple/10 text-purple border-purple/20">
+            <Badge variant="secondary">
               Overall Alignment: {overallAlignment}%
             </Badge>
-            <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+            <Badge variant="outline" className="border-transparent bg-success-subtle text-success">
               {alignedCount} Aligned
             </Badge>
-            <Badge variant="outline" className="bg-red/10 text-red border-red/20">
+            <Badge variant="outline" className="border-transparent bg-danger-subtle text-danger">
               {gapCount} Gaps
             </Badge>
           </div>
@@ -428,7 +410,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                     <div className="flex items-center gap-2">
                       <div className={cn(
                         "w-2 h-2 rounded-full",
-                        item.status === "aligned" ? "bg-green" : item.status === "partial" ? "bg-yellow-500" : "bg-red"
+                        item.status === "aligned" ? "bg-success" : item.status === "partial" ? "bg-warning" : "bg-danger"
                       )} />
                       <div>
                         <p className="text-sm font-medium">{item.bvmField}</p>
@@ -443,7 +425,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={cn("text-sm font-semibold", getScoreColor(item.score).replace('bg-', 'text-'))}>{item.score}%</span>
+                    <span className={cn("text-sm font-semibold", scoreText(item.score))}>{item.score}%</span>
                   </td>
                   <td className="px-4 py-3">
                     {getStatusBadge(item.status)}
@@ -495,7 +477,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
             </div>
           </div>
           <div className="flex items-center gap-2 mt-3">
-            <Badge variant="outline" className="bg-cyan-500/10 text-cyan-600 border-cyan-500/20">
+            <Badge variant="outline" className={`border-transparent ${categoryBadge}`}>
               Complete Framework
             </Badge>
             <span className="text-xs text-muted-foreground">All BVM data displayed on platform</span>
@@ -517,13 +499,10 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
               {paginatedBvmData.map((item) => (
                 <tr key={item.id} className="border-b border-border hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className={cn("w-2 h-2 rounded-full", getCategoryDotColor(item.categoryColor))} />
-                      <span className="text-sm">{item.category}</span>
-                    </div>
+                    <span className="text-sm">{item.category}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge className="bg-orange/10 text-orange border-orange/20 hover:bg-orange/20">
+                    <Badge variant="outline" className={`border-transparent ${categoryBadge}`}>
                       {item.field}
                     </Badge>
                   </td>
@@ -579,7 +558,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
             </div>
           </div>
           <div className="flex items-center gap-2 mt-3">
-            <Badge variant="outline" className="bg-purple/10 text-purple border-purple/20">
+            <Badge variant="outline" className={`border-transparent ${categoryBadge}`}>
               Deal-Specific View
             </Badge>
             <span className="text-xs text-muted-foreground">Mapped info specific to current deal</span>
@@ -616,7 +595,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                     <div className="flex flex-wrap gap-1">
                       {item.mappedBvm.length > 0 ? (
                         item.mappedBvm.map((bvm, idx) => (
-                          <Badge key={idx} className="bg-purple/10 text-purple border-purple/20 text-xs">
+                          <Badge key={idx} variant="outline" className={`border-transparent text-xs ${categoryBadge}`}>
                             {bvm}
                           </Badge>
                         ))

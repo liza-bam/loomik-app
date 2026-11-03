@@ -13,6 +13,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { priorityDot, avatarFallback } from "@/lib/tone";
 import { useSignalsStore, DetectedSignal } from "@/stores/signalsStore";
 import { useSignalProcessor } from "@/hooks/useSignalProcessor";
 import { toast } from "@/hooks/use-toast";
@@ -198,14 +199,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
     const isEditingThis = editingId === item.id;
 
     return (
-      <div 
-        className={cn(
-          "border rounded-lg bg-card transition-shadow",
-          isCritical && isRisk && "border-red/40 bg-red/5",
-          isCritical && !isRisk && "border-green/40 bg-green/5",
-          !isCritical && "hover:shadow-sm"
-        )}
-      >
+      <div className="border rounded-lg bg-card transition-shadow hover:shadow-sm">
         <button
           className="w-full p-3 flex items-start gap-3 text-left"
           onClick={onToggle}
@@ -214,14 +208,14 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
           <div className="relative shrink-0">
             <Avatar className="w-8 h-8">
               <AvatarImage src={stakeholder.avatar} />
-              <AvatarFallback className="text-xs">{stakeholder.initials}</AvatarFallback>
+              <AvatarFallback className={`${avatarFallback} text-xs`}>{stakeholder.initials}</AvatarFallback>
             </Avatar>
             {isCritical && (
               <div className={cn(
                 "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center",
-                isRisk ? "bg-red" : "bg-green"
+                isRisk ? "bg-danger text-danger-foreground" : "bg-success text-success-foreground"
               )}>
-                <Zap className="w-2.5 h-2.5 text-white" />
+                <Zap className="w-2.5 h-2.5" />
               </div>
             )}
           </div>
@@ -231,23 +225,16 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
             <div className="flex items-center gap-2 mb-1">
               {isCritical && (
                 <Badge variant="outline" className={cn(
-                  "text-xxs px-1.5 py-0 h-4 font-semibold animate-pulse",
-                  isRisk ? "border-red text-red" : "border-green text-green"
+                  "text-xxs px-1.5 py-0 h-4 font-semibold border-transparent",
+                  isRisk ? "bg-danger-subtle text-danger" : "bg-success-subtle text-success"
                 )}>
                   CRITICAL
                 </Badge>
               )}
-              <Badge 
-                variant="outline" 
-                className={cn(
-                  "text-xxs px-1.5 py-0 h-4",
-                  item.priority === 'high' && "border-red text-red",
-                  item.priority === 'medium' && "border-yellow text-yellow",
-                  item.priority === 'low' && "border-muted-foreground text-muted-foreground"
-                )}
-              >
+              <span className="inline-flex items-center gap-1 text-xxs text-muted-foreground">
+                <span className={`w-1.5 h-1.5 rounded-full ${priorityDot(item.priority)}`} />
                 {item.priority}
-              </Badge>
+              </span>
             </div>
             <p className="text-sm font-medium text-foreground line-clamp-1">
               {item.name}
@@ -357,7 +344,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-purple pr-6">{item.suggestedAction}</p>
+                      <p className="text-sm text-foreground pr-6">{item.suggestedAction}</p>
                       <button
                         onClick={(e) => { e.stopPropagation(); startEditing(item.id, 'suggestedAction', item.suggestedAction || ''); }}
                         className="absolute top-0 right-0 p-1 opacity-0 group-hover/edit:opacity-100 hover:bg-muted rounded"
@@ -374,7 +361,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                 <div className="flex items-center gap-2">
                   <Avatar className="w-5 h-5">
                     <AvatarImage src={stakeholder.avatar} />
-                    <AvatarFallback className="text-xxs">{stakeholder.initials}</AvatarFallback>
+                    <AvatarFallback className={`${avatarFallback} text-xxs`}>{stakeholder.initials}</AvatarFallback>
                   </Avatar>
                   <span className="text-xs text-muted-foreground">
                     {stakeholder.name} · {stakeholder.role}
@@ -390,11 +377,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
             <div className="flex gap-2 pt-1">
               <Button
                 size="sm"
-                className={cn(
-                  "flex-1 h-8 text-xs gap-1.5",
-                  isRisk ? "bg-red hover:bg-red/90" : "bg-green hover:bg-green/90",
-                  "text-white"
-                )}
+                className="flex-1 h-8 text-xs gap-1.5"
                 onClick={(e) => { e.stopPropagation(); handleProcess(item); }}
               >
                 <Database className="w-3.5 h-3.5" />
@@ -436,10 +419,10 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
       <section className="space-y-4">
         {/* Section Header */}
         <CollapsibleTrigger asChild>
-          <Card className="p-4 bg-gradient-to-r from-orange/5 to-red/5 border-l-4 border-l-orange cursor-pointer hover:bg-orange/5 transition-colors">
+          <Card className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange/10">
-                <AlertTriangle className="w-5 h-5 text-orange" />
+              <div className="p-2 rounded-lg bg-primary-subtle">
+                <AlertTriangle className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -470,7 +453,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-red" />
+                  <AlertTriangle className="w-3.5 h-3.5 text-danger" />
                   Risks ({risks.length})
                 </span>
                 {risks.length > 0 && (
@@ -478,7 +461,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                     <Button 
                       size="sm" 
                       variant="ghost" 
-                      className="h-6 text-xxs px-2 text-red hover:text-red hover:bg-red/10"
+                      className="h-6 text-xxs px-2"
                       onClick={() => handleProcessAll('risk')}
                     >
                       Address All
@@ -532,7 +515,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-green" />
+                  <Zap className="w-3.5 h-3.5 text-success" />
                   Signals ({signals.length})
                 </span>
                 {signals.length > 0 && (
@@ -540,7 +523,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                     <Button 
                       size="sm" 
                       variant="ghost" 
-                      className="h-6 text-xxs px-2 text-green hover:text-green hover:bg-green/10"
+                      className="h-6 text-xxs px-2"
                       onClick={() => handleProcessAll('signal')}
                     >
                       Process All
