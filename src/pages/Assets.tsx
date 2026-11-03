@@ -227,11 +227,11 @@ const Assets = () => {
       
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content - scrollable, full width on mobile */}
-        <main id="main-scroll" className={`flex-1 overflow-y-auto ${isMobile ? 'pb-20' : ''}`}>
+        <main id="main-scroll" className="flex-1 overflow-y-auto pb-20">
           {/* Filter Bar - Single line normally, 2 lines when AI panel open on tablet */}
-          <div className={`px-4 py-2 border-b border-border bg-card ${isAIPanelOpen ? 'md:flex-col md:space-y-2 lg:flex-row lg:space-y-0' : ''} flex items-center justify-between gap-3`}>
+          <div className={`px-4 py-2 border-b border-border bg-card ${isAIPanelOpen ? 'md:flex-col md:space-y-2 lg:flex-row lg:space-y-0' : ''} flex flex-wrap items-center justify-between gap-3`}>
             {/* Left: Filters */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex flex-wrap items-center gap-3">
               <Filter className="w-4 h-4 text-muted-foreground" />
               
               {/* Deal Filter */}
@@ -269,7 +269,7 @@ const Assets = () => {
             <div className={`flex items-center gap-2 ${isAIPanelOpen ? 'md:w-full md:justify-between lg:w-auto lg:justify-end' : ''}`}>
               {/* Sort */}
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                <SelectTrigger className="w-[100px] h-8 text-xs">
+                <SelectTrigger className="w-[110px] h-8 text-xs">
                   <ArrowUpDown className="w-3 h-3 mr-1" />
                   <SelectValue />
                 </SelectTrigger>

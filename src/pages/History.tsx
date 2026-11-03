@@ -21,7 +21,7 @@ import { toast } from "@/hooks/use-toast";
 import { avatarFallback, categoryBadge, priorityDot, selectedChip, unselectedChip } from "@/lib/tone";
 
 const tabTrigger = "gap-1.5 data-[state=active]:bg-primary-subtle data-[state=active]:text-primary data-[state=active]:shadow-none";
-const segment = (active: boolean) => `px-3 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${active ? selectedChip : unselectedChip}`;
+const segment = (active: boolean) => `px-3 py-1 rounded text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${active ? selectedChip : unselectedChip}`;
 
 // Helper to format time ago
 const formatTimeAgo = (date: Date) => {
@@ -159,7 +159,7 @@ const History = () => {
       
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content - scrollable, full width on mobile */}
-        <main id="main-scroll" className={`flex-1 overflow-y-auto ${isMobile ? 'pb-20' : ''}`}>
+        <main id="main-scroll" className="flex-1 overflow-y-auto pb-20">
           <div className="p-6 pt-6">
             <Card className="p-0 overflow-hidden">
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "actions" | "signals" | "timeline")}>
@@ -169,15 +169,15 @@ const History = () => {
                   <div className="flex items-center justify-between gap-4 flex-wrap">
                     <TabsList className="bg-muted/50">
                       <TabsTrigger value="actions" className={tabTrigger}>
-                        <Archive className="w-3.5 h-3.5" />
+                        <Archive className="w-3.5 h-3.5 hidden sm:block" />
                         Actions
                       </TabsTrigger>
                       <TabsTrigger value="signals" className={tabTrigger}>
-                        <Bell className="w-3.5 h-3.5" />
+                        <Bell className="w-3.5 h-3.5 hidden sm:block" />
                         Signals & Risks
                       </TabsTrigger>
                       <TabsTrigger value="timeline" className={tabTrigger}>
-                        <Clock className="w-3.5 h-3.5" />
+                        <Clock className="w-3.5 h-3.5 hidden sm:block" />
                         Timeline
                       </TabsTrigger>
                     </TabsList>
@@ -194,7 +194,7 @@ const History = () => {
                   </div>
                   
                   {/* Row 2: Sub-filters */}
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     {activeTab === "actions" ? (
                       <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
                         <button
@@ -255,7 +255,7 @@ const History = () => {
                       </Select>
                     )}
                     
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {activeTab === "actions" ? filteredActions.length : activeTab === "signals" ? filteredSignalsRisks.length : filteredTimeline.length} items
                     </span>
                   </div>

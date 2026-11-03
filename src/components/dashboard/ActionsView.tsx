@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useIsTablet } from "@/hooks/use-mobile";
+import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import ActionEmailDialog from "./ActionEmailDialog";
 import ActionMeetingDialog from "./ActionMeetingDialog";
 import ArchiveConfirmDialog from "./ArchiveConfirmDialog";
@@ -114,6 +114,7 @@ const ActionsView = () => {
   const { actions: generatedActions } = useGeneratedActionsStore();
   const { isAIPanelOpen } = useUIStore();
   const isTablet = useIsTablet();
+  const isMobile = useIsMobile();
   
   const [localRemovedIds, setLocalRemovedIds] = useState<number[]>([]);
   const [userViewMode, setUserViewMode] = useState<"list" | "cards">("list");
@@ -135,9 +136,9 @@ const ActionsView = () => {
   // Expanded row state
   const [expandedActionId, setExpandedActionId] = useState<number | null>(null);
   
-  // Force cards view on tablet when AI panel is open
-  const isTabletCompact = isTablet && isAIPanelOpen;
-  const viewMode = isTabletCompact ? "cards" : userViewMode;
+  // Compact layout (cards view, stacked filters) on phones, and on tablets when the AI panel is open
+  const isCompact = isMobile || (isTablet && isAIPanelOpen);
+  const viewMode = isCompact ? "cards" : userViewMode;
   const setViewMode = setUserViewMode;
 
   const { archiveAction, markAsDone } = useActionsStore();
@@ -419,15 +420,13 @@ const ActionsView = () => {
     );
   };
 
-  // Check if we're in tablet with AI panel open
-  const isTabletWithAI = isTablet && isAIPanelOpen;
 
   return (
     <div className="space-y-0">
       {/* Controls - matching Dashboard style */}
       <Card className={`p-0 overflow-hidden ${viewMode === "list" ? "rounded-b-none border-b-0" : "mb-4"}`}>
-        <FilterBar className={isTabletWithAI ? "flex-col items-stretch gap-3" : ""}>
-          <FilterBarLeft className={isTabletWithAI ? "w-full" : ""}>
+        <FilterBar className={isCompact ? "flex-col items-stretch gap-3" : ""}>
+          <FilterBarLeft className={isCompact ? "w-full flex-wrap" : ""}>
             {/* Priority Buttons */}
             <div className="flex items-center gap-1">
               {["high", "medium", "low"].map((p) => (
@@ -483,9 +482,9 @@ const ActionsView = () => {
             </Select>
           </FilterBarLeft>
 
-          <FilterBarRight className={isTabletWithAI ? "w-full justify-start" : ""}>
+          <FilterBarRight className={isCompact ? "w-full justify-start flex-wrap" : ""}>
             {/* Sort - hidden on smaller screens, or shown on tablet 2-row layout */}
-            <div className={`${isTabletWithAI ? "flex" : "hidden xl:flex"} items-center gap-2`}>
+            <div className={`${isCompact ? "flex" : "hidden xl:flex"} items-center gap-2`}>
               <span className="text-sm text-muted-foreground">Sort:</span>
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as "deadline" | "priority" | "company")}>
                 <SelectTrigger className="w-28 bg-muted border-0">
@@ -507,8 +506,8 @@ const ActionsView = () => {
 
             {/* Count + View Toggle - hide toggle on tablet with AI panel open */}
             <div className="flex items-center gap-3">
-              <span className={`${isTabletWithAI ? "inline" : "hidden xl:inline"} text-sm text-muted-foreground`}>{sortedActions.length} actions</span>
-              {!isTabletWithAI && (
+              <span className={`${isCompact ? "inline" : "hidden xl:inline"} text-sm text-muted-foreground`}>{sortedActions.length} actions</span>
+              {!isCompact && (
                 <div className="flex items-center border border-border rounded-lg overflow-hidden">
                   <button
                     className={`p-2 transition-colors ${viewMode === "list" ? selectedChip : unselectedChip}`}
@@ -559,7 +558,7 @@ const ActionsView = () => {
       {/* Cards View - outside the card, directly on background */}
       {viewMode === "cards" && (
         <div>
-          <div className={`grid gap-4 ${isTabletCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
+          <div className={`grid gap-4 ${isCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
             {sortedActions.map((action) => (
               <ActionCard 
                 key={action.isGenerated ? `gen-${action.id}` : action.id} 

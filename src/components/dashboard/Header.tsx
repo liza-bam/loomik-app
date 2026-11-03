@@ -58,7 +58,7 @@ const Header = ({ isScrolled = false }: HeaderProps) => {
           
           {/* Mobile: Show deal count and value */}
           {isMobile && (
-            <span className="text-foreground font-medium">4 Deals • $3.2M</span>
+            <span className="text-foreground font-medium">7 Deals • $8.0M</span>
           )}
           
           {/* Desktop metrics */}

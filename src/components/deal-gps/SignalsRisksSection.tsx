@@ -461,7 +461,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                     <Button 
                       size="sm" 
                       variant="ghost" 
-                      className="h-6 text-xxs px-2"
+                      className="h-6 px-2"
                       onClick={() => handleProcessAll('risk')}
                     >
                       Address All
@@ -469,7 +469,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                     <Button 
                       size="sm" 
                       variant="ghost" 
-                      className="h-6 text-xxs px-2 text-muted-foreground"
+                      className="h-6 px-2 text-muted-foreground"
                       onClick={() => handleIgnoreAll('risk')}
                     >
                       Ignore All
@@ -523,7 +523,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                     <Button 
                       size="sm" 
                       variant="ghost" 
-                      className="h-6 text-xxs px-2"
+                      className="h-6 px-2"
                       onClick={() => handleProcessAll('signal')}
                     >
                       Process All
@@ -531,7 +531,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                     <Button 
                       size="sm" 
                       variant="ghost" 
-                      className="h-6 text-xxs px-2 text-muted-foreground"
+                      className="h-6 px-2 text-muted-foreground"
                       onClick={() => handleIgnoreAll('signal')}
                     >
                       Ignore All

@@ -110,21 +110,23 @@ const DealCard = ({ deal }: DealCardProps) => {
 
       {/* Actions */}
       <div className="flex items-center gap-2 mt-auto pt-3 border-t border-border">
-        <Button
-          size="sm"
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            navigate(`/action-hub?company=${encodeURIComponent(company?.name || "")}`); 
-          }}
-          title="Actions"
-        >
-          <Zap className="w-4 h-4" />
-          Actions
-          <ChevronRight className="w-4 h-4" />
+        <div className="relative">
+          <Button
+            size="sm"
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              navigate(`/action-hub?company=${encodeURIComponent(company?.name || "")}`); 
+            }}
+            title="Actions"
+          >
+            <Zap className="w-4 h-4" />
+            Actions
+            <ChevronRight className="w-4 h-4" />
+          </Button>
           {deal.hasRisk && (
-            <div className="ml-1 w-2 h-2 bg-primary-foreground/80 rounded-full" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-danger rounded-full border-2 border-card" title="At risk" />
           )}
-        </Button>
+        </div>
       </div>
     </Card>
   );

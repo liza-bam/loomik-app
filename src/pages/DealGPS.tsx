@@ -131,7 +131,8 @@ const DealGPS = () => {
   const { isAIPanelOpen, toggleAIPanel } = useUIStore();
   const isTablet = useIsTablet();
   const isMobile = useIsMobile();
-  const isTabletCompact = isTablet && isAIPanelOpen;
+  // Compact layout on phones, and on tablets when the AI panel is open
+  const isCompact = isMobile || (isTablet && isAIPanelOpen);
   const [isWinPathOpen, setIsWinPathOpen] = useState(true);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(true);
   const [isBuyerProfileOpen, setIsBuyerProfileOpen] = useState(false);
@@ -488,16 +489,16 @@ const DealGPS = () => {
           <div className={`flex-1 flex overflow-hidden p-6 ${isMobile ? 'pb-20' : ''}`}>
           <Card className="flex-1 flex flex-col overflow-hidden p-0">
             {/* Unified Deal Header */}
-            <div className={`p-4 border-b border-border shrink-0 ${isTabletCompact ? 'space-y-2' : 'flex items-center justify-between'}`}>
+            <div className={`p-4 border-b border-border shrink-0 ${isCompact ? 'space-y-2' : 'flex items-center justify-between'}`}>
               {/* Row 1: Avatar + Deal Name + Company (+ Stage for tablet compact) */}
               <div className="flex items-center gap-3">
-                <Avatar className={`${isTabletCompact ? 'w-8 h-8' : 'w-10 h-10'}`}>
+                <Avatar className={`${isCompact ? 'w-8 h-8' : 'w-10 h-10'}`}>
                   <AvatarImage src={company?.logo} alt={company?.name} className="object-contain p-1" />
                   <AvatarFallback className="text-sm font-semibold">{company?.name.slice(0, 2)}</AvatarFallback>
                 </Avatar>
                 <Select value={dealId.toString()} onValueChange={(value) => handleDealChange(parseInt(value))}>
                   <SelectTrigger className="w-auto border-0 bg-transparent p-0 h-auto focus:ring-0 gap-2">
-                    <span className={`font-semibold ${isTabletCompact ? 'text-base' : 'text-lg'}`}>{deal.name}</span>
+                    <span className={`font-semibold ${isCompact ? 'text-base' : 'text-lg'}`}>{deal.name}</span>
                   </SelectTrigger>
                   <SelectContent className="bg-card border border-border z-50">
                     {deals.map(d => {
@@ -516,8 +517,8 @@ const DealGPS = () => {
                     })}
                   </SelectContent>
                 </Select>
-                {!isTabletCompact && <span className="text-xs text-muted-foreground">({company?.name})</span>}
-                {!isTabletCompact && (
+                {!isCompact && <span className="text-xs text-muted-foreground">({company?.name})</span>}
+                {!isCompact && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border cursor-help ${stageInfo.colorClass}`}>
@@ -535,7 +536,7 @@ const DealGPS = () => {
 
               {/* Row 2 (tablet compact) or Right side (desktop): Stage + Metadata + CRM */}
               <div className="flex items-center gap-3 text-sm">
-                {isTabletCompact && (
+                {isCompact && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border cursor-help ${stageInfo.colorClass}`}>
@@ -552,7 +553,7 @@ const DealGPS = () => {
                 <span className="font-medium text-muted-foreground">{formatCompactDate(deal.closeDate)}</span>
                 <span className="text-border">|</span>
                 <span className="font-medium">{formatCompactValue(deal.valueNumeric)}</span>
-                {!isTabletCompact && (
+                {!isCompact && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button className="flex items-center gap-2 text-sm text-primary font-medium hover:underline ml-2" title="Open CRM">
@@ -568,7 +569,7 @@ const DealGPS = () => {
             </div>
             
             {/* Main Content - scrollable */}
-            <main id="main-scroll" className="flex-1 overflow-y-auto p-6 space-y-6">
+            <main id="main-scroll" className="flex-1 overflow-y-auto px-6 pt-6 pb-20 space-y-6">
               {/* Section 1: Win Probability */}
               <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
                 <section className="space-y-4">
@@ -581,7 +582,7 @@ const DealGPS = () => {
                         </div>
                         <div className="flex-1">
                           <h2 className="text-lg font-semibold text-foreground">Win Probability</h2>
-                          {!isTabletCompact && (
+                          {!isCompact && (
                             <p className="text-sm text-muted-foreground">
                               {deal.summary.headline}
                             </p>
@@ -611,9 +612,9 @@ const DealGPS = () => {
                 </div>
 
                 {/* Two Analysis Cards */}
-                <div className={`${isTabletCompact ? 'flex flex-col gap-3' : 'grid grid-cols-2 gap-5'}`}>
+                <div className={`${isCompact ? 'flex flex-col gap-3' : 'grid grid-cols-2 gap-5'}`}>
                   {/* Win Probability Analysis Card */}
-                  {isTabletCompact ? (
+                  {isCompact ? (
                     <div className="bg-muted/30 border border-border rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <TrendingUp className="w-4 h-4 text-primary" />
@@ -668,7 +669,7 @@ const DealGPS = () => {
                             <div className="relative w-24 h-24 shrink-0">
                               <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" stroke="none">
+                                  <Pie data={pieData} cx="50%" cy="50%" startAngle={90} endAngle={-270} innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" stroke="none">
                                     <Cell fill={scoreColor(winProb)} />
                                     <Cell fill="hsl(var(--muted))" />
                                   </Pie>
@@ -716,9 +717,9 @@ const DealGPS = () => {
                               <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                               <YAxis hide domain={[0, 100]} />
                               <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px' }} />
-                              <Area type="natural" dataKey="alignment" name="Alignment" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="hsl(var(--chart-1))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
-                              <Area type="natural" dataKey="consensus" name="Consensus" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="hsl(var(--chart-2))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
-                              <Area type="natural" dataKey="sentiment" name="Sentiment" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="hsl(var(--chart-3))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="alignment" name="Alignment" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="consensus" name="Consensus" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="sentiment" name="Sentiment" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>
@@ -732,7 +733,7 @@ const DealGPS = () => {
                   )}
 
                   {/* Stakeholder Alignment Card */}
-                  {isTabletCompact ? (
+                  {isCompact ? (
                     <div className="bg-muted/30 border border-border rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Users className="w-4 h-4 text-primary" />
@@ -795,7 +796,7 @@ const DealGPS = () => {
                             <div className="relative w-24 h-24 shrink-0">
                               <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                  <Pie data={[{ name: "Alignment", value: stakeholderAlignmentScore }, { name: "Remaining", value: 100 - stakeholderAlignmentScore }]} cx="50%" cy="50%" innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" stroke="none">
+                                  <Pie data={[{ name: "Alignment", value: stakeholderAlignmentScore }, { name: "Remaining", value: 100 - stakeholderAlignmentScore }]} cx="50%" cy="50%" startAngle={90} endAngle={-270} innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" stroke="none">
                                     <Cell fill={scoreColor(stakeholderAlignmentScore)} />
                                     <Cell fill="hsl(var(--muted))" />
                                   </Pie>
@@ -849,9 +850,9 @@ const DealGPS = () => {
                               <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                               <YAxis hide domain={[0, 100]} />
                               <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px' }} />
-                              <Area type="natural" dataKey="capability" name="Capability" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="hsl(var(--chart-1))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
-                              <Area type="natural" dataKey="messageFit" name="Message Fit" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="hsl(var(--chart-2))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
-                              <Area type="natural" dataKey="valueTranslation" name="Value Translation" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="hsl(var(--chart-3))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="capability" name="Capability" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="messageFit" name="Message Fit" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="valueTranslation" name="Value Translation" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>
@@ -892,11 +893,9 @@ const DealGPS = () => {
                         </Link>
                       </div>
                       
-                      <div className={`grid gap-3 ${isTabletCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
+                      <div className={`grid gap-3 ${isCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
                         {paginatedActions.map((action) => {
                           const primaryStakeholder = stakeholders.find(s => action.stakeholderIds.includes(s.id));
-                          const deadlineDate = new Date(action.deadline);
-                          const formattedDeadline = `${String(deadlineDate.getMonth() + 1).padStart(2, '0')}.${String(deadlineDate.getDate()).padStart(2, '0')}`;
                           
                           return (
                             <button
@@ -942,7 +941,7 @@ const DealGPS = () => {
                                         <span className="text-xxs text-muted-foreground truncate max-w-[60px]">{primaryStakeholder.name.split(' ')[0]}</span>
                                       </div>
                                     )}
-                                    <span className="text-xxs text-muted-foreground">{formattedDeadline}</span>
+                                    <span className="text-xxs text-muted-foreground">{action.deadline}</span>
                                     <span className={`w-1.5 h-1.5 rounded-full ml-auto shrink-0 ${priorityDot(action.priority)}`} title={`${action.priority} priority`} />
                                   </div>
                                 </div>
@@ -980,7 +979,7 @@ const DealGPS = () => {
           </Collapsible>
 
               {/* Section 2: Signals & Risks - hidden in tablet compact */}
-              {!isTabletCompact && (
+              {!isCompact && (
               <SignalsRisksSection
                 dealId={dealId}
                 dealName={deal.name}
@@ -990,7 +989,7 @@ const DealGPS = () => {
               )}
 
               {/* Section 3: Recommended Offerings */}
-              {!isTabletCompact && (
+              {!isCompact && (
                 <RecommendedOfferingsSection
                   isOpen={isRecommendedOfferingsOpen}
                   onToggle={() => setIsRecommendedOfferingsOpen(!isRecommendedOfferingsOpen)}
@@ -1012,7 +1011,7 @@ const DealGPS = () => {
                           <h2 className="text-lg font-semibold text-foreground">Stakeholders</h2>
                         </div>
                         {/* Engagement indicators with avatars - hide in tablet compact */}
-                        {!isTabletCompact && (
+                        {!isCompact && (
                           <div className="flex items-center gap-5 ml-auto">
                             {/* Engaged */}
                             <div className="flex items-center gap-2">
@@ -1123,7 +1122,7 @@ const DealGPS = () => {
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     {/* Stakeholder Cards Grid */}
-                    <div className={`grid gap-4 pt-4 ${isTabletCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'}`}>
+                    <div className={`grid gap-4 pt-4 ${isCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'}`}>
                       {stakeholders.map(stakeholder => (
                         <StakeholderCardExtended 
                           key={stakeholder.id} 
@@ -1138,7 +1137,7 @@ const DealGPS = () => {
               </Collapsible>
 
               {/* Section 3: Win Path - hidden in tablet compact */}
-              {!isTabletCompact && (
+              {!isCompact && (
               <Collapsible open={isWinPathOpen} onOpenChange={setIsWinPathOpen}>
                 <section className="space-y-4">
                   {/* Section Header Card */}
@@ -1175,7 +1174,7 @@ const DealGPS = () => {
               )}
 
               {/* Section 4: Buyer Profile - hidden in tablet compact */}
-              {!isTabletCompact && (
+              {!isCompact && (
               <Collapsible open={isBuyerProfileOpen} onOpenChange={setIsBuyerProfileOpen}>
                 <section className="space-y-4">
                   {/* Section Header Card */}
@@ -1438,8 +1437,7 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
                   name="Alignment"
                   stroke="hsl(var(--chart-1))" 
                   strokeWidth={2} 
-                  fill="hsl(var(--chart-1))"
-                  fillOpacity={0.1}
+                  fill="none"
                   dot={false}
                 />
                 <Area 
@@ -1448,8 +1446,7 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
                   name="Priority"
                   stroke="hsl(var(--chart-2))" 
                   strokeWidth={1.5} 
-                  fill="hsl(var(--chart-2))"
-                  fillOpacity={0.1}
+                  fill="none"
                   dot={false}
                 />
                 <Area 
@@ -1458,8 +1455,7 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
                   name="Sentiment"
                   stroke="hsl(var(--chart-3))" 
                   strokeWidth={1.5} 
-                  fill="hsl(var(--chart-3))"
-                  fillOpacity={0.1}
+                  fill="none"
                   dot={false}
                 />
               </AreaChart>

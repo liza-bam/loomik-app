@@ -261,9 +261,9 @@ export const StakeholderPopup = () => {
                           padding: '8px 12px'
                         }} 
                       />
-                      <Area type="natural" dataKey="priority" name="Priority" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="hsl(var(--chart-1))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
-                      <Area type="natural" dataKey="sentiment" name="Sentiment" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="hsl(var(--chart-2))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
-                      <Area type="natural" dataKey="engagement" name="Engagement" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="hsl(var(--chart-3))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                      <Area type="natural" dataKey="priority" name="Priority" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                      <Area type="natural" dataKey="sentiment" name="Sentiment" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                      <Area type="natural" dataKey="engagement" name="Engagement" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>

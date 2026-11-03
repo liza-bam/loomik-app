@@ -18,7 +18,7 @@ export function SimulationControls() {
   const recentSignals = signals.slice(0, 3);
 
   return (
-    <div className="fixed bottom-20 left-4 z-50">
+    <div className="fixed bottom-4 left-4 z-50">
       {/* Expanded Panel */}
       {isExpanded && (
         <div className="mb-2 bg-card border border-border rounded-lg shadow-lg p-3 w-64 animate-in slide-in-from-bottom-2">

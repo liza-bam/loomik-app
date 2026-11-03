@@ -16,7 +16,7 @@ import { FilterBar, FilterBarLeft, FilterBarRight } from "./FilterBar";
 import { deals, stageConfig, getCompanyById } from "@/data/dealData";
 import { scoreText, selectedChip, unselectedChip } from "@/lib/tone";
 import { useSearchStore } from "@/stores/searchStore";
-import { useIsTablet } from "@/hooks/use-mobile";
+import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { useUIStore } from "@/stores/uiStore";
 
 // Format value as compact currency ($580K, $2.4M)
@@ -41,6 +41,7 @@ const DealsTable = () => {
   const { query: searchQuery } = useSearchStore();
   const { isAIPanelOpen } = useUIStore();
   const isTablet = useIsTablet();
+  const isMobile = useIsMobile();
   
   const [sortAsc, setSortAsc] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<"winProbability" | "alignment" | "value" | "closeDate" | "company">("winProbability");
@@ -49,9 +50,9 @@ const DealsTable = () => {
   const [showSortDropdown, setShowSortDropdown] = React.useState(false);
   const [userViewMode, setUserViewMode] = React.useState<"list" | "cards">("list");
   
-  // Force cards view on tablet when AI panel is open
-  const isTabletCompact = isTablet && isAIPanelOpen;
-  const viewMode = isTabletCompact ? "cards" : userViewMode;
+  // Compact layout (cards view, stacked filters) on phones, and on tablets when the AI panel is open
+  const isCompact = isMobile || (isTablet && isAIPanelOpen);
+  const viewMode = isCompact ? "cards" : userViewMode;
   const setViewMode = setUserViewMode;
 
   const toggleExpand = (dealId: number) => {
@@ -120,15 +121,13 @@ const DealsTable = () => {
     company: "Company",
   };
 
-  // Check if we're in tablet with AI panel open
-  const isTabletWithAI = isTablet && isAIPanelOpen;
 
   return (
     <TooltipProvider>
       {/* Filter Bar - always in a card */}
       <Card className="p-0 overflow-visible">
-        <FilterBar className={isTabletWithAI ? "flex-col items-stretch gap-3" : ""}>
-          <FilterBarLeft className={isTabletWithAI ? "w-full" : ""}>
+        <FilterBar className={isCompact ? "flex-col items-stretch gap-3" : ""}>
+          <FilterBarLeft className={isCompact ? "w-full flex-wrap" : ""}>
             {/* Stage Filter Pills */}
             <div className="flex items-center gap-1 flex-wrap">
               {stagePills.map((stage) => (
@@ -144,7 +143,7 @@ const DealsTable = () => {
             </div>
           </FilterBarLeft>
 
-          <FilterBarRight className={isTabletWithAI ? "w-full justify-start" : ""}>
+          <FilterBarRight className={isCompact ? "w-full justify-start flex-wrap" : ""}>
             {/* Sort Dropdown + Toggle - moved to right side for tablet 2-row layout */}
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -182,11 +181,11 @@ const DealsTable = () => {
               </button>
             </div>
             
-            {!isTabletWithAI && (
+            {!isCompact && (
               <span className="hidden xl:inline text-sm text-muted-foreground">Showing {sortedDeals.length} of {deals.length} deals</span>
             )}
             {/* Hide view toggle on tablet when AI panel is open */}
-            {!isTabletWithAI && (
+            {!isCompact && (
               <div className="flex border border-border rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode("list")}
@@ -205,7 +204,7 @@ const DealsTable = () => {
               </div>
             )}
             {/* Hide CRM button on tablet when AI panel is open */}
-            {!isTabletWithAI && (
+            {!isCompact && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button className="flex items-center gap-2 text-sm text-primary font-medium hover:underline">
@@ -417,7 +416,7 @@ const DealsTable = () => {
               </div>
             </Card>
           ) : (
-            <div className={`grid gap-4 ${isTabletCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
+            <div className={`grid gap-4 ${isCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
               {sortedDeals.map((deal) => (
                 <DealCard key={deal.id} deal={deal} />
               ))}

@@ -183,103 +183,91 @@ const Calendar = () => {
         <div className="flex-1 flex overflow-hidden">
           
           {/* Column 1: Calendar & Filters - Hidden in prep mode OR tablet/mobile compact mode */}
-          {!isCompactMode && (
-            <div className={`border-r border-border overflow-y-auto transition-all duration-300 ${
-              isCallPrepMode ? "w-[300px]" : "w-[380px]"
-            }`}>
-              {/* Calendar Grid - Hidden in prep mode */}
-              {!isCallPrepMode && (
-                <div className="p-6 pb-0">
-                  <Card className="p-4 mb-6">
-                    {/* Month Navigation */}
-                    <div className="flex items-center justify-between mb-4">
-                      <button
-                        onClick={() => navigateMonth("prev")}
-                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+          {!isCompactMode && !isCallPrepMode && (
+            <div className="w-[380px] border-r border-border overflow-y-auto">
+              <div className="p-6 pb-0">
+                <Card className="p-4 mb-6">
+                  {/* Month Navigation */}
+                  <div className="flex items-center justify-between mb-4">
+                    <button
+                      onClick={() => navigateMonth("prev")}
+                      className="p-2 hover:bg-muted rounded-lg transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <h2 className="text-base font-semibold text-foreground">
+                      {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                    </h2>
+                    <button
+                      onClick={() => navigateMonth("next")}
+                      className="p-2 hover:bg-muted rounded-lg transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Days of Week */}
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {daysOfWeek.map((day, i) => (
+                      <div
+                        key={i}
+                        className="text-center text-sm font-medium text-muted-foreground py-2"
                       >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <h2 className="text-base font-semibold text-foreground">
-                        {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-                      </h2>
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {calendarDays.map((day, i) => (
                       <button
-                        onClick={() => navigateMonth("next")}
-                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+                        key={i}
+                        onClick={() => day.isCurrentMonth && setSelectedDate(day.fullDate)}
+                        className={`
+                          relative h-10 rounded-lg text-sm font-medium transition-all
+                          ${!day.isCurrentMonth ? "text-muted-foreground/40" : "text-foreground"}
+                          ${isSelected(day.fullDate) ? "bg-primary text-primary-foreground" : "hover:bg-muted"}
+                          ${isToday(day.fullDate) && !isSelected(day.fullDate) ? "ring-2 ring-primary ring-inset" : ""}
+                        `}
+                        disabled={!day.isCurrentMonth}
                       >
-                        <ChevronRight className="w-4 h-4" />
+                        {day.date}
+                        {hasEventsOnDate(day.fullDate) && !isSelected(day.fullDate) && (
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full" />
+                        )}
                       </button>
-                    </div>
+                    ))}
+                  </div>
+                </Card>
 
-                    {/* Days of Week */}
-                    <div className="grid grid-cols-7 gap-1 mb-2">
-                      {daysOfWeek.map((day, i) => (
-                        <div
-                          key={i}
-                          className="text-center text-sm font-medium text-muted-foreground py-2"
+                {/* Deal Filters */}
+                <div className="pb-20">
+                  <h3 className="text-sm font-medium text-foreground mb-3">Filter by Deal</h3>
+                  <div className="space-y-2">
+                    {dealNames.map((dealName) => {
+                      const isChecked = selectedDeals.includes(dealName);
+                      return (
+                        <label
+                          key={dealName}
+                          className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                         >
-                          {day}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Calendar Grid */}
-                    <div className="grid grid-cols-7 gap-1">
-                      {calendarDays.map((day, i) => (
-                        <button
-                          key={i}
-                          onClick={() => day.isCurrentMonth && setSelectedDate(day.fullDate)}
-                          className={`
-                            relative h-10 rounded-lg text-sm font-medium transition-all
-                            ${!day.isCurrentMonth ? "text-muted-foreground/40" : "text-foreground"}
-                            ${isSelected(day.fullDate) ? "bg-primary text-primary-foreground" : "hover:bg-muted"}
-                            ${isToday(day.fullDate) && !isSelected(day.fullDate) ? "ring-2 ring-primary ring-inset" : ""}
-                          `}
-                          disabled={!day.isCurrentMonth}
-                        >
-                          {day.date}
-                          {hasEventsOnDate(day.fullDate) && !isSelected(day.fullDate) && (
-                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </Card>
-
-                  {/* Deal Filters */}
-                  <div className="pb-6">
-                    <h3 className="text-sm font-medium text-foreground mb-3">Filter by Deal</h3>
-                    <div className="space-y-2">
-                      {dealNames.map((dealName) => {
-                        const isChecked = selectedDeals.includes(dealName);
-                        return (
-                          <label
-                            key={dealName}
-                            className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                          >
-                            <div className="relative flex items-center justify-center">
-                              <Checkbox
-                                checked={isChecked}
-                                onCheckedChange={() => toggleDeal(dealName)}
-                                className="h-5 w-5 rounded border-2 border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                              />
-                            </div>
-                            <span className={`text-sm font-medium ${isChecked ? 'text-foreground' : 'text-muted-foreground'}`}>
-                              {dealName}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
+                          <div className="relative flex items-center justify-center">
+                            <Checkbox
+                              checked={isChecked}
+                              onCheckedChange={() => toggleDeal(dealName)}
+                              className="h-5 w-5 rounded border-2 border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                            />
+                          </div>
+                          <span className={`text-sm font-medium ${isChecked ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {dealName}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
-              )}
-
-              {/* Event List - Hidden in prep mode */}
-              {!isCallPrepMode && (
-                <div className="hidden">
-                  {/* This space intentionally left empty in normal mode */}
-                </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -370,7 +358,7 @@ const Calendar = () => {
                             <div className="flex flex-col items-end gap-2">
                               <Badge
                                 variant="outline"
-                                className={`border-transparent ${statusClass}`}
+                                className={`border-transparent whitespace-nowrap ${statusClass}`}
                               >
                                 {isFirstEvent && (
                                   <span className="h-1.5 w-1.5 mr-1.5 rounded-full bg-success" />
