@@ -59,7 +59,7 @@ const MobileBottomNav = () => {
 
       {/* AI Sheet Overlay - slides from RIGHT */}
       <Sheet open={isAIPanelOpen} onOpenChange={setIsAIPanelOpen}>
-        <SheetContent side="right" className="w-[85vw] max-w-sm p-0">
+        <SheetContent side="right" className="w-sheet max-w-sm p-0">
           <AIChatPanel />
         </SheetContent>
       </Sheet>

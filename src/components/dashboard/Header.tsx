@@ -82,13 +82,13 @@ const Header = ({ isScrolled = false }: HeaderProps) => {
           {/* Signals badge */}
           <button onClick={handleOpenSignals} className="flex items-center gap-1 px-1.5 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors">
             <Bell className="w-3.5 h-3.5" />
-            <span className="bg-primary text-primary-foreground text-xxs px-1.5 h-5 rounded-full inline-flex items-center justify-center min-w-[20px] font-semibold">{signalCount || 0}</span>
+            <span className="bg-primary text-primary-foreground text-xxs px-1.5 h-5 rounded-full inline-flex items-center justify-center min-w-5 font-semibold">{signalCount || 0}</span>
           </button>
           
           {/* Risks badge */}
           <button onClick={handleOpenRisks} className="flex items-center gap-1 px-1.5 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors">
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span className="bg-danger text-danger-foreground text-xxs px-1.5 h-5 rounded-full inline-flex items-center justify-center min-w-[20px] font-semibold">{riskCount || 0}</span>
+            <span className="bg-danger text-danger-foreground text-xxs px-1.5 h-5 rounded-full inline-flex items-center justify-center min-w-5 font-semibold">{riskCount || 0}</span>
           </button>
           
           {/* Pull button - hidden on mobile (in bottom nav) */}

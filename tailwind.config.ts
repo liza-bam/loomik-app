@@ -1,14 +1,12 @@
 import type { Config } from "tailwindcss";
+import { breakpoints } from "./src/lib/breakpoints";
 
 // Every design scale below replaces Tailwind's defaults and points at a token in src/index.css,
 // so components can only use tokenised values.
 const tokenScale = (keys: string[], prefix: string) =>
   Object.fromEntries(keys.map((k) => [k, `var(--${prefix}-${k})`]));
 
-const spacingSteps = [
-  0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28,
-  32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96,
-];
+const spacingSteps = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12.5, 14, 15, 16, 20, 22.5, 24, 25, 27.5, 28, 30, 32, 35, 36, 37.5, 40, 44, 45, 48, 50, 52, 52.5, 56, 60, 64, 70, 72, 75, 80, 96, 100];
 
 export default {
   darkMode: ["class"],
@@ -20,6 +18,7 @@ export default {
   ],
   prefix: "",
   theme: {
+    screens: Object.fromEntries(Object.entries(breakpoints).map(([k, v]) => [k, `${v}px`])),
     container: {
       center: true,
       padding: "2rem",
@@ -33,6 +32,35 @@ export default {
       ...Object.fromEntries(
         spacingSteps.map((n) => [n, `calc(var(--spacing) * ${n})`]),
       ),
+      // Named layout regions
+      ...tokenScale(["calendar-sidebar", "calendar-detail", "dialog", "sheet"], "layout"),
+    },
+    maxWidth: ({ theme }) => ({
+      ...theme("spacing"),
+      ...tokenScale(["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl"], "container"),
+      toast: "var(--layout-toast)",
+      none: "none",
+      full: "100%",
+      max: "max-content",
+    }),
+    maxHeight: ({ theme }) => ({
+      ...theme("spacing"),
+      dialog: "var(--layout-dialog-max-h)",
+      popup: "var(--layout-popup-max-h)",
+      full: "100%",
+      screen: "100vh",
+    }),
+    zIndex: {
+      0: "var(--z-base)",
+      10: "var(--z-raised)",
+      20: "var(--z-sticky)",
+      50: "var(--z-overlay)",
+      100: "var(--z-toast)",
+    },
+    borderWidth: {
+      0: "0px",
+      DEFAULT: "var(--border-width)",
+      2: "var(--border-width-thick)",
     },
     fontFamily: {
       sans: ["var(--font-sans)"],
@@ -163,6 +191,7 @@ export default {
       },
     },
     extend: {
+      gridTemplateColumns: tokenScale(["deals", "deals-wide", "win-path"], "layout"),
       backgroundImage: {
         "brand-gradient": "var(--gradient-brand)",
       },

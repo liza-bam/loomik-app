@@ -361,7 +361,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
             </div>
             <div className="flex items-center gap-2">
               <Select value={alignmentFilter} onValueChange={setAlignmentFilter}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-37.5">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="All Alignments" />
                 </SelectTrigger>
@@ -431,10 +431,10 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                     {getStatusBadge(item.status)}
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-muted-foreground max-w-[200px]">{item.gapAnalysis}</p>
+                    <p className="text-sm text-muted-foreground max-w-50">{item.gapAnalysis}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm max-w-[200px]">{item.recommendation}</p>
+                    <p className="text-sm max-w-50">{item.recommendation}</p>
                   </td>
                 </tr>
               ))}
@@ -460,7 +460,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
             </div>
             <div className="flex items-center gap-2">
               <Select value={bvmFilter} onValueChange={setBvmFilter}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-37.5">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
@@ -544,7 +544,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                 <span className="text-sm font-medium">Full SVM</span>
               </div>
               <Select value={svmFilter} onValueChange={setSvmFilter}>
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-30">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="All Fields" />
                 </SelectTrigger>

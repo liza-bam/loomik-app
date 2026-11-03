@@ -942,7 +942,7 @@ const DealGPS = () => {
                                             {primaryStakeholder.name.split(' ').map(n => n[0]).join('')}
                                           </AvatarFallback>
                                         </Avatar>
-                                        <span className="text-xxs text-muted-foreground truncate max-w-[60px]">{primaryStakeholder.name.split(' ')[0]}</span>
+                                        <span className="text-xxs text-muted-foreground truncate max-w-15">{primaryStakeholder.name.split(' ')[0]}</span>
                                       </div>
                                     )}
                                     <span className="text-xxs text-muted-foreground">{action.deadline}</span>

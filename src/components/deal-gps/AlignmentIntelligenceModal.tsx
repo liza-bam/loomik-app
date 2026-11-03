@@ -80,7 +80,7 @@ const AlignmentIntelligenceModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[80vw] max-w-5xl max-h-[90vh] overflow-hidden p-0 flex flex-col">
+      <DialogContent className="w-dialog max-w-5xl max-h-dialog overflow-hidden p-0 flex flex-col">
         {/* Header - Fixed */}
         <div className="px-5 py-3 pr-14 flex items-center gap-3 border-b border-border bg-muted/30 shrink-0">
           <div className="p-2 rounded-lg bg-primary-subtle">

@@ -134,7 +134,7 @@ export const EventDetailPopup = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && closePopup()}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden p-0 flex flex-col">
+      <DialogContent className="max-w-2xl max-h-popup overflow-hidden p-0 flex flex-col">
         <DialogHeader className="sr-only">
           <DialogTitle>Event Details</DialogTitle>
         </DialogHeader>
@@ -198,7 +198,7 @@ export const EventDetailPopup = () => {
               <img 
                   src={matchedCompany?.logo} 
                   alt={matchedCompany?.name} 
-                  className="h-10 w-auto max-w-[100px] object-contain"
+                  className="h-10 w-auto max-w-25 object-contain"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">

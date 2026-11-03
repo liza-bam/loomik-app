@@ -1,7 +1,8 @@
 import * as React from "react";
+import { breakpoints } from "@/lib/breakpoints";
 
-const MOBILE_BREAKPOINT = 1024;
-const TABLET_MAX_BREAKPOINT = 1280;
+const MOBILE_BREAKPOINT = breakpoints.lg;
+const TABLET_MAX_BREAKPOINT = breakpoints.xl;
 
 // SSR-safe initial value helper
 const getInitialMobile = () => {

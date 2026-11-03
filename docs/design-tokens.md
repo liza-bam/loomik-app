@@ -37,6 +37,14 @@ Naming maps 1:1: Figma `color/success/subtle` → CSS `--success-subtle` → Tai
 | Radius | `radius` → `radius-{sm,md,lg,xl,2xl}` | `rounded-lg` |
 | Elevation | `shadow-color`, `shadow-{sm,…,xl}` | `shadow-md` |
 | Motion | `duration-{fast,normal,slow,slower,slowest}` | `duration-200` |
+| Layout regions | `layout-{calendar-sidebar,calendar-detail,dialog,sheet,toast}`, `layout-dialog-max-h`, `layout-popup-max-h` | `w-calendar-sidebar`, `w-dialog`, `max-h-dialog` |
+| Grid templates | `layout-{deals,deals-wide,win-path}` | `grid-cols-deals` |
+| Containers | `container-{xs…5xl}` | `max-w-md` |
+| Layering | `z-{base,raised,sticky,overlay,toast}` | `z-10`, `z-50`, `z-100` |
+| Borders | `border-width`, `border-width-thick` | `border`, `border-2` |
+| Breakpoints | `src/lib/breakpoints.ts` (shared by Tailwind and `use-mobile`; media queries can't read CSS variables) | `lg:`, `xl:` |
+
+Fixed sizes such as `w-30` are steps of the `--spacing` unit, so they scale with density too.
 
 Charts use `chartTooltip` / `chartTick` from `src/lib/tone.ts`, which are built from the same tokens.
 
@@ -44,7 +52,7 @@ Charts use `chartTooltip` / `chartTick` from `src/lib/tone.ts`, which are built 
 
 ## Usage rules
 
-1. **Never** use raw values in components: no hex / `rgb()` literals, and no arbitrary style values like `text-[13px]`, `rounded-[6px]` or `shadow-[...]`. (The default palette classes no longer exist.) Arbitrary values are only for layout dimensions such as column widths.
+1. **Never** use raw values in components: no hex / `rgb()` literals, and no arbitrary style values like `text-[13px]`, `rounded-[6px]` or `shadow-[...]`. (The default palette classes no longer exist.) Fixed sizes use the spacing steps or a named `--layout-*` token. Arbitrary values are only for relative geometry (percentages, viewport units).
 2. **Colour means something.** Scores and numbers are `text-foreground`; only at-risk values are highlighted. Use the helpers in `src/lib/tone.ts` (`scoreText`, `scoreFill`, `scoreColor`, `trendText`, `sentimentBadge`, `priorityDot`, ...).
 3. **Categories are neutral.** Tags such as asset type or value primitive use `categoryBadge` (`bg-muted text-muted-foreground`), not a rainbow of colours.
 4. **Status badges are subtle:** `bg-{status}-subtle text-{status}`. Solid `bg-{status} text-{status}-foreground` is only for small counters.

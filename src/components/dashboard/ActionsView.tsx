@@ -457,7 +457,7 @@ const ActionsView = () => {
 
             {/* Deals Select */}
             <Select value={dealFilter} onValueChange={setDealFilter}>
-              <SelectTrigger className="min-w-[120px] max-w-48 h-9 bg-muted border-0 rounded-lg">
+              <SelectTrigger className="min-w-30 max-w-48 h-9 bg-muted border-0 rounded-lg">
                 <SelectValue placeholder="Deal" className="truncate" />
               </SelectTrigger>
               <SelectContent className="bg-card border border-border z-50">
@@ -470,7 +470,7 @@ const ActionsView = () => {
             
             {/* Company Filter */}
             <Select value={companyFilter} onValueChange={setCompanyFilter}>
-              <SelectTrigger className="min-w-[140px] max-w-48 h-9 bg-muted border-0 rounded-lg">
+              <SelectTrigger className="min-w-35 max-w-48 h-9 bg-muted border-0 rounded-lg">
                 <SelectValue placeholder="Company" />
               </SelectTrigger>
               <SelectContent className="bg-card border border-border z-50">

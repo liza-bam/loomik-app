@@ -307,7 +307,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
             <Textarea
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
-              className="text-sm min-h-[60px] resize-none"
+              className="text-sm min-h-15 resize-none"
               autoFocus
             />
           ) : (
@@ -419,7 +419,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
       <Card className="overflow-hidden">
         {/* Items Table */}
         <div className="divide-y divide-border">
-          <div className="grid grid-cols-[1fr_2fr_1fr_80px] gap-4 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
+          <div className="grid grid-cols-win-path gap-4 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
             <span>Item</span>
             <span>Description</span>
             <span>Source</span>
@@ -428,7 +428,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
           {activeStageData.items.map((item) => (
             <div 
               key={item.id}
-              className="grid grid-cols-[1fr_2fr_1fr_80px] gap-4 px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors"
+              className="grid grid-cols-win-path gap-4 px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors"
             >
               <EditableField 
                 id={item.id} 

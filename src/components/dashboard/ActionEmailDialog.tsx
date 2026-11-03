@@ -134,7 +134,7 @@ const ActionEmailDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[80vw] max-w-none max-h-[90vh] overflow-y-auto p-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <DialogContent className="w-dialog max-w-none max-h-dialog overflow-y-auto p-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {/* Top Bar - Compact */}
           <div className="px-4 py-3 pr-14 flex items-center justify-between border-b border-border">
             <div className="flex items-center gap-3">
@@ -347,7 +347,7 @@ const ActionEmailDialog = ({
                 <Textarea
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
-                  className="mt-1 min-h-[180px] resize-none text-sm"
+                  className="mt-1 min-h-45 resize-none text-sm"
                 />
               </div>
 

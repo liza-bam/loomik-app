@@ -208,7 +208,7 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
 
         {/* Key Moments Tab */}
         <TabsContent value="moments" className="m-0">
-          <ScrollArea className="h-[280px]">
+          <ScrollArea className="h-70">
             <div className="p-4 space-y-3">
               {mockKeyMoments.map((moment) => (
                 <div 
@@ -236,7 +236,7 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
 
         {/* Transcript Tab */}
         <TabsContent value="transcript" className="m-0">
-          <ScrollArea className="h-[280px]">
+          <ScrollArea className="h-70">
             <div className="p-4 space-y-3">
               {mockTranscript.map((entry) => (
                 <div key={entry.id} className="flex items-start gap-3">

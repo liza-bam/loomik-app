@@ -263,7 +263,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                     <Textarea
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
-                      className="text-sm min-h-[50px] resize-none"
+                      className="text-sm min-h-12.5 resize-none"
                       autoFocus
                     />
                     <div className="flex gap-1">
@@ -296,7 +296,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                     <Textarea
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
-                      className="text-sm min-h-[50px] resize-none"
+                      className="text-sm min-h-12.5 resize-none"
                       autoFocus
                     />
                     <div className="flex gap-1">
@@ -330,7 +330,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                       <Textarea
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
-                        className="text-sm min-h-[50px] resize-none"
+                        className="text-sm min-h-12.5 resize-none"
                         autoFocus
                       />
                       <div className="flex gap-1">
@@ -478,7 +478,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                 )}
               </div>
               <Card className="overflow-hidden border-muted">
-                <ScrollArea className="h-[320px]">
+                <ScrollArea className="h-80">
                   <div className="p-2 space-y-1.5">
                     {risks.length === 0 ? (
                       <EmptyState type="risk" />
@@ -540,7 +540,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                 )}
               </div>
               <Card className="overflow-hidden border-muted">
-                <ScrollArea className="h-[320px]">
+                <ScrollArea className="h-80">
                   <div className="p-2 space-y-1.5">
                     {signals.length === 0 ? (
                       <EmptyState type="signal" />

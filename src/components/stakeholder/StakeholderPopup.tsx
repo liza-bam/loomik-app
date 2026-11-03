@@ -127,7 +127,7 @@ export const StakeholderPopup = () => {
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && closePopup()}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-3xl max-h-popup overflow-y-auto p-0">
         <DialogHeader className="p-5 pb-0 pr-14">
           <DialogTitle className="sr-only">Stakeholder Details</DialogTitle>
         </DialogHeader>

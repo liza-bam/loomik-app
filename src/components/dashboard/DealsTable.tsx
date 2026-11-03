@@ -155,7 +155,7 @@ const DealsTable = () => {
                   <ChevronDown className={`w-4 h-4 transition-transform ${showSortDropdown ? "rotate-180" : ""}`} />
                 </button>
                 {showSortDropdown && (
-                  <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 min-w-[160px] animate-fade-in">
+                  <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 min-w-40 animate-fade-in">
                     {(Object.keys(sortLabels) as Array<keyof typeof sortLabels>).map((key) => (
                       <button
                         key={key}
@@ -224,7 +224,7 @@ const DealsTable = () => {
         {viewMode === "list" && (
           <>
             {/* Column Headers */}
-            <div className="grid grid-cols-[32px_48px_minmax(120px,1fr)_72px_80px_48px_48px_80px] 2xl:grid-cols-[32px_48px_minmax(120px,1fr)_80px_72px_80px_100px_100px_80px] gap-4 items-center px-4 py-2 bg-muted/50 text-xs text-muted-foreground tracking-wide border-b border-border">
+            <div className="grid grid-cols-deals 2xl:grid-cols-deals-wide gap-4 items-center px-4 py-2 bg-muted/50 text-xs text-muted-foreground tracking-wide border-b border-border">
               <div />
               <div />
               <div className="min-w-0 overflow-hidden truncate">Deal</div>
@@ -237,7 +237,7 @@ const DealsTable = () => {
             </div>
 
             {/* Deals List */}
-            <div className="divide-y divide-border min-h-[200px]">
+            <div className="divide-y divide-border min-h-50">
               {sortedDeals.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
                   <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -271,7 +271,7 @@ const DealsTable = () => {
                     return (
                     <React.Fragment key={deal.id}>
                       <div 
-                        className={`grid grid-cols-[32px_48px_minmax(120px,1fr)_72px_80px_48px_48px_80px] 2xl:grid-cols-[32px_48px_minmax(120px,1fr)_80px_72px_80px_100px_100px_80px] gap-4 items-center px-4 py-3 interactive-card-subtle ${isExpanded ? "bg-muted/30" : ""}`}
+                        className={`grid grid-cols-deals 2xl:grid-cols-deals-wide gap-4 items-center px-4 py-3 interactive-card-subtle ${isExpanded ? "bg-muted/30" : ""}`}
                         onClick={() => toggleExpand(deal.id)}
                       >
                         {/* Expand button */}

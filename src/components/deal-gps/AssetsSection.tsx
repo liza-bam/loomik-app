@@ -268,7 +268,7 @@ export const AssetsSection = () => {
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
                   <div className="flex items-center gap-1">
                     <User className="w-3 h-3" />
-                    <span className="truncate max-w-[80px]">{asset.uploadedBy}</span>
+                    <span className="truncate max-w-20">{asset.uploadedBy}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
@@ -315,13 +315,13 @@ export const AssetsSection = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
-                <TableHead className="w-[400px]">Name</TableHead>
-                <TableHead className="w-[80px]">Type</TableHead>
-                <TableHead className="w-[100px]">Size</TableHead>
-                <TableHead className="w-[120px]">Category</TableHead>
-                <TableHead className="w-[140px]">Uploaded By</TableHead>
-                <TableHead className="w-[100px]">Date</TableHead>
-                <TableHead className="w-[120px] text-right">Actions</TableHead>
+                <TableHead className="w-100">Name</TableHead>
+                <TableHead className="w-20">Type</TableHead>
+                <TableHead className="w-25">Size</TableHead>
+                <TableHead className="w-30">Category</TableHead>
+                <TableHead className="w-35">Uploaded By</TableHead>
+                <TableHead className="w-25">Date</TableHead>
+                <TableHead className="w-30 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

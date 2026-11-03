@@ -185,7 +185,7 @@ const Calendar = () => {
           
           {/* Column 1: Calendar & Filters - Hidden in prep mode OR tablet/mobile compact mode */}
           {!isCompactMode && !isCallPrepMode && (
-            <div className="w-[380px] border-r border-border overflow-y-auto">
+            <div className="w-calendar-sidebar border-r border-border overflow-y-auto">
               <div className="p-6 pb-0">
                 <Card className="p-4 mb-6">
                   {/* Month Navigation */}
@@ -421,7 +421,7 @@ const Calendar = () => {
 
           {/* Column 3: Compact Event List (CENTER in prep mode) */}
           {isCallPrepMode && (
-            <div className="w-[280px] border-l border-r border-border overflow-y-auto">
+            <div className="w-calendar-detail border-l border-r border-border overflow-y-auto">
               <div className="p-4">
                 {/* Header with back button */}
                 <div className="flex items-center gap-2 mb-4">

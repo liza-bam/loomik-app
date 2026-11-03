@@ -237,7 +237,7 @@ const Assets = () => {
               
               {/* Deal Filter */}
               <Select value={dealFilter} onValueChange={setDealFilter}>
-                <SelectTrigger className="w-[120px] h-8 text-xs">
+                <SelectTrigger className="w-30 h-8 text-xs">
                   <SelectValue placeholder="All Deals" />
                 </SelectTrigger>
                 <SelectContent>
@@ -250,7 +250,7 @@ const Assets = () => {
 
               {/* Category Filter */}
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[150px] h-8 text-xs">
+                <SelectTrigger className="w-37.5 h-8 text-xs">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -270,7 +270,7 @@ const Assets = () => {
             <div className="flex items-center gap-2 ml-auto">
               {/* Sort */}
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                <SelectTrigger className="w-[110px] h-8 text-xs">
+                <SelectTrigger className="w-27.5 h-8 text-xs">
                   <ArrowUpDown className="w-3 h-3 mr-1" />
                   <SelectValue />
                 </SelectTrigger>

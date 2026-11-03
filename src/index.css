@@ -136,6 +136,37 @@
     --shadow-lg: 0 10px 15px -3px hsl(var(--shadow-color) / 0.1), 0 4px 6px -4px hsl(var(--shadow-color) / 0.1);
     --shadow-xl: 0 20px 25px -5px hsl(var(--shadow-color) / 0.1), 0 8px 10px -6px hsl(var(--shadow-color) / 0.1);
 
+    /* Layout (Figma: "Layout"). Breakpoints live in src/lib/breakpoints.ts */
+    --layout-calendar-sidebar: 23.75rem;
+    --layout-calendar-detail: 17.5rem;
+    --layout-dialog: 80vw;
+    --layout-dialog-max-h: 90vh;
+    --layout-popup-max-h: 85vh;
+    --layout-sheet: 85vw;
+    --layout-toast: 26.25rem;
+    --layout-deals: 32px 48px minmax(120px, 1fr) 72px 80px 48px 48px 80px;
+    --layout-deals-wide: 32px 48px minmax(120px, 1fr) 80px 72px 80px 100px 100px 80px;
+    --layout-win-path: 1fr 2fr 1fr 80px;
+
+    --container-xs: 20rem;
+    --container-sm: 24rem;
+    --container-md: 28rem;
+    --container-lg: 32rem;
+    --container-xl: 36rem;
+    --container-2xl: 42rem;
+    --container-3xl: 48rem;
+    --container-4xl: 56rem;
+    --container-5xl: 64rem;
+
+    --z-base: 0;
+    --z-raised: 10;
+    --z-sticky: 20;
+    --z-overlay: 50;
+    --z-toast: 100;
+
+    --border-width: 1px;
+    --border-width-thick: 2px;
+
     /* Motion */
     --duration-fast: 150ms;
     --duration-normal: 200ms;

@@ -149,7 +149,7 @@ const ActionMeetingDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[80vw] max-w-none max-h-[90vh] overflow-y-auto p-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <DialogContent className="w-dialog max-w-none max-h-dialog overflow-y-auto p-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {/* Top Bar - Deadline & Action Type */}
           <div className="px-6 pt-6 pb-4 pr-14 flex items-center justify-between border-b border-border">
             <div className="flex items-center gap-4">
@@ -225,7 +225,7 @@ const ActionMeetingDialog = ({
               })()}
 
               {/* AI Reasoning - Why we need to do it with primitive context */}
-              <div className="bg-primary-subtle border-0 rounded-lg p-5 min-h-[90px]">
+              <div className="bg-primary-subtle border-0 rounded-lg p-5 min-h-22.5">
                 <span className="text-sm font-semibold text-primary mb-2 block">Why we need to do this</span>
                 {(() => {
                   const stakeholderIds = action.stakeholderIds || [];
@@ -341,7 +341,7 @@ const ActionMeetingDialog = ({
                 <Textarea
                   value={meetingAgenda}
                   onChange={(e) => setMeetingAgenda(e.target.value)}
-                  className="mt-1 min-h-[210px] resize-none"
+                  className="mt-1 min-h-52.5 resize-none"
                 />
               </div>
 

@@ -201,7 +201,7 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
               <img 
                 src={company?.logo} 
                 alt={company?.name} 
-                className="h-10 w-auto max-w-[100px] object-contain"
+                className="h-10 w-auto max-w-25 object-contain"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">

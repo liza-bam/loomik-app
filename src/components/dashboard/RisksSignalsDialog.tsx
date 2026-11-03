@@ -350,7 +350,7 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
           <Textarea
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className="text-sm min-h-[60px] resize-none"
+            className="text-sm min-h-15 resize-none"
             autoFocus
           />
           <div className="flex gap-1">
@@ -385,7 +385,7 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0">
+      <DialogContent className="max-w-2xl max-h-popup flex flex-col p-0">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "risks" | "signals")} className="flex flex-col h-full min-h-0">
           {/* Header */}
           <div className="px-4 pt-3 pb-2 pr-14">
