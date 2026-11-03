@@ -11,12 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ArchiveConfirmDialog from "./ArchiveConfirmDialog";
-import { getStakeholderById, avatarColors } from "@/data/dealData";
+import { getStakeholderById } from "@/data/dealData";
+import { avatarFallback, priorityDot, selectedChip } from "@/lib/tone";
 import { ValuePrimitiveBadge } from "@/components/value-primitives/ValuePrimitiveBadge";
 import { getTopPrimitivesForRole } from "@/lib/value-primitives/roleDefaults";
 import { getPrimitiveById } from "@/lib/value-primitives/types";
-
-const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
 
 interface Attachment {
   name: string;
@@ -79,17 +78,6 @@ const ActionMeetingDialog = ({
     { day: "Tomorrow", time: "10:00 AM", duration: "30 min", date: new Date(Date.now() + 86400000) },
     { day: "Tomorrow", time: "2:00 PM", duration: "45 min", date: new Date(Date.now() + 86400000) },
   ];
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red text-white";
-      case "medium":
-        return "bg-yellow text-black";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
 
   const getDeadlineText = () => {
     if (action.priority === "high") return "Schedule within 24 hours";
@@ -166,13 +154,14 @@ const ActionMeetingDialog = ({
           <div className="px-6 pt-6 pb-4 pr-14 flex items-center justify-between border-b border-border">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Video className="w-5 h-5 text-purple" />
+                <Video className="w-5 h-5 text-primary" />
                 <span className="font-semibold text-foreground">Meeting</span>
               </div>
-              <Badge className={`${getPriorityColor(action.priority)} uppercase text-xs font-semibold`}>
+              <Badge variant="outline" className="gap-1.5 uppercase text-xs font-semibold">
+                <span className={`w-1.5 h-1.5 rounded-full ${priorityDot(action.priority)}`} />
                 {action.priority}
               </Badge>
-              <Badge variant="outline" className="text-green border-green bg-green/10">
+              <Badge variant="outline" className="border-transparent bg-success-subtle text-success">
                 <Sparkles className="w-3 h-3 mr-1" />
                 +12% win probability
               </Badge>
@@ -219,9 +208,9 @@ const ActionMeetingDialog = ({
                   <div className="space-y-2">
                     {allStakeholders.map((sh) => sh && (
                       <div key={sh.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                        <Avatar className="w-10 h-10 ring-2 ring-purple/20">
+                        <Avatar className="w-10 h-10 ring-2 ring-primary/20">
                           <AvatarImage src={sh.avatar} />
-                          <AvatarFallback className={`${getAvatarColor(sh.id)} text-sm font-medium`}>
+                          <AvatarFallback className={`${avatarFallback} text-sm font-medium`}>
                             {sh.name.split(" ").map(n => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
@@ -236,8 +225,8 @@ const ActionMeetingDialog = ({
               })()}
 
               {/* AI Reasoning - Why we need to do it with primitive context */}
-              <div className="bg-purple/5 border-0 rounded-lg p-5 min-h-[90px]">
-                <span className="text-sm font-semibold text-purple mb-2 block">Why we need to do this</span>
+              <div className="bg-primary-subtle border-0 rounded-lg p-5 min-h-[90px]">
+                <span className="text-sm font-semibold text-primary mb-2 block">Why we need to do this</span>
                 {(() => {
                   const stakeholderIds = action.stakeholderIds || [];
                   const firstStakeholder = stakeholderIds.length > 0 ? getStakeholderById(stakeholderIds[0]) : null;
@@ -250,7 +239,7 @@ const ActionMeetingDialog = ({
                         {action.stakeholderName} needs technical clarity on {action.artifact.toLowerCase()}. A direct call will accelerate alignment.
                       </p>
                       {topPrimitives.length > 0 && (
-                        <div className="pt-2 border-t border-purple/10">
+                        <div className="pt-2 border-t border-primary/10">
                           <p className="text-xs text-muted-foreground mb-2">Addresses value primitives:</p>
                           <div className="flex flex-wrap gap-1.5">
                             {topPrimitives.map(primitiveId => (
@@ -334,7 +323,7 @@ const ActionMeetingDialog = ({
                       onClick={() => setSelectedTimeIndex(index)}
                       className={`px-3 py-2 rounded-lg border-0 transition-colors text-sm ${
                         selectedTimeIndex === index 
-                          ? 'bg-purple/10 text-purple ring-2 ring-purple' 
+                          ? selectedChip 
                           : 'bg-muted/50 hover:bg-muted'
                       }`}
                     >
@@ -393,7 +382,7 @@ const ActionMeetingDialog = ({
             <div className="flex items-center gap-3">
               {!callScheduled ? (
                 <Button 
-                  className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white gap-2"
+                  className="gap-2"
                   onClick={handleScheduleCall}
                 >
                   <Video className="w-4 h-4" />
@@ -401,7 +390,7 @@ const ActionMeetingDialog = ({
                 </Button>
               ) : (
                 <Button 
-                  className="bg-green hover:bg-green/90 text-white gap-2"
+                  className="gap-2"
                   onClick={handleConfirmDone}
                 >
                   <CheckCircle2 className="w-4 h-4" />
@@ -410,7 +399,8 @@ const ActionMeetingDialog = ({
               )}
               {hasNextAction && (
                 <Button
-                  className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white gap-1"
+                  variant="outline"
+                  className="gap-1"
                   onClick={onNextAction}
                 >
                   Next Action

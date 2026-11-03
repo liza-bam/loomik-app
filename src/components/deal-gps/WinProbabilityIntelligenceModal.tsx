@@ -33,6 +33,7 @@ import {
   Video,
 } from "lucide-react";
 import type { Stakeholder } from "@/data/dealData";
+import { scoreText, trendText, priorityDot, categoryBadge, selectedChip, unselectedChip } from "@/lib/tone";
 
 interface WinProbabilityIntelligenceModalProps {
   open: boolean;
@@ -45,23 +46,10 @@ interface WinProbabilityIntelligenceModalProps {
   sentimentPct: number;
 }
 
-// Color coding helpers
-const getBarColor = (value: number) => {
-  if (value > 70) return "bg-green";
-  if (value >= 50) return "bg-yellow";
-  return "bg-red";
-};
-
-const getTextColor = (value: number) => {
-  if (value > 70) return "text-green";
-  if (value >= 50) return "text-yellow-600";
-  return "text-red";
-};
-
 const getStatusBadge = (value: number) => {
-  if (value >= 75) return { label: "Aligned", color: "bg-green text-white" };
-  if (value >= 50) return { label: "Partial", color: "bg-yellow text-white" };
-  return { label: "At Risk", color: "bg-red text-white" };
+  if (value >= 75) return { label: "Aligned", color: "bg-success-subtle text-success" };
+  if (value >= 50) return { label: "Partial", color: "bg-warning-subtle text-warning" };
+  return { label: "At Risk", color: "bg-danger-subtle text-danger" };
 };
 
 // Hardcoded data for Consensus Heatmap
@@ -142,24 +130,6 @@ const consensusProgressByDriver = [
   },
 ];
 
-const getDivisionBadgeColor = (division: string) => {
-  switch (division) {
-    case "high": return "bg-red/10 text-red border-red/20";
-    case "medium": return "bg-yellow/10 text-yellow-700 border-yellow/20";
-    case "low": return "bg-green/10 text-green border-green/20";
-    default: return "bg-muted text-muted-foreground";
-  }
-};
-
-const getPriorityBadgeColor = (priority: string) => {
-  switch (priority) {
-    case "high": return "bg-red text-white";
-    case "medium": return "bg-yellow text-white";
-    case "low": return "bg-green text-white";
-    default: return "bg-muted text-muted-foreground";
-  }
-};
-
 // Sentiment Tab Data
 const sentimentTimelineData = [
   { month: "Jan", sentiment: 63 },
@@ -207,15 +177,13 @@ const SentimentTabContent = ({ sentimentPct }: { sentimentPct: number }) => {
           <h3 className="text-sm font-semibold">Sentiment Intelligence</h3>
           <p className="text-xs text-muted-foreground">Real-time sentiment analysis and stakeholder mood tracking</p>
         </div>
-        <div className="flex items-center bg-muted rounded-lg p-0.5">
+        <div className="flex items-center gap-0.5">
           {["1m", "3m", "6m", "1y"].map((period) => (
             <button
               key={period}
               onClick={() => setSelectedPeriod(period)}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                selectedPeriod === period
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                selectedPeriod === period ? selectedChip : unselectedChip
               }`}
             >
               {period}
@@ -226,74 +194,58 @@ const SentimentTabContent = ({ sentimentPct }: { sentimentPct: number }) => {
 
       {/* Metric Cards Row */}
       <div className="grid grid-cols-4 gap-3">
-        <div className="group relative bg-purple/5 border border-purple/20 rounded-lg p-4 cursor-pointer
-          transition-all duration-300 ease-out
-          hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5
-          before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-          hover:before:opacity-100">
+        <div className="group relative bg-card border border-border rounded-lg p-4 cursor-pointer transition-colors hover:bg-muted/50">
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground">Overall Sentiment</span>
-              <MessageSquare className="w-4 h-4 text-purple" />
+              <MessageSquare className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-purple">{sentimentPct}%</span>
-              <span className="text-xs text-green flex items-center gap-0.5">
+              <span className={`text-2xl font-bold ${scoreText(sentimentPct)}`}>{sentimentPct}%</span>
+              <span className="text-xs text-success flex items-center gap-0.5">
                 <TrendingUp className="w-3 h-3" />+3%
               </span>
             </div>
           </div>
         </div>
-        <div className="group relative bg-green/5 border border-green/20 rounded-lg p-4 cursor-pointer
-          transition-all duration-300 ease-out
-          hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5
-          before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-          hover:before:opacity-100">
+        <div className="group relative bg-card border border-border rounded-lg p-4 cursor-pointer transition-colors hover:bg-muted/50">
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground">Engagement</span>
-              <Activity className="w-4 h-4 text-green" />
+              <Activity className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-green">82%</span>
-              <span className="text-xs text-green flex items-center gap-0.5">
+              <span className="text-2xl font-bold text-foreground">82%</span>
+              <span className="text-xs text-success flex items-center gap-0.5">
                 <TrendingUp className="w-3 h-3" />+5%
               </span>
             </div>
           </div>
         </div>
-        <div className="group relative bg-green/5 border border-green/20 rounded-lg p-4 cursor-pointer
-          transition-all duration-300 ease-out
-          hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5
-          before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-          hover:before:opacity-100">
+        <div className="group relative bg-card border border-border rounded-lg p-4 cursor-pointer transition-colors hover:bg-muted/50">
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground">Positive Sentiment</span>
-              <CheckCircle className="w-4 h-4 text-green" />
+              <CheckCircle className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-green">81%</span>
-              <span className="text-xs text-green flex items-center gap-0.5">
+              <span className="text-2xl font-bold text-foreground">81%</span>
+              <span className="text-xs text-success flex items-center gap-0.5">
                 <TrendingUp className="w-3 h-3" />+2%
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">Click to view keywords</p>
           </div>
         </div>
-        <div className="group relative bg-red/5 border border-red/20 rounded-lg p-4 cursor-pointer
-          transition-all duration-300 ease-out
-          hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5
-          before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-          hover:before:opacity-100">
+        <div className="group relative bg-card border border-border rounded-lg p-4 cursor-pointer transition-colors hover:bg-muted/50">
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground">Negative Sentiment</span>
-              <AlertTriangle className="w-4 h-4 text-red" />
+              <AlertTriangle className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-red">19%</span>
-              <span className="text-xs text-green flex items-center gap-0.5">
+              <span className="text-2xl font-bold text-foreground">19%</span>
+              <span className="text-xs text-success flex items-center gap-0.5">
                 <TrendingDown className="w-3 h-3" />-1%
               </span>
             </div>
@@ -305,8 +257,8 @@ const SentimentTabContent = ({ sentimentPct }: { sentimentPct: number }) => {
       {/* Stakeholder Engagement Details */}
       <div>
         <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 rounded-lg bg-purple/10">
-            <Activity className="w-4 h-4 text-purple" />
+          <div className="p-2 rounded-lg bg-primary-subtle">
+            <Activity className="w-4 h-4 text-primary" />
           </div>
           <div>
             <h3 className="text-sm font-semibold">Stakeholder Engagement Details</h3>
@@ -318,34 +270,31 @@ const SentimentTabContent = ({ sentimentPct }: { sentimentPct: number }) => {
             <div
               key={sh.name}
               onClick={() => setSelectedStakeholder(idx)}
-              className={`group relative bg-card border rounded-lg p-4 cursor-pointer transition-all duration-300 ease-out
-                ${selectedStakeholder === idx ? "border-purple ring-2 ring-purple/20" : "border-border hover:border-purple/40"}
-                hover:shadow-lg hover:shadow-purple/10 hover:-translate-y-0.5
-                before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-                hover:before:opacity-100`}
+              className={`group relative bg-card border rounded-lg p-4 cursor-pointer transition-colors
+                ${selectedStakeholder === idx ? "border-primary" : "border-border hover:bg-muted/50"}`}
             >
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-green" />
+                  <div className="w-2 h-2 rounded-full bg-success" />
                   <span className="font-medium text-sm">{sh.name}</span>
-                  <Badge className="bg-muted text-foreground text-xs">Engagement {sh.engagement}%</Badge>
+                  <Badge variant="secondary" className="text-xs">Engagement {sh.engagement}%</Badge>
                   {selectedStakeholder === idx && (
-                    <Badge className="bg-purple text-white text-xs">Selected</Badge>
+                    <Badge variant="outline" className={`border-transparent text-xs ${selectedChip}`}>Selected</Badge>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mb-2">{sh.role}</p>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Email Opens:</span>
-                    <span className={sh.emailOpens >= 80 ? "text-green font-medium" : "text-foreground"}>{sh.emailOpens}%</span>
+                    <span className={`font-medium ${scoreText(sh.emailOpens)}`}>{sh.emailOpens}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Call Attendance:</span>
-                    <span className={sh.callAttendance >= 80 ? "text-green font-medium" : "text-foreground"}>{sh.callAttendance}%</span>
+                    <span className={`font-medium ${scoreText(sh.callAttendance)}`}>{sh.callAttendance}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Material Review:</span>
-                    <span className={sh.materialReview >= 80 ? "text-green font-medium" : "text-foreground"}>{sh.materialReview}%</span>
+                    <span className={`font-medium ${scoreText(sh.materialReview)}`}>{sh.materialReview}%</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">Last activity: {sh.lastActivity}</p>
@@ -357,31 +306,28 @@ const SentimentTabContent = ({ sentimentPct }: { sentimentPct: number }) => {
         <div className="mt-3 max-w-[calc(25%-0.5rem)]">
           <div
             onClick={() => setSelectedStakeholder(4)}
-            className={`group relative bg-card border rounded-lg p-4 cursor-pointer transition-all duration-300 ease-out
-              ${selectedStakeholder === 4 ? "border-purple ring-2 ring-purple/20" : "border-border hover:border-purple/40"}
-              hover:shadow-lg hover:shadow-purple/10 hover:-translate-y-0.5
-              before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-              hover:before:opacity-100`}
+            className={`group relative bg-card border rounded-lg p-4 cursor-pointer transition-colors
+              ${selectedStakeholder === 4 ? "border-primary" : "border-border hover:bg-muted/50"}`}
           >
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 rounded-full bg-green" />
+                <div className="w-2 h-2 rounded-full bg-success" />
                 <span className="font-medium text-sm">{stakeholderEngagementData[4].name}</span>
-                <Badge className="bg-muted text-foreground text-xs">Engagement {stakeholderEngagementData[4].engagement}%</Badge>
+                <Badge variant="secondary" className="text-xs">Engagement {stakeholderEngagementData[4].engagement}%</Badge>
               </div>
               <p className="text-xs text-muted-foreground mb-2">{stakeholderEngagementData[4].role}</p>
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email Opens:</span>
-                  <span className="text-green font-medium">{stakeholderEngagementData[4].emailOpens}%</span>
+                  <span className={`font-medium ${scoreText(stakeholderEngagementData[4].emailOpens)}`}>{stakeholderEngagementData[4].emailOpens}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Call Attendance:</span>
-                  <span className="text-green font-medium">{stakeholderEngagementData[4].callAttendance}%</span>
+                  <span className={`font-medium ${scoreText(stakeholderEngagementData[4].callAttendance)}`}>{stakeholderEngagementData[4].callAttendance}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Material Review:</span>
-                  <span className="text-foreground">{stakeholderEngagementData[4].materialReview}%</span>
+                  <span className={`font-medium ${scoreText(stakeholderEngagementData[4].materialReview)}`}>{stakeholderEngagementData[4].materialReview}%</span>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mt-2">Last activity: {stakeholderEngagementData[4].lastActivity}</p>
@@ -400,27 +346,27 @@ const SentimentTabContent = ({ sentimentPct }: { sentimentPct: number }) => {
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
               <YAxis domain={[50, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
               <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
-              <Line type="monotone" dataKey="sentiment" stroke="hsl(var(--green))" strokeWidth={2} dot={{ fill: 'hsl(var(--green))', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: 'hsl(var(--green))', stroke: 'white', strokeWidth: 2 }} />
+              <Line type="monotone" dataKey="sentiment" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-1))', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         {/* Selected Stakeholder Detail Card */}
-        <div className="border-l-4 border-purple bg-card rounded-lg p-4">
+        <div className="border border-border bg-card rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold">{selectedStakeholderDetails.name}</h4>
               <p className="text-sm text-muted-foreground">{selectedStakeholderDetails.role}</p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-yellow-600 font-medium">Sentiment: {selectedStakeholderDetails.sentiment}</span>
-              <Badge className="bg-yellow/10 text-yellow-700 border border-yellow/20">{selectedStakeholderDetails.riskLevel}</Badge>
+              <span className={`font-medium ${scoreText(selectedStakeholderDetails.sentiment)}`}>Sentiment: {selectedStakeholderDetails.sentiment}</span>
+              <Badge variant="outline" className="border-transparent bg-warning-subtle text-warning">{selectedStakeholderDetails.riskLevel}</Badge>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4 mt-3">
             <div>
               <p className="text-xs text-muted-foreground">Engagement</p>
-              <p className="text-lg font-semibold text-green">{selectedStakeholderDetails.engagement}%</p>
+              <p className={`text-lg font-semibold ${scoreText(selectedStakeholderDetails.engagement)}`}>{selectedStakeholderDetails.engagement}%</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Last Contact</p>
@@ -445,11 +391,7 @@ const SentimentTabContent = ({ sentimentPct }: { sentimentPct: number }) => {
           return (
             <div 
               key={channel.channel} 
-              className="group relative bg-card border border-border rounded-lg p-4 cursor-pointer
-                transition-all duration-300 ease-out
-                hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5
-                before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-                hover:before:opacity-100"
+              className="group relative bg-card border border-border rounded-lg p-4 cursor-pointer transition-colors hover:bg-muted/50"
             >
               <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
@@ -457,22 +399,22 @@ const SentimentTabContent = ({ sentimentPct }: { sentimentPct: number }) => {
                   <IconComponent className="w-4 h-4 text-muted-foreground" />
                   <span className="font-medium text-sm">{channel.channel}</span>
                 </div>
-                <Badge className={`text-xs ${channel.trend >= 0 ? "bg-green/10 text-green" : "bg-red/10 text-red"}`}>
+                <Badge variant="outline" className={`border-transparent text-xs ${channel.trend >= 0 ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger"}`}>
                   {channel.trend >= 0 ? "+" : ""}{channel.trend}%
                 </Badge>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Positive</span>
-                  <span className="text-green font-medium">{channel.positive}%</span>
+                  <span className="text-foreground font-medium">{channel.positive}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Neutral</span>
-                  <span className="text-foreground">{channel.neutral}%</span>
+                  <span className="text-foreground font-medium">{channel.neutral}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Negative</span>
-                  <span className="text-red font-medium">{channel.negative}%</span>
+                  <span className="text-foreground font-medium">{channel.negative}%</span>
                 </div>
               </div>
                 <p className="text-xs text-muted-foreground mt-3 pt-2 border-t border-border">Total Communications: {channel.total}</p>
@@ -497,14 +439,14 @@ const WinProbabilityIntelligenceModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[80vw] max-w-5xl max-h-[90vh] overflow-hidden p-0 flex flex-col">
         {/* Header - Fixed */}
-        <div className="px-5 py-3 pr-14 flex items-center gap-3 border-b border-border bg-gradient-to-r from-purple/10 to-orange/10 shrink-0">
-          <div className="p-2 rounded-lg bg-purple/20">
-            <Target className="w-5 h-5 text-purple" />
+        <div className="px-5 py-3 pr-14 flex items-center gap-3 border-b border-border bg-muted/30 shrink-0">
+          <div className="p-2 rounded-lg bg-primary-subtle">
+            <Target className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold">Win Probability Intelligence - {companyName}</h2>
-              <Badge className="bg-purple text-white">{overallScore}%</Badge>
+              <Badge variant="secondary">{overallScore}%</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               Deep-dive into consensus tracking and sentiment analysis
@@ -553,7 +495,7 @@ const WinProbabilityIntelligenceModal = ({
                     {consensusHeatmapData.map((row) => {
                       const status = getStatusBadge(row.overall);
                       return (
-                        <tr key={row.name} className="border-b border-border last:border-0 hover:bg-purple/[0.04] transition-colors">
+                        <tr key={row.name} className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
                           <td className="p-3">
                             <div>
                               <p className="font-medium text-foreground">{row.name}</p>
@@ -561,21 +503,21 @@ const WinProbabilityIntelligenceModal = ({
                             </div>
                           </td>
                           <td className="p-3 text-center">
-                            <span className={`text-xs font-semibold ${getTextColor(row.cost)}`}>{row.cost}%</span>
+                            <span className={`text-xs font-semibold ${scoreText(row.cost)}`}>{row.cost}%</span>
                           </td>
                           <td className="p-3 text-center">
-                            <span className={`text-xs font-semibold ${getTextColor(row.technical)}`}>{row.technical}%</span>
+                            <span className={`text-xs font-semibold ${scoreText(row.technical)}`}>{row.technical}%</span>
                           </td>
                           <td className="p-3 text-center">
-                            <span className={`text-xs font-semibold ${getTextColor(row.timeline)}`}>{row.timeline}%</span>
+                            <span className={`text-xs font-semibold ${scoreText(row.timeline)}`}>{row.timeline}%</span>
                           </td>
                           <td className="p-3 text-center">
-                            <span className={`text-xs font-semibold ${getTextColor(row.risk)}`}>{row.risk}%</span>
+                            <span className={`text-xs font-semibold ${scoreText(row.risk)}`}>{row.risk}%</span>
                           </td>
                           <td className="p-3">
                             <div className="flex flex-col items-center gap-1">
-                              <span className={`text-base font-bold ${getTextColor(row.overall)}`}>{row.overall}%</span>
-                              <Badge className={`text-xs ${status.color}`}>{status.label}</Badge>
+                              <span className={`text-base font-bold ${scoreText(row.overall)}`}>{row.overall}%</span>
+                              <Badge variant="outline" className={`border-transparent text-xs ${status.color}`}>{status.label}</Badge>
                             </div>
                           </td>
                         </tr>
@@ -589,8 +531,8 @@ const WinProbabilityIntelligenceModal = ({
             {/* Consensus Building Tracker */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-purple/10">
-                  <Users className="w-4 h-4 text-purple" />
+                <div className="p-2 rounded-lg bg-primary-subtle">
+                  <Users className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold">Consensus Building Tracker</h3>
@@ -601,34 +543,30 @@ const WinProbabilityIntelligenceModal = ({
               {/* Areas of Agreement */}
               <div className="mb-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle className="w-4 h-4 text-green" />
+                  <CheckCircle className="w-4 h-4 text-success" />
                   <span className="text-sm font-medium">Areas of Agreement</span>
-                  <Badge className="bg-green/10 text-green border border-green/20">{areasOfAgreement.length} Active</Badge>
+                  <Badge variant="outline" className="border-transparent bg-success-subtle text-success">{areasOfAgreement.length} Active</Badge>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {areasOfAgreement.map((area) => (
                     <div 
                       key={area.topic} 
-                      className="group relative bg-card border border-border rounded-lg p-3 cursor-pointer
-                        transition-all duration-300 ease-out
-                        hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5
-                        before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-                        hover:before:opacity-100"
+                      className="group relative bg-card border border-border rounded-lg p-3 cursor-pointer transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <span className="font-medium text-sm">{area.topic}</span>
-                        <Badge className="bg-green/10 text-green text-xs border border-green/20">agreement</Badge>
+                        <Badge variant="outline" className={`border-transparent text-xs ${categoryBadge}`}>agreement</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mb-2">
                         Support ({area.supporters.length}): {area.supporters.join(", ")}
                       </p>
                       <div className="mb-2 flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Consensus Level</span>
-                        <span className={`text-xs font-semibold ${getTextColor(area.consensusLevel)}`}>{area.consensusLevel}%</span>
+                        <span className={`text-xs font-semibold ${scoreText(area.consensusLevel)}`}>{area.consensusLevel}%</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Last activity: {area.lastActivity}</span>
-                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-purple hover:text-purple hover:bg-purple/10">
+                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
                           Take Action <ArrowRight className="w-3 h-3 ml-1" />
                         </Button>
                       </div>
@@ -640,38 +578,34 @@ const WinProbabilityIntelligenceModal = ({
               {/* Areas of Division */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                  <AlertTriangle className="w-4 h-4 text-warning" />
                   <span className="text-sm font-medium">Areas of Division</span>
-                  <Badge className="bg-yellow/10 text-yellow-700 border border-yellow/20">{areasOfDivision.length} Active</Badge>
+                  <Badge variant="outline" className="border-transparent bg-warning-subtle text-warning">{areasOfDivision.length} Active</Badge>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {areasOfDivision.map((area) => (
                     <div 
                       key={area.topic} 
-                      className="group relative bg-card border border-border rounded-lg p-3 cursor-pointer
-                        transition-all duration-300 ease-out
-                        hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5
-                        before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-                        hover:before:opacity-100"
+                      className="group relative bg-card border border-border rounded-lg p-3 cursor-pointer transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <span className="font-medium text-sm">{area.topic}</span>
-                        <Badge className={`text-xs border ${getDivisionBadgeColor(area.division)}`}>{area.division} division</Badge>
+                        <Badge variant="outline" className={`border-transparent text-xs ${categoryBadge}`}>{area.division} division</Badge>
                       </div>
                       
                       {/* Support/Against/Neutral */}
                       <div className="flex gap-3 mb-2 text-xs">
                         <div>
-                          <span className="text-green font-medium">Support ({area.support[0]?.names.length || 0})</span>
+                          <span className="text-foreground font-medium">Support ({area.support[0]?.names.length || 0})</span>
                           <div className="flex items-center gap-1 mt-0.5">
-                            <ThumbsUp className="w-3 h-3 text-green" />
+                            <ThumbsUp className="w-3 h-3 text-success" />
                             <span className="text-muted-foreground">{area.support[0]?.names.slice(0, 2).join(", ")}</span>
                           </div>
                         </div>
                         <div>
-                          <span className="text-red font-medium">Against ({area.against[0]?.names.length || 0})</span>
+                          <span className="text-foreground font-medium">Against ({area.against[0]?.names.length || 0})</span>
                           <div className="flex items-center gap-1 mt-0.5">
-                            <ThumbsDown className="w-3 h-3 text-red" />
+                            <ThumbsDown className="w-3 h-3 text-danger" />
                             <span className="text-muted-foreground">{area.against[0]?.names.join(", ")}</span>
                           </div>
                         </div>
@@ -688,15 +622,18 @@ const WinProbabilityIntelligenceModal = ({
 
                       <div className="mb-2 flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Consensus Progress</span>
-                        <span className={`text-xs font-semibold ${getTextColor(area.consensusProgress)}`}>{area.consensusProgress}%</span>
+                        <span className={`text-xs font-semibold ${scoreText(area.consensusProgress)}`}>{area.consensusProgress}%</span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">Last activity: {area.lastActivity}</span>
-                          <Badge className={`text-xs ${getPriorityBadgeColor(area.priority)}`}>{area.priority} priority</Badge>
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                            <span className={`w-1.5 h-1.5 rounded-full ${priorityDot(area.priority)}`} />
+                            {area.priority} priority
+                          </span>
                         </div>
-                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-purple hover:text-purple hover:bg-purple/10">
+                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
                           Take Action <ArrowRight className="w-3 h-3 ml-1" />
                         </Button>
                       </div>
@@ -709,18 +646,14 @@ const WinProbabilityIntelligenceModal = ({
             {/* Consensus Progress by Driver */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Target className="w-4 h-4 text-purple" />
+                <Target className="w-4 h-4 text-primary" />
                 <span className="text-sm font-semibold">Consensus Progress by Driver</span>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {consensusProgressByDriver.map((driver) => (
                   <div 
                     key={driver.driver} 
-                    className="group relative bg-muted/20 rounded-lg p-4 cursor-pointer
-                      transition-all duration-300 ease-out
-                      hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5
-                      before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-                      hover:before:opacity-100"
+                    className="group relative bg-muted/20 rounded-lg p-4 cursor-pointer transition-colors hover:bg-muted/50"
                   >
                     <div className="relative z-10">
                     <div className="flex items-center justify-between mb-3">
@@ -728,22 +661,22 @@ const WinProbabilityIntelligenceModal = ({
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-muted-foreground">{driver.aligned}/{driver.total} aligned</span>
                         {driver.progress >= 70 ? (
-                          <TrendingUp className="w-3.5 h-3.5 text-green" />
+                          <TrendingUp className="w-3.5 h-3.5 text-success" />
                         ) : (
-                          <AlertTriangle className="w-3.5 h-3.5 text-yellow-600" />
+                          <AlertTriangle className="w-3.5 h-3.5 text-warning" />
                         )}
                       </div>
                     </div>
                     
                     <div className="mb-3 flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Progress</span>
-                      <span className={`text-xs font-semibold ${getTextColor(driver.progress)}`}>{driver.progress}%</span>
+                      <span className={`text-xs font-semibold ${scoreText(driver.progress)}`}>{driver.progress}%</span>
                     </div>
 
                     {driver.blockers.length > 0 && (
                       <div className="mb-2">
-                        <p className="text-xs font-medium text-red mb-1">Key Blockers:</p>
-                        <ul className="text-xs text-red/80 space-y-0.5">
+                        <p className="text-xs font-medium text-danger mb-1">Key Blockers:</p>
+                        <ul className="text-xs text-muted-foreground space-y-0.5">
                           {driver.blockers.map((blocker, idx) => (
                             <li key={idx}>• {blocker}</li>
                           ))}
@@ -751,7 +684,7 @@ const WinProbabilityIntelligenceModal = ({
                       </div>
                     )}
 
-                      <div className="flex items-center gap-1.5 text-xs text-purple">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Clock className="w-3 h-3" />
                         <span>{driver.note}</span>
                       </div>
@@ -762,15 +695,17 @@ const WinProbabilityIntelligenceModal = ({
             </div>
 
             {/* Action Banner */}
-            <div className="bg-gradient-to-r from-purple/5 to-orange/5 border border-purple/20 rounded-lg p-4 flex items-center justify-between">
+            <div className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Zap className="w-5 h-5 text-purple" />
+                <div className="p-2 rounded-lg bg-primary-subtle">
+                  <Zap className="w-5 h-5 text-primary" />
+                </div>
                 <div>
-                  <h4 className="font-semibold text-purple">Consensus Action Required</h4>
+                  <h4 className="font-semibold text-foreground">Consensus Action Required</h4>
                   <p className="text-sm text-muted-foreground">3 critical decisions need stakeholder alignment this week</p>
                 </div>
               </div>
-              <Button className="bg-purple hover:bg-purple/90 text-white">
+              <Button>
                 <ArrowRight className="w-4 h-4 mr-2" />
                 Create Action Plan
               </Button>

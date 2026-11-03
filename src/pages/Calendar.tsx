@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
-import { ChevronLeft, ChevronRight, Plus, Phone, Video, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Phone, Video, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -154,7 +154,7 @@ const Calendar = () => {
       <Header isScrolled={false} />
       
       {/* Tab Navigation + AI Header */}
-      <div className="flex border-b border-border bg-white">
+      <div className="flex border-b border-border bg-card">
         <div className="flex-1">
           <TabNavigation isScrolled={false} activeTab="Calendar" />
         </div>
@@ -165,7 +165,7 @@ const Calendar = () => {
             {isAIPanelOpen && (
               <>
                 <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
-                <div className="w-2 h-2 bg-green rounded-full" />
+                <div className="w-2 h-2 bg-success rounded-full" />
               </>
             )}
             <button 
@@ -231,14 +231,14 @@ const Calendar = () => {
                           className={`
                             relative h-10 rounded-lg text-sm font-medium transition-all
                             ${!day.isCurrentMonth ? "text-muted-foreground/40" : "text-foreground"}
-                            ${isSelected(day.fullDate) ? "bg-purple text-white" : "hover:bg-muted"}
-                            ${isToday(day.fullDate) && !isSelected(day.fullDate) ? "ring-2 ring-purple ring-inset" : ""}
+                            ${isSelected(day.fullDate) ? "bg-primary text-primary-foreground" : "hover:bg-muted"}
+                            ${isToday(day.fullDate) && !isSelected(day.fullDate) ? "ring-2 ring-primary ring-inset" : ""}
                           `}
                           disabled={!day.isCurrentMonth}
                         >
                           {day.date}
                           {hasEventsOnDate(day.fullDate) && !isSelected(day.fullDate) && (
-                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-purple rounded-full" />
+                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full" />
                           )}
                         </button>
                       ))}
@@ -260,7 +260,7 @@ const Calendar = () => {
                               <Checkbox
                                 checked={isChecked}
                                 onCheckedChange={() => toggleDeal(dealName)}
-                                className="h-5 w-5 rounded border-2 border-muted-foreground/30 data-[state=checked]:bg-purple data-[state=checked]:border-purple"
+                                className="h-5 w-5 rounded border-2 border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                               />
                             </div>
                             <span className={`text-sm font-medium ${isChecked ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -324,7 +324,7 @@ const Calendar = () => {
                       </button>
                     )}
                   </div>
-                  <Button className="bg-gradient-to-r from-purple to-orange-500 hover:from-purple/90 hover:to-orange-500/90 text-white w-9 h-9 p-0">
+                  <Button size="icon" className="w-9 h-9">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
@@ -343,22 +343,21 @@ const Calendar = () => {
                       // First event shows "in 15 min" with green pill
                       const isFirstEvent = index === 0;
                       const statusText = isFirstEvent ? "in 15 min" : event.status;
+                      const isCompleted = !isFirstEvent && event.status === "completed";
                       const statusClass = isFirstEvent 
-                        ? "bg-green/10 text-green border-green/20" 
-                        : "bg-muted text-muted-foreground border-border";
+                        ? "bg-success-subtle text-success" 
+                        : "bg-muted text-muted-foreground";
                       
                       return (
                         <Card 
                           key={event.id} 
-                          className="p-4 group relative interactive-card interactive-card-gradient"
+                          className="p-4 interactive-card"
                           onClick={() => handleEventClick(event)}
                         >
-                          {/* Ambient glow effect */}
-                          <div className="absolute -inset-px rounded-lg bg-gradient-to-r from-purple/20 via-primary/10 to-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
                           <div className="flex items-center justify-between">
                             <div className="flex items-start gap-3">
                               <div className={`w-2.5 h-2.5 rounded-full mt-2 ${
-                                event.type === "call" ? "bg-green" : "bg-purple"
+                                event.type === "call" ? "bg-muted-foreground" : "bg-primary"
                               }`} />
                               <div>
                                 <h3 className="text-base font-semibold text-foreground">
@@ -371,17 +370,28 @@ const Calendar = () => {
                             <div className="flex flex-col items-end gap-2">
                               <Badge
                                 variant="outline"
-                                className={`${statusClass} ${isFirstEvent ? "animate-pulse" : ""}`}
+                                className={`border-transparent ${statusClass}`}
                               >
                                 {isFirstEvent && (
-                                  <span className="relative flex h-2 w-2 mr-1.5">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green"></span>
-                                  </span>
+                                  <span className="h-1.5 w-1.5 mr-1.5 rounded-full bg-success" />
                                 )}
                                 {statusText}
                               </Badge>
-                              {event.type === "call" && (
+                              {isCompleted && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEventClick(event);
+                                  }}
+                                  className="gap-1.5 text-muted-foreground"
+                                >
+                                  <Play className="w-3.5 h-3.5" />
+                                  Recording
+                                </Button>
+                              )}
+                              {!isCompleted && event.type === "call" && (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -389,13 +399,13 @@ const Calendar = () => {
                                     e.stopPropagation();
                                     console.log("Starting call:", event.id);
                                   }}
-                                   className="border-purple text-purple bg-white hover:!bg-gradient-to-r hover:!from-purple hover:!to-orange-500 hover:!text-white hover:!border-transparent gap-1.5"
+                                  className="gap-1.5"
                                 >
                                   <Phone className="w-3.5 h-3.5" />
                                   Call
                                 </Button>
                               )}
-                              {event.type === "meeting" && (
+                              {!isCompleted && event.type === "meeting" && (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -403,7 +413,7 @@ const Calendar = () => {
                                     e.stopPropagation();
                                     console.log("Joining meeting:", event.id);
                                   }}
-                                  className="border-purple text-purple bg-white hover:!bg-gradient-to-r hover:!from-purple hover:!to-orange-500 hover:!text-white hover:!border-transparent gap-1.5"
+                                  className="gap-1.5"
                                 >
                                   <Video className="w-3.5 h-3.5" />
                                   Join
@@ -448,14 +458,14 @@ const Calendar = () => {
                       key={event.id} 
                       className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                         selectedEvent?.id === event.id 
-                          ? "bg-purple/10 border border-purple/30" 
+                          ? "bg-primary-subtle border border-primary/30" 
                           : "hover:bg-muted border border-transparent"
                       }`}
                       onClick={() => handleEventClick(event)}
                     >
                       <div className="flex items-start gap-2">
                         <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                          event.type === "call" ? "bg-green" : "bg-purple"
+                          event.type === "call" ? "bg-muted-foreground" : "bg-primary"
                         }`} />
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">

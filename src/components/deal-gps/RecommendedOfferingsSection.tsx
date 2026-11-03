@@ -10,7 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
+import { scoreText, categoryBadge } from "@/lib/tone";
 
 // ==================== TYPES ====================
 
@@ -107,21 +107,15 @@ export const RecommendedOfferingsSection = ({
   onCreateAction,
 }: RecommendedOfferingsSectionProps) => {
 
-  const getAlignmentBadgeStyle = (pct: number) => {
-    if (pct >= 80) return "bg-green/10 text-green border-green/30";
-    if (pct >= 70) return "bg-yellow/10 text-yellow border-yellow/30";
-    return "bg-muted text-muted-foreground border-border";
-  };
-
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle}>
       <section className="space-y-4">
         {/* Section Header */}
         <CollapsibleTrigger asChild>
-          <Card className="p-4 bg-gradient-to-r from-purple/5 to-transparent border-l-4 border-l-purple cursor-pointer hover:bg-purple/5 transition-colors">
+          <Card className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple/10">
-                <Star className="w-5 h-5 text-purple fill-purple" />
+              <div className="p-2 rounded-lg bg-primary-subtle">
+                <Star className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -134,7 +128,7 @@ export const RecommendedOfferingsSection = ({
                 <div className="hidden md:flex items-center gap-1.5 mr-2">
                   <span className="text-xs text-muted-foreground whitespace-nowrap">Buyer priorities:</span>
                   {BUYER_PRIORITIES.map((p) => (
-                    <Badge key={p} variant="outline" className="text-xxs px-2 py-0 h-5 whitespace-nowrap border-purple/30 text-purple bg-purple/5">
+                    <Badge key={p} variant="outline" className={`text-xxs px-2 py-0 h-5 whitespace-nowrap border-transparent ${categoryBadge}`}>
                       {p}
                     </Badge>
                   ))}
@@ -154,12 +148,12 @@ export const RecommendedOfferingsSection = ({
                 <Card key={offering.name} className="p-4 space-y-2.5">
                   <p className="text-sm font-semibold text-foreground">{offering.name}</p>
                   <p className="text-xs text-muted-foreground italic line-clamp-2">"{offering.buyerSignalQuote}"</p>
-                  <Progress value={offering.alignmentPct} className="h-2 bg-muted [&>div]:bg-green" />
+                  <Progress value={offering.alignmentPct} className="h-2 bg-muted" />
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-xxs h-5 border-green/30 text-green bg-green/5">
+                    <Badge variant="outline" className="text-xxs h-5 border-transparent bg-success-subtle text-success">
                       Mentioned
                     </Badge>
-                    <span className="text-xs font-medium text-green">{offering.alignmentPct}%</span>
+                    <span className={`text-xs font-medium ${scoreText(offering.alignmentPct)}`}>{offering.alignmentPct}%</span>
                   </div>
                 </Card>
               ))}
@@ -178,7 +172,7 @@ export const RecommendedOfferingsSection = ({
                   {/* Row 1: Name + Badge */}
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-foreground">{offering.name}</p>
-                    <Badge variant="outline" className={cn("text-xs font-medium", getAlignmentBadgeStyle(offering.alignmentPct))}>
+                    <Badge variant="secondary" className="text-xs font-medium">
                       {offering.alignmentPct}%
                     </Badge>
                   </div>
@@ -206,7 +200,7 @@ export const RecommendedOfferingsSection = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-purple text-purple hover:bg-purple/10 gap-1.5"
+                      className="gap-1.5"
                       onClick={() => onCreateAction(offering)}
                     >
                       Create action

@@ -8,7 +8,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { 
-  avatarColors, 
   deals, 
   getStakeholdersForDeal, 
   stageConfig,
@@ -21,16 +20,7 @@ import {
 import userAvatar from "@/assets/user-avatar.jpg";
 import type { CalendarEvent } from "@/contexts/EventPopupContext";
 import CallRecordingPanel from "./CallRecordingPanel";
-
-const getAvatarColor = (index: number) => avatarColors[index % avatarColors.length];
-
-const getStatusBadgeColor = (status: "positive" | "neutral" | "negative") => {
-  switch (status) {
-    case "positive": return "bg-green/10 text-green border-green/20";
-    case "neutral": return "bg-yellow/10 text-yellow border-yellow/20";
-    case "negative": return "bg-red/10 text-red border-red/20";
-  }
-};
+import { avatarFallback, categoryBadge, scoreText } from "@/lib/tone";
 
 type RsvpStatus = "accepted" | "declined" | "maybe" | "pending";
 
@@ -40,8 +30,8 @@ const RsvpIcon = ({ status }: { status: RsvpStatus }) => {
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="w-4 h-4 rounded-full bg-green flex items-center justify-center">
-              <Check className="w-2.5 h-2.5 text-white" />
+            <div className="w-4 h-4 rounded-full bg-success flex items-center justify-center">
+              <Check className="w-2.5 h-2.5 text-success-foreground" />
             </div>
           </TooltipTrigger>
           <TooltipContent>Accepted</TooltipContent>
@@ -51,8 +41,8 @@ const RsvpIcon = ({ status }: { status: RsvpStatus }) => {
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="w-4 h-4 rounded-full bg-red flex items-center justify-center">
-              <X className="w-2.5 h-2.5 text-white" />
+            <div className="w-4 h-4 rounded-full bg-danger flex items-center justify-center">
+              <X className="w-2.5 h-2.5 text-danger-foreground" />
             </div>
           </TooltipTrigger>
           <TooltipContent>Declined</TooltipContent>
@@ -62,8 +52,8 @@ const RsvpIcon = ({ status }: { status: RsvpStatus }) => {
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="w-4 h-4 rounded-full bg-yellow flex items-center justify-center">
-              <span className="text-xxs font-bold text-white leading-none">?</span>
+            <div className="w-4 h-4 rounded-full bg-warning flex items-center justify-center">
+              <span className="text-xxs font-bold text-warning-foreground leading-none">?</span>
             </div>
           </TooltipTrigger>
           <TooltipContent>Maybe</TooltipContent>
@@ -142,10 +132,10 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <Badge className={`${event.type === "call" ? "bg-green text-white" : "bg-purple text-white"}`}>
+              <Badge variant="outline" className={`border-transparent ${categoryBadge}`}>
                 {event.type}
               </Badge>
-              <Badge variant="outline" className="bg-muted text-muted-foreground border-border">
+              <Badge variant="outline" className="border-transparent bg-muted text-muted-foreground">
                 {event.status}
               </Badge>
             </div>
@@ -171,11 +161,11 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
               <Share2 className="w-3.5 h-3.5" />
               Share
             </Button>
-            {event.type === "call" ? (
+            {event.status === "completed" ? null : event.type === "call" ? (
               <Button
                 size="sm"
                 onClick={handleStartCall}
-                className="bg-gradient-to-r from-green to-emerald-500 hover:from-green/90 hover:to-emerald-500/90 text-white gap-1.5"
+                className="gap-1.5"
               >
                 <Phone className="w-3.5 h-3.5" />
                 Start Call
@@ -184,7 +174,7 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
               <Button
                 size="sm"
                 onClick={handleStartCall}
-                className="bg-gradient-to-r from-purple to-violet-500 hover:from-purple/90 hover:to-violet-500/90 text-white gap-1.5"
+                className="gap-1.5"
               >
                 <Video className="w-3.5 h-3.5" />
                 Join Meeting
@@ -219,7 +209,8 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
                   {stageInfo && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge variant="outline" className={stageInfo.colorClass}>
+                        <Badge variant="outline" className={`gap-1.5 ${stageInfo.colorClass}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${stageInfo.dotColor}`} />
                           {stageInfo.label}
                         </Badge>
                       </TooltipTrigger>
@@ -231,14 +222,14 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
               </div>
               <div className="flex items-center gap-4 text-sm">
                 <div className="text-center">
-                  <div className="flex items-center gap-1 text-green">
+                  <div className="flex items-center gap-1 text-foreground">
                     <DollarSign className="w-3.5 h-3.5" />
                     <span className="font-semibold">{deal.value}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Value</p>
                 </div>
                 <div className="text-center">
-                  <div className="flex items-center gap-1 text-purple">
+                  <div className={`flex items-center gap-1 ${scoreText(deal.winProbability)}`}>
                     <TrendingUp className="w-3.5 h-3.5" />
                     <span className="font-semibold">{deal.winProbability}%</span>
                   </div>
@@ -253,7 +244,7 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-4 h-4 text-muted-foreground" />
-            <h3 className="text-sm font-medium text-foreground">Participants</h3>
+            <h3 className="text-sm font-semibold text-foreground">Participants</h3>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -261,11 +252,11 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
             <div className="space-y-4">
               {/* Host */}
               <div>
-                <p className="text-xs font-medium text-purple mb-2">Call Host</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Call Host</p>
                 <div className="flex items-center gap-3 p-2 rounded-lg border border-border">
                   <Avatar className="w-9 h-9">
                     <AvatarImage src={host.avatar} />
-                    <AvatarFallback className="bg-purple/10 text-purple text-sm font-medium">
+                    <AvatarFallback className={`${avatarFallback} text-sm font-medium`}>
                       RA
                     </AvatarFallback>
                   </Avatar>
@@ -279,14 +270,14 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
 
               {/* Sales Team */}
               <div>
-                <p className="text-xs font-medium text-purple mb-2">
+                <p className="text-xs font-medium text-muted-foreground mb-2">
                   Sales Team ({salesTeam.length})
                 </p>
                 <div className="space-y-2">
                   {salesTeam.map((member, idx) => (
                     <div key={idx} className="flex items-center gap-3 p-2 rounded-lg border border-border">
                       <Avatar className="w-9 h-9">
-                        <AvatarFallback className={`${getAvatarColor(idx + 10)} text-xs font-medium`}>
+                        <AvatarFallback className={`${avatarFallback} text-xs font-medium`}>
                           {member.name.split(" ").map(n => n[0]).join("")}
                         </AvatarFallback>
                       </Avatar>
@@ -303,15 +294,15 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
 
             {/* Right Column: Client Stakeholders */}
             <div>
-              <p className="text-xs font-medium text-green mb-2">
+              <p className="text-xs font-medium text-muted-foreground mb-2">
                 Client Stakeholders ({dealStakeholders.length})
               </p>
               <div className="space-y-2">
-                {dealStakeholders.slice(0, 5).map((stakeholder, idx) => (
+                {dealStakeholders.slice(0, 5).map((stakeholder) => (
                   <div key={stakeholder.id} className="flex items-center gap-3 p-2 rounded-lg border border-border">
                     <Avatar className="w-9 h-9">
                       <AvatarImage src={stakeholder.avatar} />
-                      <AvatarFallback className={`${getAvatarColor(idx)} text-xs font-medium`}>
+                      <AvatarFallback className={`${avatarFallback} text-xs font-medium`}>
                         {stakeholder.name.split(" ").map(n => n[0]).join("")}
                       </AvatarFallback>
                     </Avatar>
@@ -345,8 +336,8 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
         {/* Meeting Materials - Inline */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-foreground">Meeting Materials</h3>
-            <Button variant="ghost" size="sm" className="text-xs h-6 text-purple hover:text-purple hover:bg-purple/10">
+            <h3 className="text-sm font-semibold text-foreground">Meeting Materials</h3>
+            <Button variant="ghost" size="sm" className="text-xs h-6">
               + Add
             </Button>
           </div>
@@ -354,14 +345,12 @@ export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
             {mockMaterials.map((material) => (
               <div 
                 key={material.id} 
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-purple cursor-pointer transition-colors"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
               >
                 {material.type === "link" ? (
-                  <Link2 className="w-3.5 h-3.5 text-blue-500" />
+                  <Link2 className="w-3.5 h-3.5" />
                 ) : (
-                  <FileText className={`w-3.5 h-3.5 ${
-                    material.type === "pdf" ? "text-red-500" : "text-green-500"
-                  }`} />
+                  <FileText className="w-3.5 h-3.5" />
                 )}
                 <span>{material.name}</span>
               </div>

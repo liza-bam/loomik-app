@@ -34,7 +34,7 @@ const ActionHub = () => {
       </div>
       
       {/* Tab Navigation + AI Header - side by side */}
-      <div className="flex border-b border-border bg-white">
+      <div className="flex border-b border-border bg-card">
         <div className="flex-1">
           <TabNavigation isScrolled={isScrolled} activeTab="Action Hub" />
         </div>
@@ -45,7 +45,7 @@ const ActionHub = () => {
             {isAIPanelOpen && (
               <>
                 <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
-                <div className="w-2 h-2 bg-green rounded-full" />
+                <div className="w-2 h-2 bg-success rounded-full" />
               </>
             )}
             <button 

@@ -28,12 +28,11 @@ import { useGeneratedActionsStore } from "@/stores/generatedActionsStore";
 import { useUIStore } from "@/stores/uiStore";
 import {
   getAllActionsWithStakeholders,
-  getProgressColor,
-  avatarColors,
   getStakeholderById,
   deals,
   getCompanyById,
 } from "@/data/dealData";
+import { avatarFallback, categoryBadge, priorityDot, scoreText, selectedChip, sentimentBadge, unselectedChip } from "@/lib/tone";
 import salesforceLogo from "@/assets/logos/salesforce.svg";
 import stripeLogo from "@/assets/logos/stripe.svg";
 import shopifyLogo from "@/assets/logos/shopify.svg";
@@ -41,8 +40,6 @@ import hubspotLogo from "@/assets/logos/hubspot-sprocket.svg";
 import slackLogo from "@/assets/logos/slack.svg";
 import notionLogo from "@/assets/logos/notion.svg";
 import figmaLogo from "@/assets/logos/figma.svg";
-
-const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
 
 // Company logos for display (keyed by company name)
 const companyLogos: Record<string, string> = {
@@ -83,17 +80,6 @@ const getStaticDisplayActions = (): DisplayAction[] => {
       isGenerated: false,
     };
   });
-};
-
-const getPriorityStyles = (priority: "high" | "medium" | "low", isActive: boolean) => {
-  const base = "transition-all duration-200";
-  if (priority === "high") {
-    return isActive ? `${base} bg-red text-white` : `${base} bg-muted text-muted-foreground hover:bg-red/20 hover:text-red`;
-  }
-  if (priority === "medium") {
-    return isActive ? `${base} bg-yellow text-white` : `${base} bg-muted text-muted-foreground hover:bg-yellow/20 hover:text-yellow`;
-  }
-  return isActive ? `${base} bg-slate-500 text-white` : `${base} bg-muted text-muted-foreground hover:bg-slate-200 hover:text-slate-600`;
 };
 
 // AI reasoning generator based on action context
@@ -425,13 +411,6 @@ const ActionsView = () => {
     setPendingDoneAction(null);
   };
 
-  const getTypeStyles = (isActive: boolean) => {
-    const base = "transition-all duration-200";
-    return isActive 
-      ? `${base} bg-muted-foreground/20 text-foreground ring-1 ring-muted-foreground/40` 
-      : `${base} bg-muted text-muted-foreground hover:bg-muted-foreground/10`;
-  };
-
   const toggleType = (type: string) => {
     setTypeFilter(prev => 
       prev.includes(type) 
@@ -455,8 +434,9 @@ const ActionsView = () => {
                 <button
                   key={p}
                   onClick={() => togglePriority(p)}
-                  className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getPriorityStyles(p as "high" | "medium" | "low", priorityFilter.includes(p))}`}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium capitalize transition-colors ${priorityFilter.includes(p) ? selectedChip : unselectedChip}`}
                 >
+                  <span className={`w-1.5 h-1.5 rounded-full ${priorityDot(p)}`} />
                   {p}
                 </button>
               ))}
@@ -468,7 +448,7 @@ const ActionsView = () => {
                 <button
                   key={t}
                   onClick={() => toggleType(t)}
-                  className={`p-1.5 rounded-full ${getTypeStyles(typeFilter.length === 0 || typeFilter.includes(t))}`}
+                  className={`p-1.5 rounded-full transition-colors ${typeFilter.includes(t) ? selectedChip : unselectedChip}`}
                   title={t}
                 >
                   {t === "email" ? <Mail className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
@@ -531,13 +511,13 @@ const ActionsView = () => {
               {!isTabletWithAI && (
                 <div className="flex items-center border border-border rounded-lg overflow-hidden">
                   <button
-                    className={`p-2 transition-colors ${viewMode === "list" ? "bg-gradient-to-r from-purple to-orange text-white" : "bg-transparent hover:bg-muted/50"}`}
+                    className={`p-2 transition-colors ${viewMode === "list" ? selectedChip : unselectedChip}`}
                     onClick={() => setViewMode("list")}
                   >
                     <List className="w-4 h-4" />
                   </button>
                   <button
-                    className={`p-2 transition-colors ${viewMode === "cards" ? "bg-gradient-to-r from-purple to-orange text-white" : "bg-transparent hover:bg-muted/50"}`}
+                    className={`p-2 transition-colors ${viewMode === "cards" ? selectedChip : unselectedChip}`}
                     onClick={() => setViewMode("cards")}
                   >
                     <LayoutGrid className="w-4 h-4" />
@@ -655,32 +635,17 @@ interface ActionListItemProps {
 const ActionListItem = ({ action, isExpanded, isGenerated, onToggleExpand, onGoToAction, onArchive }: ActionListItemProps) => {
   const ActionIcon = action.type === "email" ? Mail : Video;
   
-  // Get border color based on priority
-  const getBorderColor = () => {
-    if (action.priority === "high") return "hsl(var(--red))";
-    if (action.priority === "medium") return "hsl(var(--yellow))";
-    return "hsl(var(--muted-foreground) / 0.3)";
-  };
-  
   // Format deadline with color coding
   const getDeadlineStyle = (deadline: string) => {
-    if (deadline === "Today") return "text-red font-semibold";
-    if (deadline === "Tomorrow") return "text-yellow font-semibold";
+    if (deadline === "Today") return "text-danger font-semibold";
+    if (deadline === "Tomorrow") return "text-warning font-semibold";
     return "text-muted-foreground";
-  };
-  
-  // Get background tint based on priority
-  const getPriorityBg = () => {
-    if (action.priority === "high") return "bg-red/[0.06]";
-    if (action.priority === "medium") return "bg-yellow/[0.08]";
-    return "bg-muted/[0.03]";
   };
   
   return (
     <div 
-      className={`group p-4 border-l-4 interactive-card-subtle ${isExpanded ? 'bg-muted/30' : getPriorityBg()}`}
+      className={`p-4 interactive-card-subtle ${isExpanded ? "bg-muted/30" : "bg-card"}`}
       onClick={onToggleExpand}
-      style={{ borderLeftColor: getBorderColor() }}
     >
       <div className="flex items-center gap-3">
         {/* Chevron Toggle */}
@@ -692,11 +657,11 @@ const ActionListItem = ({ action, isExpanded, isGenerated, onToggleExpand, onGoT
         </button>
 
         {/* Icon */}
-        <div className="w-10 h-10 rounded-lg bg-purple/10 flex items-center justify-center shrink-0 relative">
-          <ActionIcon className="w-5 h-5 text-purple" />
+        <div className="w-10 h-10 rounded-lg bg-primary-subtle flex items-center justify-center shrink-0 relative">
+          <ActionIcon className="w-5 h-5 text-primary" />
           {isGenerated && (
-            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-r from-purple to-violet-500 flex items-center justify-center animate-pulse">
-              <Sparkles className="w-2.5 h-2.5 text-white" />
+            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-gradient flex items-center justify-center">
+              <Sparkles className="w-2.5 h-2.5 text-primary-foreground" />
             </div>
           )}
         </div>
@@ -705,6 +670,7 @@ const ActionListItem = ({ action, isExpanded, isGenerated, onToggleExpand, onGoT
         <div className="flex-1 min-w-0">
           {/* Title as first line with company in brackets */}
           <div className="flex items-center gap-2 mb-1">
+            <span className={`w-2 h-2 rounded-full shrink-0 ${priorityDot(action.priority)}`} />
             <p className="font-medium text-foreground truncate">
               {action.title}
               <span className="text-sm text-muted-foreground font-normal ml-1.5">({action.companyName})</span>
@@ -716,7 +682,7 @@ const ActionListItem = ({ action, isExpanded, isGenerated, onToggleExpand, onGoT
             <div className="flex items-center gap-1">
               <Avatar className="w-5 h-5">
                 <AvatarImage src={action.stakeholders[0]?.avatar} />
-                <AvatarFallback className={`text-xxs ${getAvatarColor(action.stakeholders[0]?.id || 0)}`}>
+                <AvatarFallback className={`text-xxs ${avatarFallback}`}>
                   {action.stakeholders[0]?.name?.split(" ").map(n => n[0]).join("") || "?"}
                 </AvatarFallback>
               </Avatar>
@@ -748,7 +714,6 @@ const ActionListItem = ({ action, isExpanded, isGenerated, onToggleExpand, onGoT
           <Button
             size="sm"
             variant="outline"
-            className="border-purple text-purple bg-white group-hover:bg-purple/10 group-hover:border-purple hover:!bg-gradient-to-r hover:!from-purple hover:!to-orange-500 hover:!text-white hover:!border-transparent transition-all duration-200"
             onClick={(e) => { e.stopPropagation(); onGoToAction(action); }}
           >
             Go
@@ -805,9 +770,9 @@ const ActionExpandedContent = ({ action, onGoToAction, onArchive }: ActionExpand
             {attachments.map((att, i) => (
               <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-background border border-border rounded text-xs">
                 {att.type === "pdf" ? (
-                  <FileText className="w-3 h-3 text-red" />
+                  <FileText className="w-3 h-3 text-muted-foreground" />
                 ) : (
-                  <File className="w-3 h-3 text-blue-500" />
+                  <File className="w-3 h-3 text-muted-foreground" />
                 )}
                 <span className="text-foreground">{att.name}</span>
               </div>
@@ -840,36 +805,28 @@ interface ActionStakeholderCardProps {
 const ActionStakeholderCard = ({ stakeholder }: ActionStakeholderCardProps) => {
   const { openPopup } = useStakeholderPopup();
   
-  const getLocalStatusColor = (status: "positive" | "neutral" | "negative") => {
-    switch (status) {
-      case "positive": return "bg-green/10 text-green border-green/20";
-      case "neutral": return "bg-yellow/10 text-yellow border-yellow/20";
-      case "negative": return "bg-red/10 text-red border-red/20";
-    }
-  };
-
   return (
     <div
       onClick={() => openPopup(stakeholder)}
       className="group relative bg-card border border-border rounded-lg p-4 space-y-3 cursor-pointer
         transition-all duration-300 ease-out
-        hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5"
+        hover:shadow-md hover:border-primary/30"
     >
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Avatar className="w-9 h-9 transition-all duration-300 group-hover:scale-110 group-hover:ring-2 group-hover:ring-purple/30">
+        <Avatar className="w-9 h-9 transition-all duration-300 group-hover:scale-110 group-hover:ring-2 group-hover:ring-primary/30">
           <AvatarImage src={stakeholder.avatar} />
-          <AvatarFallback className={`${getAvatarColor(stakeholder.id)} text-xs font-medium`}>
+          <AvatarFallback className={`${avatarFallback} text-xs font-medium`}>
             {stakeholder.name.split(" ").map(n => n[0]).join("")}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground text-sm truncate transition-colors duration-200 group-hover:text-purple">
+          <p className="font-medium text-foreground text-sm truncate transition-colors duration-200 group-hover:text-primary">
             {stakeholder.name}
           </p>
           <p className="text-xs text-muted-foreground truncate">{stakeholder.role}</p>
         </div>
-        <span className={`px-2 py-0.5 rounded text-xs font-medium border ${getLocalStatusColor(stakeholder.status)}`}>
+        <span className={`px-2 py-0.5 rounded text-xs font-medium ${sentimentBadge(stakeholder.status)}`}>
           {stakeholder.status}
         </span>
       </div>
@@ -878,15 +835,15 @@ const ActionStakeholderCard = ({ stakeholder }: ActionStakeholderCardProps) => {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Priority</span>
-          <span className={`text-xs font-semibold ${getProgressColor(stakeholder.priority).replace('bg-', 'text-')}`}>{stakeholder.priority}%</span>
+          <span className={`text-xs font-semibold ${scoreText(stakeholder.priority)}`}>{stakeholder.priority}%</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Sentiment</span>
-          <span className={`text-xs font-semibold ${getProgressColor(stakeholder.sentiment).replace('bg-', 'text-')}`}>{stakeholder.sentiment}%</span>
+          <span className={`text-xs font-semibold ${scoreText(stakeholder.sentiment)}`}>{stakeholder.sentiment}%</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Engagement</span>
-          <span className={`text-xs font-semibold ${getProgressColor(stakeholder.engagement).replace('bg-', 'text-')}`}>{stakeholder.engagement}%</span>
+          <span className={`text-xs font-semibold ${scoreText(stakeholder.engagement)}`}>{stakeholder.engagement}%</span>
         </div>
       </div>
 
@@ -895,11 +852,7 @@ const ActionStakeholderCard = ({ stakeholder }: ActionStakeholderCardProps) => {
         {getPrimitivesForRole(stakeholder.role).slice(0, 3).map((p) => {
           const primitive = getPrimitiveById(p.primitiveId);
           if (!primitive) return null;
-          const pillStyles = p.weight > 70 
-            ? 'bg-purple text-white' 
-            : p.weight >= 40 
-              ? 'bg-purple/20 text-foreground' 
-              : 'bg-muted text-muted-foreground';
+          const pillStyles = p.weight > 70 ? selectedChip : categoryBadge;
           return (
             <span key={p.primitiveId} className={`px-2 py-0.5 rounded-full text-xs font-medium ${pillStyles}`}>
               {primitive.shortLabel}

@@ -11,11 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ArchiveConfirmDialog from "./ArchiveConfirmDialog";
-import { getStakeholderById, avatarColors } from "@/data/dealData";
+import { getStakeholderById } from "@/data/dealData";
+import { avatarFallback, categoryBadge, priorityDot, selectedChip } from "@/lib/tone";
 import { getPrimitivesForRole } from "@/lib/value-primitives/roleDefaults";
 import { getPrimitiveById } from "@/lib/value-primitives/types";
-
-const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
 
 interface Attachment {
   name: string;
@@ -85,17 +84,6 @@ const ActionEmailDialog = ({
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red text-white";
-      case "medium":
-        return "bg-yellow text-black";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
-
   const getDeadlineText = () => {
     if (action.priority === "high") return "Today, 2 PM";
     if (action.priority === "medium") return "Tomorrow, 10 AM";
@@ -151,18 +139,19 @@ const ActionEmailDialog = ({
           <div className="px-4 py-3 pr-14 flex items-center justify-between border-b border-border">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
-                <Mail className="w-4 h-4 text-purple" />
+                <Mail className="w-4 h-4 text-primary" />
                 <span className="font-semibold text-sm text-foreground">Email</span>
               </div>
               {isCrossSell && (
-                <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/30 uppercase text-xxs font-semibold" variant="outline">
+                <Badge className={`border-transparent uppercase text-xxs font-semibold ${categoryBadge}`} variant="outline">
                   Cross-sell opportunity
                 </Badge>
               )}
-              <Badge className={`${getPriorityColor(action.priority)} uppercase text-xxs font-semibold`}>
+              <Badge variant="outline" className="gap-1.5 uppercase text-xxs font-semibold">
+                <span className={`w-1.5 h-1.5 rounded-full ${priorityDot(action.priority)}`} />
                 {action.priority}
               </Badge>
-              <Badge variant="outline" className="text-green border-green bg-green/10 text-xxs">
+              <Badge variant="outline" className="border-transparent bg-success-subtle text-success text-xxs">
                 <Sparkles className="w-3 h-3 mr-1" />
                 +15% win probability
               </Badge>
@@ -207,9 +196,9 @@ const ActionEmailDialog = ({
                   <div className="flex flex-wrap gap-2">
                     {allStakeholders.map((sh) => sh && (
                       <div key={sh.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
-                        <Avatar className="w-8 h-8 ring-2 ring-purple/20">
+                        <Avatar className="w-8 h-8 ring-2 ring-primary/20">
                           <AvatarImage src={sh.avatar} />
-                          <AvatarFallback className={`${getAvatarColor(sh.id)} text-xs font-medium`}>
+                          <AvatarFallback className={`${avatarFallback} text-xs font-medium`}>
                             {sh.name.split(" ").map(n => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
@@ -226,8 +215,8 @@ const ActionEmailDialog = ({
               {/* Two-column grid for Reason + Attachments on tablet */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3">
                 {/* AI Reasoning */}
-                <div className="bg-purple/5 rounded-lg p-3">
-                  <span className="text-xs font-semibold text-purple mb-1 block">
+                <div className="bg-primary-subtle rounded-lg p-3">
+                  <span className="text-xs font-semibold text-primary mb-1 block">
                     {isCrossSell ? "Why this offering is recommended" : "Why we need to do this"}
                   </span>
                   {isCrossSell && crossSellData ? (
@@ -257,15 +246,11 @@ const ActionEmailDialog = ({
                         if (topPrimitives.length === 0) return null;
                         
                         return (
-                          <div className="flex flex-wrap gap-1 pt-2 border-t border-purple/10">
+                          <div className="flex flex-wrap gap-1 pt-2 border-t border-primary/10">
                             {topPrimitives.map(p => {
                               const primitive = getPrimitiveById(p.primitiveId);
                               if (!primitive) return null;
-                              const pillStyles = p.weight > 70 
-                                ? 'bg-purple text-white' 
-                                : p.weight >= 40 
-                                  ? 'bg-purple/20 text-foreground' 
-                                  : 'bg-muted text-muted-foreground';
+                              const pillStyles = p.weight > 70 ? selectedChip : categoryBadge;
                               return (
                                 <span key={p.primitiveId} className={`px-2 py-0.5 rounded-full text-xs font-medium ${pillStyles}`}>
                                   {primitive.shortLabel}
@@ -281,8 +266,8 @@ const ActionEmailDialog = ({
 
                 {/* Offering One-Pager (cross-sell only) */}
                 {isCrossSell && crossSellData && (
-                  <div className="bg-green/5 border border-green/20 rounded-lg p-3 space-y-2.5">
-                    <span className="text-xs font-semibold text-green block">Offering One-Pager</span>
+                  <div className="bg-muted/30 border border-border rounded-lg p-3 space-y-2.5">
+                    <span className="text-xs font-semibold text-foreground block">Offering One-Pager</span>
                     <div>
                       <p className="text-xxs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">Buyer Need</p>
                       <p className="text-xs text-foreground">{crossSellData.buyerNeed}</p>
@@ -304,7 +289,7 @@ const ActionEmailDialog = ({
                     </div>
                     <div>
                       <p className="text-xxs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">Cost of Inaction</p>
-                      <p className="text-xs text-red font-medium">{crossSellData.costOfInaction}</p>
+                      <p className="text-xs text-danger font-medium">{crossSellData.costOfInaction}</p>
                     </div>
                   </div>
                 )}
@@ -414,7 +399,7 @@ const ActionEmailDialog = ({
                   </Button>
                   <Button 
                     size="sm"
-                    className="bg-red hover:bg-red/90 text-white gap-1.5"
+                    className="gap-1.5"
                     onClick={handleOpenEmail}
                   >
                     <Send className="w-4 h-4" />
@@ -432,7 +417,7 @@ const ActionEmailDialog = ({
                   {!emailOpened ? (
                     <Button 
                       size="sm"
-                      className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white gap-1.5"
+                      className="gap-1.5"
                       onClick={handleOpenEmail}
                     >
                       <Send className="w-4 h-4" />
@@ -441,7 +426,7 @@ const ActionEmailDialog = ({
                   ) : (
                     <Button 
                       size="sm"
-                      className="bg-green hover:bg-green/90 text-white gap-1.5"
+                      className="gap-1.5"
                       onClick={handleConfirmDone}
                     >
                       <CheckCircle2 className="w-4 h-4" />
@@ -451,7 +436,8 @@ const ActionEmailDialog = ({
                   {hasNextAction && (
                     <Button
                       size="sm"
-                      className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white gap-1"
+                      variant="outline"
+                      className="gap-1"
                       onClick={onNextAction}
                     >
                       Next Action

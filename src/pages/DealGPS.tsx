@@ -74,9 +74,6 @@ import {
   getStakeholdersForDeal,
   getActionsForDeal,
   stageConfig,
-  getProgressColor,
-  getDonutColor,
-  avatarColors,
   getCompanyById,
   type Deal,
   type Stakeholder,
@@ -106,8 +103,7 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-
-const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
+import { scoreText, scoreColor, trendText, sentimentBadge, priorityDot, categoryBadge, avatarFallback, selectedChip } from "@/lib/tone";
 
 // Format value as compact currency ($580K, $2.4M)
 const formatCompactValue = (value: number): string => {
@@ -384,13 +380,6 @@ const DealGPS = () => {
     return Math.round(last - first);
   };
 
-  // Helper to get score color based on value
-  const getScoreColor = (value: number) => {
-    if (value > 70) return 'text-green';
-    if (value >= 50) return 'text-yellow-600';
-    return 'text-red';
-  };
-
   // Generate stakeholder alignment trend data (3 new metrics) with organic wavy curves
   const generateAlignmentTrendData = () => {
     const startDate = new Date(deal.dealStartDate);
@@ -455,7 +444,7 @@ const DealGPS = () => {
     const isPositive = value > 0;
     const textSize = size === "sm" ? "text-xs" : "text-sm";
     return (
-      <span className={`${textSize} font-medium ${isPositive ? "text-green" : "text-red"}`}>
+      <span className={`${textSize} font-medium ${trendText(value)}`}>
         {isPositive ? "↑" : "↓"}{Math.abs(value)}%
       </span>
     );
@@ -470,7 +459,7 @@ const DealGPS = () => {
         </div>
         
         {/* Tab Navigation + AI Header - side by side */}
-        <div className="flex border-b border-border bg-white">
+        <div className="flex border-b border-border bg-card">
           <div className="flex-1">
             <TabNavigation isScrolled={isScrolled} activeTab="Deal GPS" />
           </div>
@@ -481,7 +470,7 @@ const DealGPS = () => {
               {isAIPanelOpen && (
                 <>
                   <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
-                  <div className="w-2 h-2 bg-green rounded-full" />
+                  <div className="w-2 h-2 bg-success rounded-full" />
                 </>
               )}
               <button 
@@ -494,8 +483,9 @@ const DealGPS = () => {
           )}
         </div>
 
-        <div className={`flex flex-1 overflow-hidden p-6 gap-6 ${isMobile ? 'pb-20' : ''}`}>
+        <div className="flex flex-1 overflow-hidden">
           {/* Left column: Deal Tab Bar + Main Content */}
+          <div className={`flex-1 flex overflow-hidden p-6 ${isMobile ? 'pb-20' : ''}`}>
           <Card className="flex-1 flex flex-col overflow-hidden p-0">
             {/* Unified Deal Header */}
             <div className={`p-4 border-b border-border shrink-0 ${isTabletCompact ? 'space-y-2' : 'flex items-center justify-between'}`}>
@@ -518,7 +508,7 @@ const DealGPS = () => {
                             <span className="font-medium">{d.name}</span>
                             <span className="text-muted-foreground text-xs">({dCompany?.name})</span>
                             {d.hasRisk && (
-                              <div className="w-2 h-2 bg-red rounded-full" />
+                              <div className="w-2 h-2 bg-danger rounded-full" />
                             )}
                           </div>
                         </SelectItem>
@@ -531,6 +521,7 @@ const DealGPS = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border cursor-help ${stageInfo.colorClass}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${stageInfo.dotColor}`} />
                         {stageInfo.label}
                         <Info className="w-3 h-3 opacity-60" />
                       </div>
@@ -548,6 +539,7 @@ const DealGPS = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border cursor-help ${stageInfo.colorClass}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${stageInfo.dotColor}`} />
                         {stageInfo.label}
                         <Info className="w-3 h-3 opacity-60" />
                       </div>
@@ -582,10 +574,10 @@ const DealGPS = () => {
                 <section className="space-y-4">
                   {/* Section Header Card */}
                   <CollapsibleTrigger asChild>
-                    <Card className="p-4 bg-gradient-to-r from-purple/5 to-transparent border-l-4 border-l-purple cursor-pointer hover:bg-purple/5 transition-colors">
+                    <Card className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-purple/10">
-                          <TrendingUp className="w-5 h-5 text-purple" />
+                        <div className="p-2 rounded-lg bg-primary-subtle">
+                          <TrendingUp className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1">
                           <h2 className="text-lg font-semibold text-foreground">Win Probability</h2>
@@ -608,7 +600,7 @@ const DealGPS = () => {
                 {/* Summary Box */}
                 <div className="space-y-3">
                   <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-purple" />
+                    <Sparkles className="w-4 h-4 text-primary" />
                     Summary
                   </h3>
                   <div className="bg-muted/30 rounded-lg p-4">
@@ -624,14 +616,12 @@ const DealGPS = () => {
                   {isTabletCompact ? (
                     <div className="bg-muted/30 border border-border rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <TrendingUp className="w-4 h-4 text-purple" />
+                        <TrendingUp className="w-4 h-4 text-primary" />
                         <span className="font-semibold text-foreground text-sm">Win Probability</span>
                       </div>
                       <div className="flex flex-col items-center gap-3">
                         {/* Score Badge (Top) */}
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg ${
-                          winProb > 70 ? 'bg-green' : winProb >= 50 ? 'bg-yellow' : 'bg-red'
-                        }`}>
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center bg-muted font-bold text-xl ${scoreText(winProb)}`}>
                           {winProb}%
                         </div>
                         
@@ -648,7 +638,7 @@ const DealGPS = () => {
                             <div key={m.label} className="flex items-center justify-between text-sm">
                               <span className="text-muted-foreground">{m.label}</span>
                               <div className="flex items-center gap-2">
-                                <span className={`font-medium ${getScoreColor(m.value)}`}>{m.value}%</span>
+                                <span className={`font-medium ${scoreText(m.value)}`}>{m.value}%</span>
                                 <TrendIndicator value={m.trend} size="sm" />
                               </div>
                             </div>
@@ -659,14 +649,14 @@ const DealGPS = () => {
                   ) : (
                     <div 
                       onClick={() => setWinProbModalOpen(true)}
-                      className="group cursor-pointer rounded-xl transition-all duration-300 ease-out p-5 space-y-5 border border-border bg-card hover:bg-purple/5 hover:border-purple/30 hover:shadow-lg hover:shadow-purple/20"
+                      className="group cursor-pointer rounded-xl transition-shadow p-5 space-y-5 border border-border bg-card hover:bg-muted/30 hover:shadow-md"
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => e.key === 'Enter' && setWinProbModalOpen(true)}
                     >
                       <div className="flex items-center justify-between pointer-events-none">
                         <h3 className="font-semibold text-foreground flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-purple" />
+                          <TrendingUp className="w-4 h-4 text-primary" />
                           Win Probability
                         </h3>
                       </div>
@@ -676,28 +666,16 @@ const DealGPS = () => {
                         <div className="flex items-center gap-6">
                           <div className="flex flex-col items-center gap-2">
                             <div className="relative w-24 h-24 shrink-0">
-                              <div className="absolute inset-0 rounded-full blur-xl opacity-40 transition-opacity duration-500" style={{ backgroundColor: winProb > 70 ? 'hsl(142 70% 30%)' : winProb >= 50 ? 'hsl(45 90% 40%)' : 'hsl(0 70% 30%)' }} />
-                              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
                               <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                  <defs>
-                                    <filter id="donutGlow1" x="-50%" y="-50%" width="200%" height="200%">
-                                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                    </filter>
-                                    <linearGradient id="donutGradient1" x1="0" y1="0" x2="1" y2="1">
-                                      <stop offset="0%" stopColor={getDonutColor(winProb)} stopOpacity={1}/>
-                                      <stop offset="100%" stopColor={getDonutColor(winProb)} stopOpacity={0.7}/>
-                                    </linearGradient>
-                                  </defs>
-                                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" filter="url(#donutGlow1)">
-                                    <Cell fill="url(#donutGradient1)" />
-                                    <Cell fill="hsl(var(--muted)/0.3)" />
+                                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" stroke="none">
+                                    <Cell fill={scoreColor(winProb)} />
+                                    <Cell fill="hsl(var(--muted))" />
                                   </Pie>
                                 </PieChart>
                               </ResponsiveContainer>
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <span className={`text-xl font-bold drop-shadow-lg ${getScoreColor(winProb)}`}>{winProb}%</span>
+                                <span className={`text-xl font-bold ${scoreText(winProb)}`}>{winProb}%</span>
                               </div>
                             </div>
                             <TrendIndicator value={winProbTrend} size="md" />
@@ -706,21 +684,21 @@ const DealGPS = () => {
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-muted-foreground">Alignment</span>
                               <div className="flex items-center gap-2">
-                                <span className={`text-sm font-semibold ${getScoreColor(alignmentPct)}`}>{alignmentPct}%</span>
+                                <span className={`text-sm font-semibold ${scoreText(alignmentPct)}`}>{alignmentPct}%</span>
                                 <TrendIndicator value={alignmentTrend} size="sm" />
                               </div>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-muted-foreground">Consensus</span>
                               <div className="flex items-center gap-2">
-                                <span className={`text-sm font-semibold ${getScoreColor(consensusPct)}`}>{consensusPct}%</span>
+                                <span className={`text-sm font-semibold ${scoreText(consensusPct)}`}>{consensusPct}%</span>
                                 <TrendIndicator value={consensusTrend} size="sm" />
                               </div>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-muted-foreground">Sentiment</span>
                               <div className="flex items-center gap-2">
-                                <span className={`text-sm font-semibold ${getScoreColor(sentimentPct)}`}>{sentimentPct}%</span>
+                                <span className={`text-sm font-semibold ${scoreText(sentimentPct)}`}>{sentimentPct}%</span>
                                 <TrendIndicator value={sentimentTrend} size="sm" />
                               </div>
                             </div>
@@ -734,41 +712,20 @@ const DealGPS = () => {
                         <div className="h-28">
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={winProbTrendData}>
-                              <defs>
-                                <linearGradient id="gradAlignment" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--purple))" stopOpacity={0.6}/>
-                                  <stop offset="50%" stopColor="hsl(var(--purple))" stopOpacity={0.3}/>
-                                  <stop offset="100%" stopColor="hsl(var(--purple))" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <linearGradient id="gradConsensus" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5}/>
-                                  <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.25}/>
-                                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <linearGradient id="gradSentiment" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--green))" stopOpacity={0.5}/>
-                                  <stop offset="50%" stopColor="hsl(var(--green))" stopOpacity={0.2}/>
-                                  <stop offset="100%" stopColor="hsl(var(--green))" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
-                                  <feGaussianBlur stdDeviation="2" result="blur"/>
-                                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                </filter>
-                              </defs>
                               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
                               <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                               <YAxis hide domain={[0, 100]} />
-                              <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} />
-                              <Area type="natural" dataKey="alignment" name="Alignment" stroke="hsl(var(--purple))" strokeWidth={2.5} fill="url(#gradAlignment)" dot={false} activeDot={{ r: 6, fill: 'hsl(var(--purple))', stroke: 'white', strokeWidth: 2 }} filter="url(#lineGlow)" />
-                              <Area type="natural" dataKey="consensus" name="Consensus" stroke="#3b82f6" strokeWidth={2} fill="url(#gradConsensus)" dot={false} activeDot={{ r: 6, fill: '#3b82f6', stroke: 'white', strokeWidth: 2 }} />
-                              <Area type="natural" dataKey="sentiment" name="Sentiment" stroke="hsl(var(--green))" strokeWidth={2} fill="url(#gradSentiment)" dot={false} activeDot={{ r: 6, fill: 'hsl(var(--green))', stroke: 'white', strokeWidth: 2 }} />
+                              <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px' }} />
+                              <Area type="natural" dataKey="alignment" name="Alignment" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="hsl(var(--chart-1))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="consensus" name="Consensus" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="hsl(var(--chart-2))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="sentiment" name="Sentiment" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="hsl(var(--chart-3))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-3 flex-wrap">
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-purple rounded" /><span className="text-xs text-muted-foreground">Alignment</span></div>
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-blue-500 rounded" /><span className="text-xs text-muted-foreground">Consensus</span></div>
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-green rounded" /><span className="text-xs text-muted-foreground">Sentiment</span></div>
+                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-chart-1 rounded" /><span className="text-xs text-muted-foreground">Alignment</span></div>
+                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-chart-2 rounded" /><span className="text-xs text-muted-foreground">Consensus</span></div>
+                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-chart-3 rounded" /><span className="text-xs text-muted-foreground">Sentiment</span></div>
                         </div>
                       </div>
                     </div>
@@ -778,14 +735,12 @@ const DealGPS = () => {
                   {isTabletCompact ? (
                     <div className="bg-muted/30 border border-border rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <Users className="w-4 h-4 text-purple" />
+                        <Users className="w-4 h-4 text-primary" />
                         <span className="font-semibold text-foreground text-sm">Alignment</span>
                       </div>
                       <div className="flex flex-col items-center gap-3">
                         {/* Score Badge (Top) */}
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg ${
-                          stakeholderAlignmentScore > 70 ? 'bg-green' : stakeholderAlignmentScore >= 50 ? 'bg-yellow' : 'bg-red'
-                        }`}>
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center bg-muted font-bold text-xl ${scoreText(stakeholderAlignmentScore)}`}>
                           {stakeholderAlignmentScore}%
                         </div>
                         
@@ -802,7 +757,7 @@ const DealGPS = () => {
                             <div key={m.label} className="flex items-center justify-between text-sm">
                               <span className="text-muted-foreground">{m.label}</span>
                               <div className="flex items-center gap-2">
-                                <span className={`font-medium ${getScoreColor(m.value)}`}>{m.value}%</span>
+                                <span className={`font-medium ${scoreText(m.value)}`}>{m.value}%</span>
                                 <TrendIndicator value={m.trend} size="sm" />
                               </div>
                             </div>
@@ -814,7 +769,7 @@ const DealGPS = () => {
                     /* Full Stakeholder Alignment Card - Clickable */
                     <div 
                       onClick={() => setAlignmentModalOpen(true)}
-                      className="group cursor-pointer rounded-xl transition-all duration-300 ease-out p-5 space-y-5 border border-border bg-card hover:bg-purple/5 hover:border-purple/30 hover:shadow-lg hover:shadow-purple/20"
+                      className="group cursor-pointer rounded-xl transition-shadow p-5 space-y-5 border border-border bg-card hover:bg-muted/30 hover:shadow-md"
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => e.key === 'Enter' && setAlignmentModalOpen(true)}
@@ -822,12 +777,12 @@ const DealGPS = () => {
                       {/* Header */}
                       <div className="flex items-center justify-between pointer-events-none">
                         <h3 className="font-semibold text-foreground flex items-center gap-2">
-                          <Users className="w-4 h-4 text-purple" />
+                          <Users className="w-4 h-4 text-primary" />
                           Alignment
                         </h3>
                         {stakeholderAlignment.isGuardrailActive && (
-                          <div className="flex items-center gap-1.5 px-2 py-1 bg-yellow/10 border border-yellow/30 rounded-full text-xs font-medium text-yellow-700">
-                            <div className="w-2 h-2 bg-yellow rounded-full" />
+                          <div className="flex items-center gap-1.5 px-2 py-1 bg-warning-subtle rounded-full text-xs font-medium text-warning">
+                            <div className="w-2 h-2 bg-warning rounded-full" />
                             {stakeholderPrimaryRisk && STAKEHOLDER_METRIC_LABELS[stakeholderPrimaryRisk]} Risk
                           </div>
                         )}
@@ -838,28 +793,16 @@ const DealGPS = () => {
                         <div className="flex items-center gap-6">
                           <div className="flex flex-col items-center gap-2">
                             <div className="relative w-24 h-24 shrink-0">
-                              <div className="absolute inset-0 rounded-full blur-xl opacity-40 transition-opacity duration-500" style={{ backgroundColor: stakeholderAlignmentScore > 70 ? 'hsl(142 70% 30%)' : stakeholderAlignmentScore >= 50 ? 'hsl(45 90% 40%)' : 'hsl(0 70% 30%)' }} />
-                              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
                               <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                  <defs>
-                                    <filter id="donutGlow2" x="-50%" y="-50%" width="200%" height="200%">
-                                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                    </filter>
-                                    <linearGradient id="donutGradient2" x1="0" y1="0" x2="1" y2="1">
-                                      <stop offset="0%" stopColor={getDonutColor(stakeholderAlignmentScore)} stopOpacity={1}/>
-                                      <stop offset="100%" stopColor={getDonutColor(stakeholderAlignmentScore)} stopOpacity={0.7}/>
-                                    </linearGradient>
-                                  </defs>
-                                  <Pie data={[{ name: "Alignment", value: stakeholderAlignmentScore }, { name: "Remaining", value: 100 - stakeholderAlignmentScore }]} cx="50%" cy="50%" innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" filter="url(#donutGlow2)">
-                                    <Cell fill="url(#donutGradient2)" />
-                                    <Cell fill="hsl(var(--muted)/0.3)" />
+                                  <Pie data={[{ name: "Alignment", value: stakeholderAlignmentScore }, { name: "Remaining", value: 100 - stakeholderAlignmentScore }]} cx="50%" cy="50%" innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" stroke="none">
+                                    <Cell fill={scoreColor(stakeholderAlignmentScore)} />
+                                    <Cell fill="hsl(var(--muted))" />
                                   </Pie>
                                 </PieChart>
                               </ResponsiveContainer>
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <span className={`text-xl font-bold drop-shadow-lg ${getScoreColor(stakeholderAlignmentScore)}`}>{stakeholderAlignmentScore}%</span>
+                                <span className={`text-xl font-bold ${scoreText(stakeholderAlignmentScore)}`}>{stakeholderAlignmentScore}%</span>
                               </div>
                             </div>
                             <TrendIndicator value={stakeholderAlignmentTrend} size="md" />
@@ -869,7 +812,7 @@ const DealGPS = () => {
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-sm text-muted-foreground flex items-center gap-1">Capability<Info className="w-3 h-3 opacity-60" /></span>
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-semibold ${getScoreColor(capabilityPct)}`}>{capabilityPct}%</span>
+                                  <span className={`text-sm font-semibold ${scoreText(capabilityPct)}`}>{capabilityPct}%</span>
                                   <TrendIndicator value={capabilityTrend} size="sm" />
                                 </div>
                               </div>
@@ -878,7 +821,7 @@ const DealGPS = () => {
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground flex items-center gap-1">Message Fit<Info className="w-3 h-3 opacity-60" /></span>
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-semibold ${getScoreColor(messageFitPct)}`}>{messageFitPct}%</span>
+                                  <span className={`text-sm font-semibold ${scoreText(messageFitPct)}`}>{messageFitPct}%</span>
                                   <TrendIndicator value={messageFitTrend} size="sm" />
                                 </div>
                               </div>
@@ -887,7 +830,7 @@ const DealGPS = () => {
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground flex items-center gap-1">Value Translation<Info className="w-3 h-3 opacity-60" /></span>
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-semibold ${getScoreColor(valueTranslationPct)}`}>{valueTranslationPct}%</span>
+                                  <span className={`text-sm font-semibold ${scoreText(valueTranslationPct)}`}>{valueTranslationPct}%</span>
                                   <TrendIndicator value={valueTranslationTrend} size="sm" />
                                 </div>
                               </div>
@@ -902,41 +845,20 @@ const DealGPS = () => {
                         <div className="h-28">
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={alignmentTrendData}>
-                              <defs>
-                                <linearGradient id="gradCapability" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--purple))" stopOpacity={0.6}/>
-                                  <stop offset="50%" stopColor="hsl(var(--purple))" stopOpacity={0.3}/>
-                                  <stop offset="100%" stopColor="hsl(var(--purple))" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <linearGradient id="gradMsgFit" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5}/>
-                                  <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.25}/>
-                                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <linearGradient id="gradValueTrans" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--green))" stopOpacity={0.5}/>
-                                  <stop offset="50%" stopColor="hsl(var(--green))" stopOpacity={0.2}/>
-                                  <stop offset="100%" stopColor="hsl(var(--green))" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <filter id="lineGlow2" x="-20%" y="-20%" width="140%" height="140%">
-                                  <feGaussianBlur stdDeviation="2" result="blur"/>
-                                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                </filter>
-                              </defs>
                               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
                               <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                               <YAxis hide domain={[0, 100]} />
-                              <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} />
-                              <Area type="natural" dataKey="capability" name="Capability" stroke="hsl(var(--purple))" strokeWidth={2.5} fill="url(#gradCapability)" dot={false} activeDot={{ r: 6, fill: 'hsl(var(--purple))', stroke: 'white', strokeWidth: 2 }} filter="url(#lineGlow2)" />
-                              <Area type="natural" dataKey="messageFit" name="Message Fit" stroke="#3b82f6" strokeWidth={2} fill="url(#gradMsgFit)" dot={false} activeDot={{ r: 6, fill: '#3b82f6', stroke: 'white', strokeWidth: 2 }} />
-                              <Area type="natural" dataKey="valueTranslation" name="Value Translation" stroke="hsl(var(--green))" strokeWidth={2} fill="url(#gradValueTrans)" dot={false} activeDot={{ r: 6, fill: 'hsl(var(--green))', stroke: 'white', strokeWidth: 2 }} />
+                              <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px' }} />
+                              <Area type="natural" dataKey="capability" name="Capability" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="hsl(var(--chart-1))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="messageFit" name="Message Fit" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="hsl(var(--chart-2))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-2))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
+                              <Area type="natural" dataKey="valueTranslation" name="Value Translation" stroke="hsl(var(--chart-3))" strokeWidth={2} fill="hsl(var(--chart-3))" fillOpacity={0.1} dot={false} activeDot={{ r: 5, fill: 'hsl(var(--chart-3))', stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-3 flex-wrap">
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-purple rounded" /><span className="text-xs text-muted-foreground">Capability</span></div>
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-blue-500 rounded" /><span className="text-xs text-muted-foreground">Message Fit</span></div>
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-green rounded" /><span className="text-xs text-muted-foreground">Value Translation</span></div>
+                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-chart-1 rounded" /><span className="text-xs text-muted-foreground">Capability</span></div>
+                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-chart-2 rounded" /><span className="text-xs text-muted-foreground">Message Fit</span></div>
+                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-chart-3 rounded" /><span className="text-xs text-muted-foreground">Value Translation</span></div>
                         </div>
                       </div>
                     </div>
@@ -954,23 +876,15 @@ const DealGPS = () => {
                   const startIndex = (actionsPage - 1) * ACTIONS_PER_PAGE;
                   const paginatedActions = sortedActions.slice(startIndex, startIndex + ACTIONS_PER_PAGE);
                   
-                  const getPriorityBorderColor = (priority: string) => {
-                    switch (priority) {
-                      case 'high': return 'border-l-red-500';
-                      case 'medium': return 'border-l-yellow-500';
-                      default: return 'border-l-green-500';
-                    }
-                  };
-
                   return (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-foreground flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-purple" />
+                          <Mail className="w-4 h-4 text-primary" />
                           Actions ({sortedActions.length})
                         </h3>
                         <Link to={`/action-hub?deal=${encodeURIComponent(deal.name)}`}>
-                          <Button size="sm" className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white">
+                          <Button size="sm">
                             <Zap className="w-4 h-4" />
                             Actions
                             <ChevronRight className="w-4 h-4" />
@@ -1004,7 +918,7 @@ const DealGPS = () => {
                                   setMeetingDialogOpen(true);
                                 }
                               }}
-                              className={`bg-card border border-border ${getPriorityBorderColor(action.priority)} border-l-[3px] rounded-lg p-3 text-left hover:bg-muted/50 transition-colors group`}
+                              className="bg-card border border-border rounded-lg p-3 text-left hover:bg-muted/50 transition-colors group"
                             >
                               <div className="flex items-start gap-2">
                                 <div className="p-1.5 rounded bg-muted/50 shrink-0">
@@ -1021,7 +935,7 @@ const DealGPS = () => {
                                       <div className="flex items-center gap-1">
                                         <Avatar className="w-4 h-4">
                                           <AvatarImage src={primaryStakeholder.avatar} alt={primaryStakeholder.name} />
-                                          <AvatarFallback className="text-xxs text-white" style={{ backgroundColor: avatarColors[(primaryStakeholder.id - 1) % avatarColors.length] }}>
+                                          <AvatarFallback className={`${avatarFallback} text-xxs`}>
                                             {primaryStakeholder.name.split(' ').map(n => n[0]).join('')}
                                           </AvatarFallback>
                                         </Avatar>
@@ -1029,6 +943,7 @@ const DealGPS = () => {
                                       </div>
                                     )}
                                     <span className="text-xxs text-muted-foreground">{formattedDeadline}</span>
+                                    <span className={`w-1.5 h-1.5 rounded-full ml-auto shrink-0 ${priorityDot(action.priority)}`} title={`${action.priority} priority`} />
                                   </div>
                                 </div>
                               </div>
@@ -1088,10 +1003,10 @@ const DealGPS = () => {
                 <section className="space-y-4">
                   {/* Section Header Card with Engagement Indicators */}
                   <CollapsibleTrigger asChild>
-                    <Card className="p-4 bg-gradient-to-r from-purple/5 to-transparent border-l-4 border-l-purple cursor-pointer hover:bg-purple/5 transition-colors">
+                    <Card className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className="p-2 rounded-lg bg-purple/10">
-                          <Users className="w-5 h-5 text-purple" />
+                        <div className="p-2 rounded-lg bg-primary-subtle">
+                          <Users className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                           <h2 className="text-lg font-semibold text-foreground">Stakeholders</h2>
@@ -1101,18 +1016,18 @@ const DealGPS = () => {
                           <div className="flex items-center gap-5 ml-auto">
                             {/* Engaged */}
                             <div className="flex items-center gap-2">
-                              <div className="w-2.5 h-2.5 rounded-full bg-green" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-success" />
                               <span className="text-sm text-muted-foreground">Engaged</span>
                               <div className="flex -space-x-2">
                                 {engagedStakeholders.slice(0, 4).map(s => (
                                   <Tooltip key={s.id}>
                                     <TooltipTrigger asChild>
                                       <Avatar 
-                                        className="w-7 h-7 border-2 border-card ring-2 ring-green/30 cursor-pointer hover:scale-110 transition-transform"
+                                        className="w-7 h-7 border-2 border-card cursor-pointer hover:scale-110 transition-transform"
                                         onClick={(e) => { e.stopPropagation(); openPopup(s); }}
                                       >
                                         <AvatarImage src={s.avatar} />
-                                        <AvatarFallback className={`${getAvatarColor(s.id)} text-xs`}>
+                                        <AvatarFallback className={`${avatarFallback} text-xs`}>
                                           {s.name.split(" ").map(n => n[0]).join("")}
                                         </AvatarFallback>
                                       </Avatar>
@@ -1133,18 +1048,18 @@ const DealGPS = () => {
                             {/* Silent */}
                             {silentStakeholders.length > 0 && (
                               <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-full bg-yellow" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-warning" />
                                 <span className="text-sm text-muted-foreground">Silent</span>
                                 <div className="flex -space-x-2">
                                   {silentStakeholders.slice(0, 3).map(s => (
                                     <Tooltip key={s.id}>
                                       <TooltipTrigger asChild>
                                         <Avatar 
-                                          className="w-7 h-7 border-2 border-card ring-2 ring-yellow/30 cursor-pointer hover:scale-110 transition-transform"
+                                          className="w-7 h-7 border-2 border-card cursor-pointer hover:scale-110 transition-transform"
                                           onClick={(e) => { e.stopPropagation(); openPopup(s); }}
                                         >
                                           <AvatarImage src={s.avatar} />
-                                          <AvatarFallback className={`${getAvatarColor(s.id)} text-xs`}>
+                                          <AvatarFallback className={`${avatarFallback} text-xs`}>
                                             {s.name.split(" ").map(n => n[0]).join("")}
                                           </AvatarFallback>
                                         </Avatar>
@@ -1166,18 +1081,18 @@ const DealGPS = () => {
                             {/* Hidden */}
                             {hiddenStakeholders.length > 0 && (
                               <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-full bg-red" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-danger" />
                                 <span className="text-sm text-muted-foreground">Hidden</span>
                                 <div className="flex -space-x-2">
                                   {hiddenStakeholders.slice(0, 2).map(s => (
                                     <Tooltip key={s.id}>
                                       <TooltipTrigger asChild>
                                         <Avatar 
-                                          className="w-7 h-7 border-2 border-card ring-2 ring-red/30 cursor-pointer hover:scale-110 transition-transform"
+                                          className="w-7 h-7 border-2 border-card cursor-pointer hover:scale-110 transition-transform"
                                           onClick={(e) => { e.stopPropagation(); openPopup(s); }}
                                         >
                                           <AvatarImage src={s.avatar} />
-                                          <AvatarFallback className={`${getAvatarColor(s.id)} text-xs`}>
+                                          <AvatarFallback className={`${avatarFallback} text-xs`}>
                                             {s.name.split(" ").map(n => n[0]).join("")}
                                           </AvatarFallback>
                                         </Avatar>
@@ -1228,10 +1143,10 @@ const DealGPS = () => {
                 <section className="space-y-4">
                   {/* Section Header Card */}
                   <CollapsibleTrigger asChild>
-                    <Card className="p-4 bg-gradient-to-r from-purple/5 to-transparent border-l-4 border-l-purple cursor-pointer hover:bg-purple/5 transition-colors">
+                    <Card className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-purple/10">
-                          <Target className="w-5 h-5 text-purple" />
+                        <div className="p-2 rounded-lg bg-primary-subtle">
+                          <Target className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1">
                           <h2 className="text-lg font-semibold text-foreground">Win Path</h2>
@@ -1265,10 +1180,10 @@ const DealGPS = () => {
                 <section className="space-y-4">
                   {/* Section Header Card */}
                   <CollapsibleTrigger asChild>
-                    <Card className="p-4 bg-gradient-to-r from-orange/5 to-transparent border-l-4 border-l-orange cursor-pointer hover:bg-orange/5 transition-colors">
+                    <Card className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-orange/10">
-                          <Target className="w-5 h-5 text-orange" />
+                        <div className="p-2 rounded-lg bg-primary-subtle">
+                          <Target className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1">
                           <h2 className="text-lg font-semibold text-foreground">Buyer Profile</h2>
@@ -1293,6 +1208,7 @@ const DealGPS = () => {
 
             </main>
           </Card>
+          </div>
 
           {/* AI Chat Sidebar - ONLY tablet/desktop */}
           {!isMobile && (
@@ -1388,14 +1304,6 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
     };
   };
   
-  const getLocalStatusColor = (status: "positive" | "neutral" | "negative") => {
-    switch (status) {
-      case "positive": return "bg-green/10 text-green border-green/20";
-      case "neutral": return "bg-yellow/10 text-yellow border-yellow/20";
-      case "negative": return "bg-red/10 text-red border-red/20";
-    }
-  };
-
   // Generate truly wavy trend data with significant variation
   const generateWavyTrends = () => {
     const numPoints = 12;
@@ -1448,31 +1356,26 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
   const hasMoreActions = actions.length > 2;
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5">
-      {/* Subtle glow effect on hover */}
-      <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-purple/20 via-primary/10 to-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
-      
+    <Card className="group relative overflow-hidden transition-shadow hover:shadow-md">
       <div 
         className="p-4 space-y-3 cursor-pointer"
         onClick={() => openPopup(stakeholder)}
       >
         {/* Header - same as base StakeholderCard */}
         <div className="flex items-center gap-3">
-          <Avatar 
-            className="w-9 h-9 transition-all duration-300 group-hover:scale-110 group-hover:ring-2 group-hover:ring-purple/30 group-hover:ring-offset-2 group-hover:ring-offset-card"
-          >
+          <Avatar className="w-9 h-9">
             <AvatarImage src={stakeholder.avatar} />
-            <AvatarFallback className={`${getAvatarColor(stakeholder.id)} text-xs font-medium`}>
+            <AvatarFallback className={`${avatarFallback} text-xs font-medium`}>
               {stakeholder.name.split(" ").map(n => n[0]).join("")}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-foreground text-sm truncate transition-colors duration-200 group-hover:text-purple">
+            <p className="font-medium text-foreground text-sm truncate transition-colors group-hover:text-primary">
               {stakeholder.name}
             </p>
             <p className="text-xs text-muted-foreground truncate">{stakeholder.role}</p>
           </div>
-          <span className={`px-2 py-0.5 rounded text-xs font-medium border transition-all duration-200 group-hover:scale-105 ${getLocalStatusColor(stakeholder.status)}`}>
+          <span className={`px-2 py-0.5 rounded text-xs font-medium ${sentimentBadge(stakeholder.status)}`}>
             {stakeholder.status}
           </span>
         </div>
@@ -1481,15 +1384,15 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Priority</span>
-            <span className={`text-xs font-semibold ${getProgressColor(stakeholder.priority).replace('bg-', 'text-')}`}>{stakeholder.priority}%</span>
+            <span className={`text-xs font-semibold ${scoreText(stakeholder.priority)}`}>{stakeholder.priority}%</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Sentiment</span>
-            <span className={`text-xs font-semibold ${getProgressColor(stakeholder.sentiment).replace('bg-', 'text-')}`}>{stakeholder.sentiment}%</span>
+            <span className={`text-xs font-semibold ${scoreText(stakeholder.sentiment)}`}>{stakeholder.sentiment}%</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Engagement</span>
-            <span className={`text-xs font-semibold ${getProgressColor(stakeholder.engagement).replace('bg-', 'text-')}`}>{stakeholder.engagement}%</span>
+            <span className={`text-xs font-semibold ${scoreText(stakeholder.engagement)}`}>{stakeholder.engagement}%</span>
           </div>
         </div>
 
@@ -1498,11 +1401,7 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
           {getPrimitivesForRole(stakeholder.role).slice(0, 3).map((p) => {
             const primitive = getPrimitiveById(p.primitiveId);
             if (!primitive) return null;
-            const pillStyles = p.weight > 70 
-              ? 'bg-purple text-white' 
-              : p.weight >= 40 
-                ? 'bg-purple/20 text-foreground' 
-                : 'bg-muted text-muted-foreground';
+            const pillStyles = p.weight > 70 ? selectedChip : categoryBadge;
             return (
               <span key={p.primitiveId} className={`px-2 py-0.5 rounded-full text-xs font-medium ${pillStyles}`}>
                 {primitive.shortLabel}
@@ -1517,30 +1416,6 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
           <div className="h-20">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trendsData}>
-                <defs>
-                  <linearGradient id={`gradSHAlign${stakeholder.id}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--purple))" stopOpacity={0.5}/>
-                    <stop offset="50%" stopColor="hsl(var(--purple))" stopOpacity={0.25}/>
-                    <stop offset="100%" stopColor="hsl(var(--purple))" stopOpacity={0.05}/>
-                  </linearGradient>
-                  <linearGradient id={`gradSHPriority${stakeholder.id}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--yellow))" stopOpacity={0.5}/>
-                    <stop offset="50%" stopColor="hsl(var(--yellow))" stopOpacity={0.2}/>
-                    <stop offset="100%" stopColor="hsl(var(--yellow))" stopOpacity={0.05}/>
-                  </linearGradient>
-                  <linearGradient id={`gradSHSentiment${stakeholder.id}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ec4899" stopOpacity={0.45}/>
-                    <stop offset="50%" stopColor="#ec4899" stopOpacity={0.2}/>
-                    <stop offset="100%" stopColor="#ec4899" stopOpacity={0.05}/>
-                  </linearGradient>
-                  <filter id={`shGlow${stakeholder.id}`} x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="1.5" result="blur"/>
-                    <feMerge>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
                 <XAxis 
                   dataKey="date" 
                   tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} 
@@ -1555,35 +1430,36 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
                     borderRadius: '8px',
                     fontSize: '11px',
                     padding: '6px 10px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                   }} 
                 />
                 <Area 
                   type="natural" 
                   dataKey="alignment" 
                   name="Alignment"
-                  stroke="hsl(var(--purple))" 
+                  stroke="hsl(var(--chart-1))" 
                   strokeWidth={2} 
-                  fill={`url(#gradSHAlign${stakeholder.id})`}
+                  fill="hsl(var(--chart-1))"
+                  fillOpacity={0.1}
                   dot={false}
-                  filter={`url(#shGlow${stakeholder.id})`}
                 />
                 <Area 
                   type="natural" 
                   dataKey="priority" 
                   name="Priority"
-                  stroke="hsl(var(--yellow))" 
+                  stroke="hsl(var(--chart-2))" 
                   strokeWidth={1.5} 
-                  fill={`url(#gradSHPriority${stakeholder.id})`}
+                  fill="hsl(var(--chart-2))"
+                  fillOpacity={0.1}
                   dot={false}
                 />
                 <Area 
                   type="natural" 
                   dataKey="sentiment" 
                   name="Sentiment"
-                  stroke="#ec4899" 
+                  stroke="hsl(var(--chart-3))" 
                   strokeWidth={1.5} 
-                  fill={`url(#gradSHSentiment${stakeholder.id})`}
+                  fill="hsl(var(--chart-3))"
+                  fillOpacity={0.1}
                   dot={false}
                 />
               </AreaChart>
@@ -1592,15 +1468,15 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
           {/* Chart Legend */}
           <div className="flex items-center justify-center gap-4 mt-2">
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-1 bg-purple rounded" />
+              <div className="w-3 h-1 bg-chart-1 rounded" />
               <span className="text-xxs text-muted-foreground">Alignment</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-1 bg-yellow rounded" />
+              <div className="w-3 h-1 bg-chart-2 rounded" />
               <span className="text-xxs text-muted-foreground">Priority</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-1 bg-pink-500 rounded" />
+              <div className="w-3 h-1 bg-chart-3 rounded" />
               <span className="text-xxs text-muted-foreground">Sentiment</span>
             </div>
           </div>
@@ -1613,18 +1489,18 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Actions</p>
             <div className="space-y-1.5">
               {visibleActions.map(action => {
-                const borderColor = action.priority === 'high' ? 'border-l-red' : action.priority === 'medium' ? 'border-l-yellow' : 'border-l-muted-foreground';
                 return (
                   <button 
                     key={action.id}
                     onClick={(e) => handleActionClick(action, e)}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-card border border-border hover:bg-purple/10 hover:border-purple/30 border-l-[3px] ${borderColor} transition-all group w-full text-left`}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors group w-full text-left"
                   >
-                    <span className="text-xs text-foreground truncate flex-1 group-hover:text-purple transition-colors">{action.title}</span>
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${priorityDot(action.priority)}`} />
+                    <span className="text-xs text-foreground truncate flex-1 group-hover:text-primary transition-colors">{action.title}</span>
                     {action.type === "email" ? (
-                      <Mail className="w-3.5 h-3.5 text-muted-foreground group-hover:text-purple shrink-0" />
+                      <Mail className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary shrink-0" />
                     ) : (
-                      <Video className="w-3.5 h-3.5 text-muted-foreground group-hover:text-purple shrink-0" />
+                      <Video className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary shrink-0" />
                     )}
                   </button>
                 );
@@ -1632,7 +1508,7 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
               {hasMoreActions && !showAllActions && (
                 <button 
                   onClick={() => setShowAllActions(true)}
-                  className="flex items-center gap-1.5 text-xs text-purple hover:text-purple/80 font-medium"
+                  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium"
                 >
                   <MoreHorizontal className="w-3.5 h-3.5" />
                   +{actions.length - 2} more

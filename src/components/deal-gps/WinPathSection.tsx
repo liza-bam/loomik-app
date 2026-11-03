@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { scoreText, scoreFill, selectedChip, unselectedChip } from "@/lib/tone";
 import type { Deal, Stakeholder } from "@/data/dealData";
 
 interface WinPathSectionProps {
@@ -36,12 +37,6 @@ interface StageData {
   icon: LucideIcon;
   items: StageItem[];
 }
-
-const getProgressTextColor = (progress: number, status: string) => {
-  if (status === 'pending' || progress < 40) return 'text-red';
-  if (progress < 70) return 'text-orange';
-  return 'text-green';
-};
 
 export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentScore }: WinPathSectionProps) => {
   const [activeStage, setActiveStage] = useState<StageKey>(deal.stage as StageKey);
@@ -371,11 +366,9 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
               key={stage.key}
               onClick={() => setActiveStage(stage.key)}
               className={cn(
-                "inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium transition-all",
+                "inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                isActive
-                  ? "bg-purple text-white shadow-sm"
-                  : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                isActive ? selectedChip : unselectedChip
               )}
             >
               {stage.hasAlert ? (
@@ -386,7 +379,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
               <span>{stage.name}</span>
               <span className={cn(
                 "font-semibold",
-                isActive ? "text-white/90" : getProgressTextColor(stage.progress, stage.status)
+                !isActive && scoreText(stage.progress)
               )}>
                 {stage.progress}%
               </span>
@@ -398,7 +391,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
       {/* Summary Box - matches Win Probability style */}
       <div className="space-y-3">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple" />
+          <Sparkles className="w-4 h-4 text-primary" />
           Summary
         </h3>
         <div className="bg-muted/30 rounded-lg p-4">
@@ -409,12 +402,12 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
                 <div 
                   className={cn(
                     "h-full rounded-full transition-all",
-                    activeStageData.progress < 40 ? "bg-red" : activeStageData.progress < 70 ? "bg-orange" : "bg-green"
+                    scoreFill(activeStageData.progress)
                   )}
                   style={{ width: `${activeStageData.progress}%` }}
                 />
               </div>
-              <span className={cn("text-sm font-semibold", getProgressTextColor(activeStageData.progress, activeStageData.status))}>
+              <span className={cn("text-sm font-semibold", scoreText(activeStageData.progress))}>
                 {activeStageData.progress}%
               </span>
             </div>
@@ -455,7 +448,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
               />
               <div className="flex justify-center">
                 {item.status === 'complete' ? (
-                  <CheckCircle2 className="w-4 h-4 text-green" />
+                  <CheckCircle2 className="w-4 h-4 text-success" />
                 ) : (
                   <span className="text-xs text-muted-foreground">Pending</span>
                 )}

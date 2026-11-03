@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { categoryBadge, sentimentBadge } from "@/lib/tone";
 
 interface KeyMoment {
   id: number;
@@ -69,21 +70,15 @@ const mockSummary = {
 
 const getMomentIcon = (type: KeyMoment["type"]) => {
   switch (type) {
-    case "insight": return <Lightbulb className="w-3.5 h-3.5 text-yellow" />;
-    case "risk": return <AlertTriangle className="w-3.5 h-3.5 text-red" />;
-    case "action": return <CheckCircle2 className="w-3.5 h-3.5 text-green" />;
-    case "question": return <MessageSquare className="w-3.5 h-3.5 text-blue-500" />;
+    case "insight": return <Lightbulb className="w-3.5 h-3.5 text-muted-foreground" />;
+    case "risk": return <AlertTriangle className="w-3.5 h-3.5 text-danger" />;
+    case "action": return <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />;
+    case "question": return <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />;
   }
 };
 
-const getMomentBadgeClass = (type: KeyMoment["type"]) => {
-  switch (type) {
-    case "insight": return "bg-yellow/10 text-yellow border-yellow/20";
-    case "risk": return "bg-red/10 text-red border-red/20";
-    case "action": return "bg-green/10 text-green border-green/20";
-    case "question": return "bg-blue-500/10 text-blue-500 border-blue-500/20";
-  }
-};
+const getMomentBadgeClass = (type: KeyMoment["type"]) =>
+  type === "risk" ? "bg-danger-subtle text-danger" : categoryBadge;
 
 interface CallRecordingPanelProps {
   eventTitle: string;
@@ -98,16 +93,16 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
   return (
     <div className="border border-border rounded-lg overflow-hidden bg-card">
       {/* Loomik Recording Header */}
-      <div className="bg-gradient-to-r from-purple/10 to-primary/10 border-b border-border p-4">
+      <div className="border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple to-primary rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 bg-brand-gradient rounded-lg flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-foreground text-sm">Loomik Recording</h3>
-                <Badge variant="outline" className="bg-purple/10 text-purple border-purple/20 text-xs animate-pulse">
+                <Badge variant="outline" className="border-transparent bg-muted text-muted-foreground text-xs">
                   Just Ended
                 </Badge>
               </div>
@@ -143,13 +138,13 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
       {/* Tabs for Transcript, Key Moments, Summary */}
       <Tabs defaultValue="summary" className="w-full">
         <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-10 px-4">
-          <TabsTrigger value="summary" className="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-purple rounded-none">
+          <TabsTrigger value="summary" className="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
             AI Summary
           </TabsTrigger>
-          <TabsTrigger value="moments" className="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-purple rounded-none">
+          <TabsTrigger value="moments" className="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
             Key Moments ({mockKeyMoments.length})
           </TabsTrigger>
-          <TabsTrigger value="transcript" className="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-purple rounded-none">
+          <TabsTrigger value="transcript" className="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
             Transcript
           </TabsTrigger>
         </TabsList>
@@ -159,14 +154,10 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
           <div className="space-y-4">
             {/* Headline */}
             <div className="flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-purple mt-0.5 shrink-0" />
+              <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
               <div>
                 <p className="font-medium text-foreground">{mockSummary.headline}</p>
-                <Badge variant="outline" className={`mt-1 text-xs ${
-                  mockSummary.sentiment === "positive" ? "bg-green/10 text-green border-green/20" :
-                  mockSummary.sentiment === "negative" ? "bg-red/10 text-red border-red/20" :
-                  "bg-yellow/10 text-yellow border-yellow/20"
-                }`}>
+                <Badge variant="outline" className={`mt-1 text-xs border-transparent ${sentimentBadge(mockSummary.sentiment)}`}>
                   {mockSummary.sentiment} sentiment
                 </Badge>
               </div>
@@ -178,7 +169,7 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
               <ul className="space-y-1.5">
                 {mockSummary.keyTakeaways.map((takeaway, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                    <span className="text-purple mt-1">•</span>
+                    <span className="text-muted-foreground mt-1">•</span>
                     {takeaway}
                   </li>
                 ))}
@@ -191,7 +182,7 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
               <ul className="space-y-1.5">
                 {mockSummary.nextSteps.map((step, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-green mt-0.5 shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
                     {step}
                   </li>
                 ))}
@@ -200,8 +191,8 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
 
             {/* Risk Flags */}
             {mockSummary.riskFlags.length > 0 && (
-              <div className="bg-red/5 border border-red/20 rounded-lg p-3">
-                <p className="text-xs font-medium text-red uppercase tracking-wide mb-2 flex items-center gap-1">
+              <div className="bg-danger-subtle rounded-lg p-3">
+                <p className="text-xs font-medium text-danger uppercase tracking-wide mb-2 flex items-center gap-1">
                   <AlertTriangle className="w-3.5 h-3.5" />
                   Risk Flags
                 </p>
@@ -231,7 +222,7 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-medium text-foreground">{moment.speaker}</span>
-                      <Badge variant="outline" className={`text-xxs ${getMomentBadgeClass(moment.type)}`}>
+                      <Badge variant="outline" className={`text-xxs border-transparent ${getMomentBadgeClass(moment.type)}`}>
                         {moment.type}
                       </Badge>
                     </div>
@@ -252,10 +243,10 @@ export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecor
                   <span className="text-xs font-mono text-muted-foreground shrink-0 w-10">{entry.timestamp}</span>
                   <div className={`flex-1 p-2.5 rounded-lg ${
                     entry.isClient 
-                      ? "bg-green/5 border border-green/20" 
-                      : "bg-purple/5 border border-purple/20"
+                      ? "bg-muted/50 border border-border" 
+                      : "bg-card border border-border"
                   }`}>
-                    <p className={`text-xs font-medium mb-1 ${entry.isClient ? "text-green" : "text-purple"}`}>
+                    <p className="text-xs font-medium mb-1 text-foreground">
                       {entry.speaker}
                     </p>
                     <p className="text-sm text-foreground">{entry.content}</p>
