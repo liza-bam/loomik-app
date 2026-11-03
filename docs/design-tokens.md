@@ -61,22 +61,37 @@ Charts use `chartTooltip` / `chartTick` from `src/lib/tone.ts`, which are built 
 7. **The brand gradient** (`bg-brand-gradient`) is reserved for the Loomik AI identity (assistant avatar, AI send button). Primary actions use `<Button>` (solid `bg-primary`); secondary actions use `<Button variant="outline">`.
 8. **Text over the gradient or a solid fill** uses the matching `*-foreground` token, never `text-white`.
 
-## Adding a skin
+## Skins
 
-Override semantic tokens under a selector placed after the default tokens in `src/index.css`, and set it on `<html>` (`<html data-theme="acme">`):
+Four skins ship with the app, switchable from the palette button in the header (the choice is remembered per browser):
+
+| Skin | Character |
+|---|---|
+| Loomik | Default: violet, Inter, 8px radius |
+| Soft & airy | Indigo, Plus Jakarta Sans, 16px radius, soft shadows, roomier spacing |
+| Midnight | Dark, mint accent, Space Grotesk |
+| Bold & compact | Blue, IBM Plex Sans, 4px radius, flat shadows, denser spacing |
+
+Each skin is just a block of token overrides at the end of `src/index.css`.
+
+### Adding a skin
+
+1. Add a block at the end of `src/index.css` that overrides only the tokens that change:
 
 ```css
 [data-theme="acme"] {
   --primary: 210 90% 45%;
   --primary-subtle: 210 90% 96%;
-  --brand-accent: 160 70% 40%;
+  --accent: 210 90% 96%;
+  --accent-foreground: 210 90% 45%;
   --ring: 210 90% 45%;
-  --logo-wordmark: 210 90% 30%;
-  --logo-mark: 160 70% 40%;
+  --logo-mark: 210 90% 45%;
   --font-sans: "Manrope", sans-serif;  /* also load the font in index.html */
   --radius: 0.75rem;
-  --spacing: 0.3rem;                   /* roomier density */
+  --spacing: 0.3rem;                   /* density */
 }
 ```
 
-Dark mode is the `.dark` class, which already redefines every semantic token.
+2. Add `{ id: "acme", label: "Acme" }` to `src/lib/skins.ts` (add `dark: true` for a dark skin).
+
+Check text colours against WCAG AA (4.5:1) on `card`, `background` and the `-subtle` tints.
