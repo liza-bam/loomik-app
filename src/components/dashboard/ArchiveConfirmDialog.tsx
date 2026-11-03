@@ -28,8 +28,8 @@ const ArchiveConfirmDialog = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center">
-              <Archive className="w-5 h-5 text-purple" />
+            <div className="w-10 h-10 rounded-full bg-primary-subtle flex items-center justify-center">
+              <Archive className="w-5 h-5 text-primary" />
             </div>
             <AlertDialogTitle>Archive Action</AlertDialogTitle>
           </div>
@@ -51,10 +51,7 @@ const ArchiveConfirmDialog = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={onConfirm}
-            className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white"
-          >
+          <AlertDialogAction onClick={onConfirm}>
             Archive Action
           </AlertDialogAction>
         </AlertDialogFooter>

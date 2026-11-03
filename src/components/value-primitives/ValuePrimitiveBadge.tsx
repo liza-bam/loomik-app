@@ -84,8 +84,7 @@ export const ValuePrimitiveBadge = ({
           "rounded-md flex items-center justify-center transition-all",
           sizeClasses[size],
           config.bgClass,
-          isPrimary && "ring-2 ring-offset-1",
-          isPrimary && config.borderClass
+          isPrimary && "ring-1 ring-ring ring-offset-1"
         )}
       >
         <Icon className={cn(iconSizes[size], config.colorClass)} />
@@ -114,7 +113,7 @@ export const ValuePrimitiveBadge = ({
           <p className="text-xs text-muted-foreground">{primitive.description}</p>
           {weight !== undefined && (
             <p className="text-xs">
-              <span className={isPrimary ? "text-green font-medium" : "text-muted-foreground"}>
+              <span className={isPrimary ? "text-foreground font-medium" : "text-muted-foreground"}>
                 {isPrimary ? "Primary" : "Secondary"} Priority: {weight}%
               </span>
             </p>

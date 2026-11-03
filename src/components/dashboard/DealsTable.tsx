@@ -13,7 +13,8 @@ import {
 import DealExpandedRow from "./DealExpandedRow";
 import DealCard from "./DealCard";
 import { FilterBar, FilterBarLeft, FilterBarRight } from "./FilterBar";
-import { deals, stageConfig, getProgressColor, getCompanyById } from "@/data/dealData";
+import { deals, stageConfig, getCompanyById } from "@/data/dealData";
+import { scoreText, selectedChip, unselectedChip } from "@/lib/tone";
 import { useSearchStore } from "@/stores/searchStore";
 import { useIsTablet } from "@/hooks/use-mobile";
 import { useUIStore } from "@/stores/uiStore";
@@ -105,19 +106,11 @@ const DealsTable = () => {
     return sortAsc ? aVal - bVal : bVal - aVal;
   });
 
-  const stagePills = [
-    { key: "all" as const, label: "All", count: deals.length, activeColor: "bg-foreground text-white", inactiveColor: "bg-muted text-muted-foreground" },
-    { key: "diagnose" as const, label: "Diagnose", count: deals.filter(d => d.stage === "diagnose").length, activeColor: "bg-blue-400 text-white", inactiveColor: "bg-blue-400/20 text-blue-500" },
-    { key: "validate" as const, label: "Validate", count: deals.filter(d => d.stage === "validate").length, activeColor: "bg-yellow text-white", inactiveColor: "bg-yellow/20 text-yellow-600" },
-    { key: "align" as const, label: "Align", count: deals.filter(d => d.stage === "align").length, activeColor: "bg-purple text-white", inactiveColor: "bg-purple/20 text-purple" },
-    { key: "commit" as const, label: "Commit", count: deals.filter(d => d.stage === "commit").length, activeColor: "bg-green text-white", inactiveColor: "bg-green/20 text-green" },
-  ];
-
-  const getStagePillStyles = (stageKey: string, isActive: boolean) => {
-    const pill = stagePills.find(p => p.key === stageKey);
-    if (!pill) return "bg-muted text-muted-foreground";
-    return isActive ? pill.activeColor : pill.inactiveColor;
-  };
+  const stagePills = (["all", "diagnose", "validate", "align", "commit"] as const).map((key) => ({
+    key,
+    label: key === "all" ? "All" : stageConfig[key].label,
+    dotColor: key === "all" ? null : stageConfig[key].dotColor,
+  }));
 
   const sortLabels = {
     winProbability: "Win Probability",
@@ -125,16 +118,6 @@ const DealsTable = () => {
     value: "Deal Value",
     closeDate: "Close Date",
     company: "Company",
-  };
-
-  const getStageAccentColor = (stage: string) => {
-    switch (stage) {
-      case "commit": return "border-l-green";
-      case "align": return "border-l-purple";
-      case "validate": return "border-l-yellow";
-      case "diagnose": return "border-l-blue-400";
-      default: return "border-l-muted";
-    }
   };
 
   // Check if we're in tablet with AI panel open
@@ -152,8 +135,9 @@ const DealsTable = () => {
                 <button
                   key={stage.key}
                   onClick={() => setStageFilter(stage.key)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${getStagePillStyles(stage.key, stageFilter === stage.key)}`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${stageFilter === stage.key ? selectedChip : unselectedChip}`}
                 >
+                  {stage.dotColor && <span className={`w-1.5 h-1.5 rounded-full ${stage.dotColor}`} />}
                   {stage.label}
                 </button>
               ))}
@@ -176,7 +160,7 @@ const DealsTable = () => {
                     {(Object.keys(sortLabels) as Array<keyof typeof sortLabels>).map((key) => (
                       <button
                         key={key}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors ${sortBy === key ? "bg-purple/10 text-purple font-medium" : ""}`}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors ${sortBy === key ? `${selectedChip} font-medium` : ""}`}
                         onClick={() => { setSortBy(key); setShowSortDropdown(false); }}
                       >
                         {sortLabels[key]}
@@ -206,14 +190,14 @@ const DealsTable = () => {
               <div className="flex border border-border rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 transition-colors ${viewMode === "list" ? "bg-gradient-to-r from-purple to-orange text-white" : "bg-transparent hover:bg-muted/50"}`}
+                  className={`p-2 transition-colors ${viewMode === "list" ? selectedChip : unselectedChip}`}
                   title="List view"
                 >
                   <List className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode("cards")}
-                  className={`p-2 transition-colors ${viewMode === "cards" ? "bg-gradient-to-r from-purple to-orange text-white" : "bg-transparent hover:bg-muted/50"}`}
+                  className={`p-2 transition-colors ${viewMode === "cards" ? selectedChip : unselectedChip}`}
                   title="Cards view"
                 >
                   <LayoutGrid className="w-4 h-4" />
@@ -274,7 +258,6 @@ const DealsTable = () => {
                       variant="outline" 
                       size="sm"
                       onClick={() => setStageFilter("all")}
-                      className="border-purple text-purple hover:bg-purple hover:text-white"
                     >
                       View all stages
                     </Button>
@@ -325,7 +308,8 @@ const DealsTable = () => {
                         <div className="hidden xl:flex justify-center">
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className={`px-1.5 py-0.5 rounded-full text-xxs font-medium border ${stageInfo.colorClass} cursor-help`}>
+                              <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xxs font-medium border ${stageInfo.colorClass} cursor-help`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${stageInfo.dotColor}`} />
                                 {stageInfo.label}
                               </div>
                             </TooltipTrigger>
@@ -347,14 +331,14 @@ const DealsTable = () => {
 
                         {/* Win Probability */}
                         <div>
-                          <span className={`text-xs font-semibold ${getProgressColor(deal.winProbability).replace('bg-', 'text-')}`}>
+                          <span className={`text-xs font-semibold ${scoreText(deal.winProbability)}`}>
                             {deal.winProbability}%
                           </span>
                         </div>
 
                         {/* Alignment */}
                         <div>
-                          <span className={`text-xs font-semibold ${getProgressColor(deal.alignment).replace('bg-', 'text-')}`}>
+                          <span className={`text-xs font-semibold ${scoreText(deal.alignment)}`}>
                             {deal.alignment}%
                           </span>
                         </div>
@@ -365,7 +349,6 @@ const DealsTable = () => {
                             <Button 
                               size="sm" 
                               variant="outline"
-                              className="border-purple text-purple bg-white hover:bg-gradient-to-r hover:from-purple hover:to-orange-500 hover:text-white hover:border-transparent transition-all"
                               onClick={(e) => handleActionHub(company?.name || "", e)}
                               title="Actions"
                             >
@@ -373,14 +356,13 @@ const DealsTable = () => {
                               <span className="hidden 2xl:inline">Actions</span>
                             </Button>
                             {deal.hasRisk && (
-                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red rounded-full border-2 border-white animate-pulse" />
+                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-danger rounded-full border-2 border-card" />
                             )}
                           </div>
                           <Button 
                             asChild
                             size="sm" 
                             variant="outline"
-                            className="border-purple text-purple bg-white hover:bg-gradient-to-r hover:from-purple hover:to-orange-500 hover:text-white hover:border-transparent transition-all"
                             title="View"
                           >
                             <Link to={`/deal-gps?deal=${deal.id}`} onClick={(e) => e.stopPropagation()}>
@@ -428,7 +410,6 @@ const DealsTable = () => {
                     variant="outline" 
                     size="sm"
                     onClick={() => setStageFilter("all")}
-                    className="border-purple text-purple hover:bg-purple hover:text-white"
                   >
                     View all stages
                   </Button>

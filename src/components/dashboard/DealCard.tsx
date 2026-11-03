@@ -3,7 +3,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { getProgressColor, getCompanyById } from "@/data/dealData";
+import { getCompanyById, stageConfig } from "@/data/dealData";
+import { scoreText } from "@/lib/tone";
 import { useIsTablet } from "@/hooks/use-mobile";
 import { useUIStore } from "@/stores/uiStore";
 
@@ -22,16 +23,6 @@ const formatCompactDate = (dateStr: string): string => {
   const dd = String(date.getDate()).padStart(2, '0');
   const yy = String(date.getFullYear()).slice(-2);
   return `${mm}.${dd}.${yy}`;
-};
-
-const getStageAccentColor = (stage: string) => {
-  switch (stage) {
-    case "commit": return "border-l-green";
-    case "align": return "border-l-purple";
-    case "validate": return "border-l-yellow";
-    case "diagnose": return "border-l-blue-400";
-    default: return "border-l-muted";
-  }
 };
 
 interface Deal {
@@ -53,7 +44,7 @@ interface DealCardProps {
 const DealCard = ({ deal }: DealCardProps) => {
   const navigate = useNavigate();
   const company = getCompanyById(deal.companyId);
-  const stageBorderColor = getStageAccentColor(deal.stage);
+  const stageInfo = stageConfig[deal.stage];
   const isTablet = useIsTablet();
   const { isAIPanelOpen } = useUIStore();
   
@@ -66,12 +57,9 @@ const DealCard = ({ deal }: DealCardProps) => {
 
   return (
     <Card 
-      className={`group p-4 border-l-4 ${stageBorderColor} interactive-card interactive-card-gradient flex flex-col relative cursor-pointer`}
+      className="group p-4 interactive-card flex flex-col relative cursor-pointer"
       onClick={handleCardClick}
     >
-      {/* Ambient glow effect */}
-      <div className="absolute -inset-px rounded-lg bg-gradient-to-r from-purple/20 via-primary/10 to-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
-      
       {/* Header: Logo + Deal Info */}
       <div className="flex items-start gap-3 mb-3">
         <Avatar className="w-10 h-10 shrink-0">
@@ -85,6 +73,10 @@ const DealCard = ({ deal }: DealCardProps) => {
           {!isCompactMode && (
             <p className="text-xs text-muted-foreground truncate">{company?.name}</p>
           )}
+        </div>
+        <div className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xxs font-medium border ${stageInfo.colorClass}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${stageInfo.dotColor}`} />
+          {stageInfo.label}
         </div>
       </div>
 
@@ -104,13 +96,13 @@ const DealCard = ({ deal }: DealCardProps) => {
       <div className="space-y-2 mb-4">
         <div className="flex items-center justify-between">
           <span className="text-xxs text-muted-foreground uppercase tracking-wide">Win Probability</span>
-          <span className={`text-xs font-semibold ${getProgressColor(deal.winProbability).replace('bg-', 'text-')}`}>
+          <span className={`text-xs font-semibold ${scoreText(deal.winProbability)}`}>
             {deal.winProbability}%
           </span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-xxs text-muted-foreground uppercase tracking-wide">Alignment</span>
-          <span className={`text-xs font-semibold ${getProgressColor(deal.alignment).replace('bg-', 'text-')}`}>
+          <span className={`text-xs font-semibold ${scoreText(deal.alignment)}`}>
             {deal.alignment}%
           </span>
         </div>
@@ -120,7 +112,6 @@ const DealCard = ({ deal }: DealCardProps) => {
       <div className="flex items-center gap-2 mt-auto pt-3 border-t border-border">
         <Button
           size="sm"
-          className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white"
           onClick={(e) => { 
             e.stopPropagation(); 
             navigate(`/action-hub?company=${encodeURIComponent(company?.name || "")}`); 
@@ -131,7 +122,7 @@ const DealCard = ({ deal }: DealCardProps) => {
           Actions
           <ChevronRight className="w-4 h-4" />
           {deal.hasRisk && (
-            <div className="ml-1 w-2 h-2 bg-white/80 rounded-full animate-pulse" />
+            <div className="ml-1 w-2 h-2 bg-primary-foreground/80 rounded-full" />
           )}
         </Button>
       </div>

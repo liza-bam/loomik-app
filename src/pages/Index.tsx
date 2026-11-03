@@ -34,7 +34,7 @@ const Index = () => {
       </div>
       
       {/* Tab Navigation + AI Header - side by side */}
-      <div className="flex border-b border-border bg-white">
+      <div className="flex border-b border-border bg-card">
         <div className="flex-1">
           <TabNavigation isScrolled={isScrolled} activeTab="Dashboard" />
         </div>
@@ -45,7 +45,7 @@ const Index = () => {
             {isAIPanelOpen && (
               <>
                 <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
-                <div className="w-2 h-2 bg-green rounded-full" />
+                <div className="w-2 h-2 bg-success rounded-full" />
               </>
             )}
             <button 
@@ -60,7 +60,7 @@ const Index = () => {
       
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content - scrollable, full width on mobile */}
-        <main id="main-scroll" className={`flex-1 overflow-y-auto px-6 py-4 ${isMobile ? 'pb-20' : ''}`}>
+        <main id="main-scroll" className={`flex-1 overflow-y-auto px-6 pt-4 ${isMobile ? 'pb-20' : 'pb-32'}`}>
           <DealsTable />
         </main>
 

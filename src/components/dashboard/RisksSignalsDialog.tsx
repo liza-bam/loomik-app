@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { avatarFallback, priorityDot, sentimentBadge } from "@/lib/tone";
 import { useNavigate } from "react-router-dom";
 import { useSignalsStore, DetectedSignal } from "@/stores/signalsStore";
 import { useGeneratedActionsStore } from "@/stores/generatedActionsStore";
@@ -393,11 +394,11 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
             </DialogTitle>
             
             <TabsList className="grid w-full grid-cols-2 bg-muted/50 mb-2">
-              <TabsTrigger value="risks" className="data-[state=active]:bg-white gap-1.5">
-                Risks <span className="text-red font-semibold">{liveRisks.length}</span>
+              <TabsTrigger value="risks" className="data-[state=active]:bg-card gap-1.5">
+                Risks <span className="text-danger font-semibold">{liveRisks.length}</span>
               </TabsTrigger>
-              <TabsTrigger value="signals" className="data-[state=active]:bg-white gap-1.5">
-                Signals <span className="text-primary font-semibold">{liveSignals.length}</span>
+              <TabsTrigger value="signals" className="data-[state=active]:bg-card gap-1.5">
+                Signals <span className="text-foreground font-semibold">{liveSignals.length}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -446,7 +447,7 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                     key={risk.id} 
                     className={cn(
                       "border rounded-lg bg-card hover:shadow-sm transition-shadow",
-                      isCritical && "border-red/40 bg-red/5 ring-1 ring-red/20"
+                      isCritical && "border-danger/40"
                     )}
                   >
                     <button
@@ -457,13 +458,13 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                       <div className="relative shrink-0">
                         <Avatar className="w-8 h-8 mt-0.5">
                           <AvatarImage src={stakeholder.avatar} />
-                          <AvatarFallback className="bg-muted text-xs">
+                          <AvatarFallback className={`${avatarFallback} text-xs`}>
                             {stakeholder.initials}
                           </AvatarFallback>
                         </Avatar>
                         {isCritical && (
-                          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-red flex items-center justify-center ring-2 ring-background">
-                            <Zap className="w-2.5 h-2.5 text-white" />
+                          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-danger flex items-center justify-center ring-2 ring-background">
+                            <Zap className="w-2.5 h-2.5 text-danger-foreground" />
                           </div>
                         )}
                       </div>
@@ -471,11 +472,11 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                         {/* Critical badge and category */}
                         {isCritical && (
                           <div className="flex items-center gap-1.5 mb-1">
-                            <Badge className="bg-red text-white text-xxs px-1.5 py-0 font-semibold animate-pulse">
+                            <Badge variant="outline" className="border-transparent bg-danger-subtle text-danger text-xxs px-1.5 py-0 font-semibold">
                               CRITICAL
                             </Badge>
                             {risk.eventCategory && (
-                              <Badge variant="outline" className="text-xxs px-1.5 py-0 border-red/30 text-red">
+                              <Badge variant="outline" className="text-xxs px-1.5 py-0 text-muted-foreground">
                                 {CRITICAL_EVENT_LABELS[risk.eventCategory] || risk.eventCategory}
                               </Badge>
                             )}
@@ -485,9 +486,9 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                         <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{risk.trigger}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <span className="text-sm text-muted-foreground">{stakeholder.name}</span>
-                          {!isCritical && risk.isUrgent && <Badge className="bg-red/10 text-red border-red/20 text-xxs px-1.5 py-0">Urgent</Badge>}
+                          {!isCritical && risk.isUrgent && <Badge variant="outline" className="border-transparent bg-danger-subtle text-danger text-xxs px-1.5 py-0">Urgent</Badge>}
                           {!isCritical && (
-                            <Badge className={cn("text-xxs px-1.5 py-0", risk.priority === "high" ? "bg-red/10 text-red border-red/20" : "bg-muted text-muted-foreground")}>
+                            <Badge variant="outline" className={cn("border-transparent text-xxs px-1.5 py-0", risk.priority === "high" ? "bg-danger-subtle text-danger" : "bg-muted text-muted-foreground")}>
                               {risk.priority === "high" ? "High" : "Low"}
                             </Badge>
                           )}
@@ -511,9 +512,9 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                         <div className="pt-3 space-y-3">
                           {/* Score impact for critical events */}
                           {isCritical && (
-                            <div className="bg-red/10 border border-red/20 rounded p-2 flex items-center gap-2">
-                              <AlertTriangle className="w-4 h-4 text-red shrink-0" />
-                              <span className="text-sm text-red font-medium">
+                            <div className="bg-danger-subtle rounded p-2 flex items-center gap-2">
+                              <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
+                              <span className="text-sm text-danger font-medium">
                                 Critical Impact: This event may significantly affect deal outcome (-10-15% win probability if unaddressed)
                               </span>
                             </div>
@@ -543,25 +544,23 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                           </div>
                           
                           {/* Editable Evidence */}
-                          <div className="bg-red/5 border border-red/20 rounded p-2">
+                          <div className="bg-muted/50 border rounded p-2">
                             <EditableField 
                               id={risk.id} 
                               field="evidence" 
                               value={risk.evidence} 
                               label="Evidence"
-                              className="[&_p:first-child]:text-red"
                             />
                           </div>
                           
                           {/* Editable Suggested Action */}
                           {risk.suggestedAction && (
-                            <div className="bg-green/5 border border-green/20 rounded p-2">
+                            <div className="bg-muted/50 border rounded p-2">
                               <EditableField 
                                 id={risk.id} 
                                 field="suggestedAction" 
                                 value={risk.suggestedAction} 
                                 label="Suggested Action"
-                                className="[&_p:first-child]:text-green"
                               />
                             </div>
                           )}
@@ -570,7 +569,7 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                           <div className="flex items-center gap-2 pt-2">
                             {isCritical ? (
                               <>
-                                <Button size="sm" className="h-7 text-xs gap-1.5 bg-green hover:bg-green/90" onClick={() => handleAddToDatabase("risk", risk.id)}>
+                                <Button size="sm" className="h-7 text-xs gap-1.5" onClick={() => handleAddToDatabase("risk", risk.id)}>
                                   <Check className="w-3 h-3" /> Confirm
                                 </Button>
                                 <Button 
@@ -584,7 +583,7 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                                 <Button 
                                   size="sm" 
                                   variant="outline" 
-                                  className="h-7 text-xs gap-1.5 text-red hover:text-red hover:bg-red/10" 
+                                  className="h-7 text-xs gap-1.5 text-danger hover:text-danger hover:bg-danger-subtle" 
                                   onClick={() => handleIgnoreWithUndo("risk", risk.id, risk.trigger)}
                                 >
                                   <X className="w-3 h-3" /> Dismiss
@@ -629,7 +628,7 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                     key={signal.id} 
                     className={cn(
                       "border rounded-lg bg-card hover:shadow-sm transition-shadow",
-                      isCritical && "border-green/40 bg-green/5 ring-1 ring-green/20"
+                      isCritical && "border-success/40"
                     )}
                   >
                     <button
@@ -640,13 +639,13 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                       <div className="relative shrink-0">
                         <Avatar className="w-8 h-8 mt-0.5">
                           <AvatarImage src={stakeholder.avatar} />
-                          <AvatarFallback className="bg-muted text-xs">
+                          <AvatarFallback className={`${avatarFallback} text-xs`}>
                             {stakeholder.initials}
                           </AvatarFallback>
                         </Avatar>
                         {isCritical && (
-                          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green flex items-center justify-center ring-2 ring-background">
-                            <Zap className="w-2.5 h-2.5 text-white" />
+                          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
+                            <Zap className="w-2.5 h-2.5 text-success-foreground" />
                           </div>
                         )}
                       </div>
@@ -654,11 +653,11 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                         {/* Critical badge and category */}
                         {isCritical && (
                           <div className="flex items-center gap-1.5 mb-1">
-                            <Badge className="bg-green text-white text-xxs px-1.5 py-0 font-semibold animate-pulse">
+                            <Badge variant="outline" className="border-transparent bg-success-subtle text-success text-xxs px-1.5 py-0 font-semibold">
                               CRITICAL
                             </Badge>
                             {signal.eventCategory && (
-                              <Badge variant="outline" className="text-xxs px-1.5 py-0 border-green/30 text-green">
+                              <Badge variant="outline" className="text-xxs px-1.5 py-0 text-muted-foreground">
                                 {CRITICAL_EVENT_LABELS[signal.eventCategory] || signal.eventCategory}
                               </Badge>
                             )}
@@ -668,13 +667,9 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                         <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{signal.trigger}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <span className="text-sm text-muted-foreground">{stakeholder.name}</span>
-                          {!isCritical && signal.isUrgent && <Badge className="bg-red/10 text-red border-red/20 text-xxs px-1.5 py-0">Urgent</Badge>}
+                          {!isCritical && signal.isUrgent && <Badge variant="outline" className="border-transparent bg-danger-subtle text-danger text-xxs px-1.5 py-0">Urgent</Badge>}
                           {!isCritical && (
-                            <Badge className={cn("text-xxs px-1.5 py-0",
-                              signal.sentiment === "positive" ? "bg-green/10 text-green border-green/20"
-                                : signal.sentiment === "negative" ? "bg-red/10 text-red border-red/20"
-                                : "bg-muted text-muted-foreground"
-                            )}>
+                            <Badge variant="outline" className={cn("border-transparent text-xxs px-1.5 py-0", sentimentBadge(signal.sentiment ?? "neutral"))}>
                               {signal.sentiment ? signal.sentiment.charAt(0).toUpperCase() + signal.sentiment.slice(1) : 'Neutral'}
                             </Badge>
                           )}
@@ -698,9 +693,9 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                         <div className="pt-3 space-y-3">
                           {/* Score impact for critical events */}
                           {isCritical && (
-                            <div className="bg-green/10 border border-green/20 rounded p-2 flex items-center gap-2">
-                              <Zap className="w-4 h-4 text-green shrink-0" />
-                              <span className="text-sm text-green font-medium">
+                            <div className="bg-success-subtle rounded p-2 flex items-center gap-2">
+                              <Zap className="w-4 h-4 text-success shrink-0" />
+                              <span className="text-sm text-success font-medium">
                                 Major Opportunity: This event can significantly boost deal momentum (+10-15% win probability)
                               </span>
                             </div>
@@ -726,28 +721,23 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                           </div>
                           
                           {/* Editable Evidence */}
-                          <div className={cn(
-                            "border rounded p-2",
-                            isCritical ? "bg-green/5 border-green/20" : "bg-primary/5 border-primary/20"
-                          )}>
+                          <div className="bg-muted/50 border rounded p-2">
                             <EditableField 
                               id={signal.id} 
                               field="evidence" 
                               value={signal.evidence} 
                               label="Evidence"
-                              className={isCritical ? "[&_p:first-child]:text-green" : "[&_p:first-child]:text-primary"}
                             />
                           </div>
                           
                           {/* Editable Suggested Action */}
                           {signal.suggestedAction && (
-                            <div className="bg-green/5 border border-green/20 rounded p-2">
+                            <div className="bg-muted/50 border rounded p-2">
                               <EditableField 
                                 id={signal.id} 
                                 field="suggestedAction" 
                                 value={signal.suggestedAction} 
                                 label="Suggested Action"
-                                className="[&_p:first-child]:text-green"
                               />
                             </div>
                           )}
@@ -756,7 +746,7 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                           <div className="flex items-center gap-2 pt-2">
                             {isCritical ? (
                               <>
-                                <Button size="sm" className="h-7 text-xs gap-1.5 bg-green hover:bg-green/90" onClick={() => handleAddToDatabase("signal", signal.id)}>
+                                <Button size="sm" className="h-7 text-xs gap-1.5" onClick={() => handleAddToDatabase("signal", signal.id)}>
                                   <Check className="w-3 h-3" /> Confirm
                                 </Button>
                                 <Button 
@@ -843,11 +833,11 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
               <div className="space-y-3 pt-2">
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-green font-medium">+{lastProcessingResult?.actionsAdded || 2}</span>
+                    <span className="text-success font-medium">+{lastProcessingResult?.actionsAdded || 2}</span>
                     <span className="text-foreground">actions added</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary font-medium">{lastProcessingResult?.actionsModified || 5}</span>
+                    <span className="text-foreground font-medium">{lastProcessingResult?.actionsModified || 5}</span>
                     <span className="text-foreground">modified</span>
                   </div>
                 </div>
@@ -862,7 +852,7 @@ const RisksSignalsDialog = ({ open, onOpenChange, defaultTab = "risks" }: RisksS
                         <div key={idx} className="flex items-start gap-2 text-sm">
                           <div className={cn(
                             "w-1.5 h-1.5 rounded-full mt-1.5 shrink-0",
-                            action.priority === "high" ? "bg-red" : action.priority === "medium" ? "bg-yellow" : "bg-muted-foreground"
+                            priorityDot(action.priority)
                           )} />
                           <div className="flex-1 min-w-0">
                             <p className="text-foreground line-clamp-1">{action.title}</p>

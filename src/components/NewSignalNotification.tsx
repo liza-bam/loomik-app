@@ -66,14 +66,13 @@ export const NewSignalNotification = ({ onClick }: NewSignalNotificationProps) =
       onClick={handleClick}
       className={cn(
         "relative flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
-        "bg-primary/10 text-primary hover:bg-primary/20 transition-colors",
-        "animate-pulse"
+        "bg-primary-subtle text-primary hover:bg-accent transition-colors"
       )}
     >
       <Bell className="w-3.5 h-3.5" />
       <span>{totalNew} new</span>
       {newRisks > 0 && (
-        <span className="w-1.5 h-1.5 rounded-full bg-red" />
+        <span className="w-1.5 h-1.5 rounded-full bg-danger" />
       )}
     </button>
   );

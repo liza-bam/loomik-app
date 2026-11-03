@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { RefreshCw, History } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useUIStore } from "@/stores/uiStore";
 import { executePullSignals } from "@/lib/simulation/pullSignals";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -12,7 +11,8 @@ const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { isAIPanelOpen, setIsAIPanelOpen } = useUIStore();
+  // Local state so the AI sheet always starts closed on mobile (the persisted desktop panel state is separate)
+  const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
 
   const isHistoryPage = location.pathname === "/history";
@@ -33,16 +33,16 @@ const MobileBottomNav = () => {
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 flex justify-around items-center z-50">
         <button 
           onClick={handlePull} 
-          className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-purple transition-colors"
+          className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-foreground transition-colors"
           disabled={isPulling}
         >
-          <RefreshCw className={`w-5 h-5 ${isPulling ? 'animate-spin text-purple' : ''}`} />
+          <RefreshCw className={`w-5 h-5 ${isPulling ? 'animate-spin text-primary' : ''}`} />
           <span className="text-xs">Pull</span>
         </button>
         
         <button 
           onClick={() => navigate("/history")} 
-          className={`flex flex-col items-center gap-1 p-2 transition-colors ${isHistoryPage ? 'text-purple' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`flex flex-col items-center gap-1 p-2 transition-colors ${isHistoryPage ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
         >
           <History className="w-5 h-5" />
           <span className="text-xs">History</span>
@@ -50,7 +50,7 @@ const MobileBottomNav = () => {
         
         <button 
           onClick={() => setIsAIPanelOpen(true)} 
-          className={`flex flex-col items-center gap-1 p-2 transition-colors ${isAIPanelOpen ? 'text-purple' : 'text-muted-foreground hover:text-purple'}`}
+          className={`flex flex-col items-center gap-1 p-2 transition-colors ${isAIPanelOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
         >
           <img src={loomikIcon} alt="Loomik" className="w-5 h-5" />
           <span className="text-xs">Ask Loomik</span>

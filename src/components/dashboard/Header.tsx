@@ -11,6 +11,7 @@ import { useSignalsStore } from "@/stores/signalsStore";
 import { executePullSignals } from "@/lib/simulation/pullSignals";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { trendText } from "@/lib/tone";
 
 interface HeaderProps {
   isScrolled?: boolean;
@@ -68,11 +69,11 @@ const Header = ({ isScrolled = false }: HeaderProps) => {
               <span className="text-muted-foreground hidden lg:inline">Value</span><span className="hidden lg:inline">$8.0M</span>
               <span className="text-border hidden lg:inline">|</span>
               <span className="text-muted-foreground">Alignment</span>
-              <span className="font-semibold text-green">72% ↑5%</span>
+              <span className="font-semibold text-foreground">72%</span><span className={`font-semibold ${trendText(5)}`}>↑5%</span>
               <span className="text-xs text-muted-foreground bg-muted px-1 rounded hidden 2xl:inline">vs last week</span>
               <span className="text-border">|</span>
               <span className="text-muted-foreground">Win</span>
-              <span className="font-semibold text-green">63%</span><span className="font-semibold text-red">↓3%</span>
+              <span className="font-semibold text-foreground">63%</span><span className={`font-semibold ${trendText(-3)}`}>↓3%</span>
               <span className="text-xs text-muted-foreground bg-muted px-1 rounded hidden 2xl:inline">vs last week</span>
             </>
           )}
@@ -82,20 +83,20 @@ const Header = ({ isScrolled = false }: HeaderProps) => {
           {/* Signals badge */}
           <button onClick={handleOpenSignals} className="flex items-center gap-1 px-1.5 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors">
             <Bell className="w-3.5 h-3.5" />
-            <span className={`bg-purple text-xxs px-1.5 h-5 rounded-full inline-flex items-center justify-center min-w-[20px] font-semibold text-white ${signalCount > 0 ? 'animate-pulse' : ''}`}>{signalCount || 0}</span>
+            <span className="bg-primary text-primary-foreground text-xxs px-1.5 h-5 rounded-full inline-flex items-center justify-center min-w-[20px] font-semibold">{signalCount || 0}</span>
           </button>
           
           {/* Risks badge */}
           <button onClick={handleOpenRisks} className="flex items-center gap-1 px-1.5 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors">
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span className={`bg-red text-xxs px-1.5 h-5 rounded-full inline-flex items-center justify-center min-w-[20px] font-semibold text-white ${riskCount > 0 ? 'animate-pulse' : ''}`}>{riskCount || 0}</span>
+            <span className="bg-danger text-danger-foreground text-xxs px-1.5 h-5 rounded-full inline-flex items-center justify-center min-w-[20px] font-semibold">{riskCount || 0}</span>
           </button>
           
           {/* Pull button - hidden on mobile (in bottom nav) */}
           {!isMobile && (
             <button 
               onClick={handlePull} 
-              className="p-1.5 text-muted-foreground hover:text-purple hover:bg-purple/10 rounded transition-colors" 
+              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors" 
               title="Pull Signals & Risks"
               disabled={isPulling}
             >
