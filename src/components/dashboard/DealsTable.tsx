@@ -416,7 +416,7 @@ const DealsTable = () => {
               </div>
             </Card>
           ) : (
-            <div className={`grid gap-4 ${isCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
+            <div className={`grid gap-4 ${isCompact ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
               {sortedDeals.map((deal) => (
                 <DealCard key={deal.id} deal={deal} />
               ))}

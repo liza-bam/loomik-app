@@ -4,9 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getCompanyById, stageConfig } from "@/data/dealData";
-import { scoreText } from "@/lib/tone";
-import { useIsTablet } from "@/hooks/use-mobile";
-import { useUIStore } from "@/stores/uiStore";
+import { scoreFill, scoreText } from "@/lib/tone";
 
 // Format value as compact currency ($580K, $2.4M)
 const formatCompactValue = (value: number): string => {
@@ -45,11 +43,6 @@ const DealCard = ({ deal }: DealCardProps) => {
   const navigate = useNavigate();
   const company = getCompanyById(deal.companyId);
   const stageInfo = stageConfig[deal.stage];
-  const isTablet = useIsTablet();
-  const { isAIPanelOpen } = useUIStore();
-  
-  // Compact mode for tablet with AI panel open
-  const isCompactMode = isTablet && isAIPanelOpen;
 
   const handleCardClick = () => {
     navigate(`/deal-gps?deal=${deal.id}`);
@@ -69,10 +62,8 @@ const DealCard = ({ deal }: DealCardProps) => {
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className={`font-medium text-foreground text-sm ${isCompactMode ? "" : "line-clamp-1"}`}>{deal.name}</p>
-          {!isCompactMode && (
-            <p className="text-xs text-muted-foreground truncate">{company?.name}</p>
-          )}
+          <p className="font-medium text-foreground text-sm line-clamp-1">{deal.name}</p>
+          <p className="text-xs text-muted-foreground truncate">{company?.name}</p>
         </div>
         <div className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xxs font-medium border ${stageInfo.colorClass}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${stageInfo.dotColor}`} />
@@ -80,32 +71,27 @@ const DealCard = ({ deal }: DealCardProps) => {
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      {/* Metrics */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-4">
         <div>
           <p className="text-xxs text-muted-foreground uppercase tracking-wide mb-0.5">Value</p>
           <p className="text-sm font-semibold text-foreground">{formatCompactValue(deal.valueNumeric)}</p>
         </div>
         <div>
           <p className="text-xxs text-muted-foreground uppercase tracking-wide mb-0.5">Close By</p>
-          <p className="text-sm text-foreground">{formatCompactDate(deal.closeDate)}</p>
+          <p className="text-sm font-semibold text-foreground">{formatCompactDate(deal.closeDate)}</p>
         </div>
-      </div>
-
-      {/* Scores */}
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center justify-between">
-          <span className="text-xxs text-muted-foreground uppercase tracking-wide">Win Probability</span>
-          <span className={`text-xs font-semibold ${scoreText(deal.winProbability)}`}>
-            {deal.winProbability}%
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-xxs text-muted-foreground uppercase tracking-wide">Alignment</span>
-          <span className={`text-xs font-semibold ${scoreText(deal.alignment)}`}>
-            {deal.alignment}%
-          </span>
-        </div>
+        {([["Win", deal.winProbability], ["Alignment", deal.alignment]] as const).map(([label, value]) => (
+          <div key={label}>
+            <div className="flex items-baseline justify-between mb-1">
+              <p className="text-xxs text-muted-foreground uppercase tracking-wide">{label}</p>
+              <p className={`text-sm font-semibold ${scoreText(value)}`}>{value}%</p>
+            </div>
+            <div className="h-1 rounded-full bg-muted">
+              <div className={`h-1 rounded-full ${scoreFill(value)}`} style={{ width: `${value}%` }} />
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Actions */}
