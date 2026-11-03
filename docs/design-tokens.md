@@ -65,12 +65,15 @@ Charts use `chartTooltip` / `chartTick` from `src/lib/tone.ts`, which are built 
 
 Four skins ship with the app, switchable from the palette button in the header (the choice is remembered per browser):
 
-| Skin | Character |
-|---|---|
-| Loomik | Default: violet, Inter, 8px radius |
-| Soft & airy | Indigo, Plus Jakarta Sans, 16px radius, soft shadows, roomier spacing |
-| Midnight | Dark, mint accent, Space Grotesk |
-| Bold & compact | Blue, IBM Plex Sans, 4px radius, flat shadows, denser spacing |
+| Skin | Inspired by | Character |
+|---|---|---|
+| Loomik | — | Default: violet, Inter, 8px radius |
+| Warm sand | Lisso (Dribbble) | Cream gradient canvas, black pill buttons, yellow highlights, light Manrope numbers |
+| Editorial | Filko (Dribbble) | Flat ivory, square corners, hairlines, no shadows, bold yellow selection, Instrument Sans |
+| Aurora glass | Wearable health (Dribbble) | Lavender-to-pink canvas, frosted translucent cards, 24px radius, Plus Jakarta Sans |
+| Midnight gold | Daylier (Dribbble) | Near-black with an amber glow, amber accents, Space Grotesk |
+
+Beyond colour and type, skins can set `--canvas-image` (page background), `--surface-opacity` / `--surface-blur` (frosted cards), `--radius-control` (button shape) and the font-weight tokens.
 
 Each skin is just a block of token overrides at the end of `src/index.css`.
 

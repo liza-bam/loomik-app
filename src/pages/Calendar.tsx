@@ -151,7 +151,7 @@ const Calendar = () => {
   const isCompactMode = isTabletCompact || isMobile;
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-screen flex flex-col bg-background bg-canvas bg-cover overflow-hidden">
       <Header isScrolled={false} />
       
       {/* Tab Navigation + AI Header */}

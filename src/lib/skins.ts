@@ -1,9 +1,10 @@
 // Skins are token sets in src/index.css, switched with <html data-theme="...">.
 export const skins = [
   { id: "loomik", label: "Loomik" },
-  { id: "airy", label: "Soft & airy" },
-  { id: "midnight", label: "Midnight", dark: true },
-  { id: "ocean", label: "Bold & compact" },
+  { id: "sand", label: "Warm sand" },
+  { id: "editorial", label: "Editorial" },
+  { id: "aurora", label: "Aurora glass" },
+  { id: "midnight", label: "Midnight gold", dark: true },
 ] as const;
 
 export type SkinId = (typeof skins)[number]["id"];

@@ -91,6 +91,7 @@ export default {
       lg: "var(--radius-lg)",
       xl: "var(--radius-xl)",
       "2xl": "var(--radius-2xl)",
+      control: "var(--radius-control)",
       full: "9999px",
     },
     boxShadow: {
@@ -140,7 +141,7 @@ export default {
         foreground: "hsl(var(--popover-foreground))",
       },
       card: {
-        DEFAULT: "hsl(var(--card))",
+        DEFAULT: "hsl(var(--card) / calc(<alpha-value> * var(--surface-opacity)))",
         foreground: "hsl(var(--card-foreground))",
       },
       sidebar: {
@@ -194,6 +195,7 @@ export default {
       gridTemplateColumns: tokenScale(["deals", "deals-wide", "win-path"], "layout"),
       backgroundImage: {
         "brand-gradient": "var(--gradient-brand)",
+        canvas: "var(--canvas-image)",
       },
       keyframes: {
         "accordion-down": {

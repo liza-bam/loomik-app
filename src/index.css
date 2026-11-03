@@ -127,6 +127,12 @@
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
     --radius-2xl: calc(var(--radius) + 8px);
+    --radius-control: var(--radius-md);
+
+    /* Surfaces */
+    --canvas-image: none;
+    --surface-opacity: 1;
+    --surface-blur: 0px;
 
     /* Elevation */
     --shadow-color: 222 47% 11%;
@@ -323,93 +329,174 @@
   }
 }
 
+
 /*
  * Skins — each one only overrides tokens. Switch with <html data-theme="...">
  * (see src/lib/skins.ts). "loomik" is the default above.
  */
 @layer base {
-  [data-theme="airy"] {
-    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-    --radius: 1rem;
+  /* Warm sand — cream gradient, black pill buttons, yellow highlights, light numbers */
+  [data-theme="sand"] {
+    --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    --font-weight-semibold: 500;
+    --font-weight-bold: 300;
+    --radius: 1.25rem;
+    --radius-control: 9999px;
     --spacing: 0.27rem;
 
-    --background: 230 30% 97%;
-    --border: 230 20% 93%;
-    --input: 230 20% 93%;
-    --muted: 230 25% 95%;
-    --muted-foreground: 230 10% 45%;
-    --primary: 245 75% 58%;
-    --primary-subtle: 245 80% 96%;
-    --accent: 245 80% 96%;
-    --accent-foreground: 245 75% 58%;
-    --ring: 245 75% 58%;
-    --brand-accent: 330 80% 65%;
-    --logo-mark: 245 75% 58%;
-    --chart-1: 245 75% 58%;
-    --chart-2: 330 80% 65%;
-    --chart-3: 190 80% 45%;
+    --background: 30 33% 94%;
+    --canvas-image: radial-gradient(ellipse at 15% -10%, hsl(28 60% 86%) 0%, transparent 55%),
+      radial-gradient(ellipse at 95% 110%, hsl(350 55% 89%) 0%, transparent 55%);
+    --foreground: 20 10% 10%;
+    --card-foreground: 20 10% 10%;
+    --popover-foreground: 20 10% 10%;
+    --muted: 30 25% 93%;
+    --secondary: 30 25% 93%;
+    --muted-foreground: 25 8% 40%;
+    --border: 30 20% 88%;
+    --input: 30 20% 88%;
+    --primary: 20 10% 10%;
+    --primary-foreground: 0 0% 100%;
+    --primary-subtle: 45 95% 70%;
+    --accent: 30 25% 92%;
+    --accent-foreground: 20 10% 10%;
+    --ring: 20 10% 10%;
+    --brand-accent: 45 95% 55%;
+    --gradient-brand: linear-gradient(90deg, hsl(20 10% 10%), hsl(20 10% 28%));
+    --logo-wordmark: 20 10% 10%;
+    --logo-mark: 25 90% 55%;
+    --chart-1: 20 10% 15%;
+    --chart-2: 40 95% 50%;
+    --chart-3: 250 60% 65%;
 
-    --shadow-sm: 0 2px 8px -2px hsl(var(--shadow-color) / 0.06);
-    --shadow: 0 4px 16px -4px hsl(var(--shadow-color) / 0.08);
-    --shadow-md: 0 8px 24px -6px hsl(var(--shadow-color) / 0.1);
-    --shadow-lg: 0 16px 40px -8px hsl(var(--shadow-color) / 0.12);
-    --shadow-xl: 0 24px 56px -12px hsl(var(--shadow-color) / 0.14);
+    --shadow-sm: 0 2px 8px -2px hsl(25 30% 30% / 0.06);
+    --shadow: 0 6px 20px -6px hsl(25 30% 30% / 0.1);
+    --shadow-md: 0 12px 32px -8px hsl(25 30% 30% / 0.12);
+    --shadow-lg: 0 20px 48px -12px hsl(25 30% 30% / 0.16);
+    --shadow-xl: 0 28px 64px -16px hsl(25 30% 30% / 0.2);
   }
 
-  /* Used together with the .dark class */
+  /* Editorial — flat ivory, square corners, hairlines, bold yellow selection */
+  [data-theme="editorial"] {
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+    --radius: 0px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-xl: 0px;
+    --radius-2xl: 0px;
+    --radius-control: 0px;
+    --spacing: 0.26rem;
+
+    --background: 45 50% 95%;
+    --card: 45 45% 98%;
+    --popover: 45 45% 98%;
+    --foreground: 0 0% 8%;
+    --card-foreground: 0 0% 8%;
+    --popover-foreground: 0 0% 8%;
+    --muted: 45 25% 90%;
+    --secondary: 45 25% 90%;
+    --muted-foreground: 40 6% 36%;
+    --border: 45 10% 80%;
+    --input: 45 10% 80%;
+    --primary: 0 0% 8%;
+    --primary-foreground: 45 50% 96%;
+    --primary-subtle: 45 95% 55%;
+    --accent: 45 25% 90%;
+    --accent-foreground: 0 0% 8%;
+    --ring: 0 0% 8%;
+    --brand-accent: 265 55% 60%;
+    --gradient-brand: linear-gradient(90deg, hsl(265 55% 55%), hsl(265 55% 55%));
+    --logo-wordmark: 0 0% 8%;
+    --logo-mark: 265 55% 55%;
+    --chart-1: 265 55% 55%;
+    --chart-2: 42 95% 48%;
+    --chart-3: 0 0% 30%;
+
+    --shadow-sm: none;
+    --shadow: none;
+    --shadow-md: none;
+    --shadow-lg: 0 0 0 1px hsl(var(--border));
+    --shadow-xl: 0 0 0 1px hsl(var(--border));
+  }
+
+  /* Aurora glass — lavender-to-pink canvas, frosted translucent cards */
+  [data-theme="aurora"] {
+    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    --radius: 1.5rem;
+    --radius-control: 9999px;
+
+    --background: 255 35% 85%;
+    --canvas-image: linear-gradient(135deg, hsl(250 45% 78%) 0%, hsl(275 40% 83%) 45%, hsl(335 50% 87%) 100%);
+    --card: 0 0% 100%;
+    --surface-opacity: 0.55;
+    --surface-blur: 20px;
+    --foreground: 250 30% 18%;
+    --card-foreground: 250 30% 18%;
+    --popover-foreground: 250 30% 18%;
+    --muted: 255 50% 96%;
+    --secondary: 255 50% 96%;
+    --muted-foreground: 250 15% 33%;
+    --border: 0 0% 100%;
+    --input: 255 40% 90%;
+    --primary: 255 60% 48%;
+    --primary-subtle: 0 0% 100%;
+    --accent: 255 60% 96%;
+    --accent-foreground: 255 60% 48%;
+    --ring: 255 60% 48%;
+    --brand-accent: 335 70% 65%;
+    --logo-wordmark: 250 30% 18%;
+    --logo-mark: 255 60% 52%;
+    --chart-1: 255 60% 52%;
+    --chart-2: 335 70% 58%;
+    --chart-3: 200 70% 45%;
+
+    --shadow-sm: 0 4px 16px -6px hsl(250 40% 30% / 0.12);
+    --shadow: 0 8px 32px -8px hsl(250 40% 30% / 0.16);
+    --shadow-md: 0 12px 40px -10px hsl(250 40% 30% / 0.2);
+    --shadow-lg: 0 20px 56px -12px hsl(250 40% 30% / 0.24);
+    --shadow-xl: 0 28px 72px -16px hsl(250 40% 30% / 0.28);
+  }
+
+  /* Midnight gold — near-black with an amber glow (used with the .dark class) */
   [data-theme="midnight"] {
     --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-    --radius: 0.75rem;
+    --radius: 1rem;
+    --radius-control: 9999px;
 
-    --background: 230 25% 7%;
-    --card: 230 22% 11%;
-    --popover: 230 22% 11%;
-    --foreground: 220 20% 96%;
-    --card-foreground: 220 20% 96%;
-    --popover-foreground: 220 20% 96%;
-    --muted: 230 18% 16%;
-    --muted-foreground: 225 12% 66%;
-    --secondary: 230 18% 16%;
-    --border: 230 16% 20%;
-    --input: 230 16% 20%;
-    --overlay: 230 25% 4%;
-    --primary: 165 75% 50%;
-    --primary-foreground: 230 25% 7%;
-    --primary-subtle: 165 45% 14%;
-    --accent: 165 45% 14%;
-    --accent-foreground: 165 75% 50%;
-    --ring: 165 75% 50%;
-    --brand-accent: 280 85% 65%;
-    --logo-wordmark: 220 20% 96%;
-    --logo-mark: 165 75% 50%;
-    --chart-1: 165 75% 50%;
-    --chart-2: 280 85% 70%;
-    --chart-3: 200 90% 60%;
+    --background: 0 0% 4%;
+    --canvas-image: radial-gradient(ellipse at 75% -20%, hsl(38 90% 50% / 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 0% 110%, hsl(25 85% 45% / 0.14) 0%, transparent 50%);
+    --card: 0 0% 9%;
+    --surface-opacity: 0.8;
+    --surface-blur: 12px;
+    --popover: 0 0% 10%;
+    --foreground: 40 10% 94%;
+    --card-foreground: 40 10% 94%;
+    --popover-foreground: 40 10% 94%;
+    --muted: 0 0% 14%;
+    --secondary: 0 0% 14%;
+    --muted-foreground: 0 0% 62%;
+    --border: 0 0% 17%;
+    --input: 0 0% 17%;
+    --overlay: 0 0% 0%;
+    --primary: 38 95% 55%;
+    --primary-foreground: 0 0% 6%;
+    --primary-subtle: 38 60% 14%;
+    --accent: 38 60% 14%;
+    --accent-foreground: 38 95% 55%;
+    --ring: 38 95% 55%;
+    --brand-accent: 18 90% 55%;
+    --logo-wordmark: 40 10% 94%;
+    --logo-mark: 38 95% 55%;
+    --chart-1: 38 95% 55%;
+    --chart-2: 200 80% 60%;
+    --chart-3: 0 0% 70%;
     --shadow-color: 0 0% 0%;
   }
 
-  [data-theme="ocean"] {
-    --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-    --radius: 0.25rem;
-    --spacing: 0.23rem;
-
-    --background: 210 20% 98%;
-    --primary: 221 83% 48%;
-    --primary-subtle: 214 95% 95%;
-    --accent: 214 95% 95%;
-    --accent-foreground: 221 83% 48%;
-    --ring: 221 83% 48%;
-    --brand-accent: 190 90% 42%;
-    --logo-wordmark: 221 60% 25%;
-    --logo-mark: 221 83% 48%;
-    --chart-1: 221 83% 48%;
-    --chart-2: 190 90% 42%;
-    --chart-3: 262 70% 60%;
-
-    --shadow-sm: none;
-    --shadow: 0 1px 2px hsl(var(--shadow-color) / 0.06);
-    --shadow-md: 0 2px 4px hsl(var(--shadow-color) / 0.08);
-    --shadow-lg: 0 4px 10px hsl(var(--shadow-color) / 0.1);
-    --shadow-xl: 0 8px 16px hsl(var(--shadow-color) / 0.12);
+  /* Frosted surfaces for skins that set --surface-blur */
+  [data-theme="aurora"] .bg-card,
+  [data-theme="midnight"] .bg-card {
+    backdrop-filter: blur(var(--surface-blur));
   }
 }

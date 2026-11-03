@@ -461,7 +461,7 @@ const DealGPS = () => {
 
   return (
     <TooltipProvider>
-      <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <div className="h-screen flex flex-col bg-background bg-canvas bg-cover overflow-hidden">
         {/* Header - hides on scroll */}
         <div className={`transition-all duration-200 ${isScrolled ? "h-0 opacity-0 overflow-hidden" : ""}`}>
           <Header isScrolled={isScrolled} />
