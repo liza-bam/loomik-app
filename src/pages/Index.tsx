@@ -4,6 +4,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Header from "@/components/dashboard/Header";
 import TabNavigation from "@/components/dashboard/TabNavigation";
 import DealsTable from "@/components/dashboard/DealsTable";
+import PipelineHero from "@/components/dashboard/PipelineHero";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -62,6 +63,7 @@ const Index = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content - scrollable, full width on mobile */}
         <main id="main-scroll" className="flex-1 overflow-y-auto px-6 pt-4 pb-20">
+          <PipelineHero />
           <DealsTable />
         </main>
 

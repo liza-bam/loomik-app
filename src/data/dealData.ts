@@ -220,6 +220,13 @@ export const companies: Company[] = [
 
 // ==================== DEALS DATA ====================
 
+// Compact money label: 2400000 -> "$2.4M", 950000 -> "$950K"
+export const formatCompactValue = (value: number): string =>
+  value >= 1000000 ? `$${(value / 1000000).toFixed(1)}M`.replace(".0M", "M") : `$${Math.round(value / 1000)}K`;
+
+// Pipeline-level scores shown in the header and the dashboard hero (week-over-week change)
+export const pipelineSummary = { winRate: 63, winRateChange: -3, alignment: 72, alignmentChange: 5 };
+
 export const deals: Deal[] = [
   {
     id: 1,

@@ -71,6 +71,8 @@ Four skins ship with the app, switchable from the palette button in the header (
 | Warm sand | Lisso (Dribbble) | Cream gradient canvas, black pill buttons, yellow highlights, light Manrope numbers |
 | Editorial | Filko (Dribbble) | Flat ivory, square corners, hairlines, no shadows, bold yellow selection, Instrument Sans |
 | Aurora glass | Wearable health (Dribbble) | Lavender-to-pink canvas, frosted translucent cards, 24px radius, Plus Jakarta Sans |
+| Lime | Management Dashboard (Dribbble) | Sage canvas, soft grey cards, black + lime, light oversized numbers, Outfit |
+| Crimson | Sales Analytics (Dribbble) | Warm grey canvas, white cards, crimson accent, DM Sans |
 | Midnight gold | Daylier (Dribbble) | Near-black with an amber glow, amber accents, Space Grotesk |
 
 Beyond colour and type, skins can set `--canvas-image` (page background), `--surface-opacity` / `--surface-blur` (frosted cards), `--radius-control` (button shape) and the font-weight tokens.

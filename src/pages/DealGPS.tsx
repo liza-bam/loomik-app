@@ -68,17 +68,7 @@ import AlignmentIntelligenceModal from "@/components/deal-gps/AlignmentIntellige
 import WinProbabilityIntelligenceModal from "@/components/deal-gps/WinProbabilityIntelligenceModal";
 
 
-import {
-  deals,
-  getDealById,
-  getStakeholdersForDeal,
-  getActionsForDeal,
-  stageConfig,
-  getCompanyById,
-  type Deal,
-  type Stakeholder,
-  type Action,
-} from "@/data/dealData";
+import { deals, getDealById, getStakeholdersForDeal, getActionsForDeal, stageConfig, getCompanyById, type Deal, type Stakeholder, type Action, formatCompactValue } from "@/data/dealData";
 import { 
   getScoreForDeal, 
   metricToPercent, 
@@ -107,13 +97,6 @@ import { scoreText, scoreColor, trendText, sentimentBadge, priorityDot, category
 import Logo from "@/components/Logo";
 
 // Format value as compact currency ($580K, $2.4M)
-const formatCompactValue = (value: number): string => {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`.replace('.0M', 'M');
-  }
-  return `$${(value / 1000).toFixed(0)}K`;
-};
-
 // Format date as MM.DD.YY
 // Compact score gauge: a ring filled to the score, number in the middle
 const ScoreRing = ({ value }: { value: number }) => (

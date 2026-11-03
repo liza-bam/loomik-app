@@ -3,17 +3,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { getCompanyById, stageConfig } from "@/data/dealData";
+import { getCompanyById, stageConfig, formatCompactValue } from "@/data/dealData";
 import { scoreFill, scoreText } from "@/lib/tone";
 
 // Format value as compact currency ($580K, $2.4M)
-const formatCompactValue = (value: number): string => {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`.replace('.0M', 'M');
-  }
-  return `$${Math.round(value / 1000)}K`;
-};
-
 // Format date as MM.DD.YY
 const formatCompactDate = (dateStr: string): string => {
   const date = new Date(dateStr);

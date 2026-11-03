@@ -4,6 +4,8 @@ export const skins = [
   { id: "sand", label: "Warm sand" },
   { id: "editorial", label: "Editorial" },
   { id: "aurora", label: "Aurora glass" },
+  { id: "lime", label: "Lime" },
+  { id: "crimson", label: "Crimson" },
   { id: "midnight", label: "Midnight gold", dark: true },
 ] as const;
 

@@ -13,20 +13,13 @@ import {
 import DealExpandedRow from "./DealExpandedRow";
 import DealCard from "./DealCard";
 import { FilterBar, FilterBarLeft, FilterBarRight } from "./FilterBar";
-import { deals, stageConfig, getCompanyById } from "@/data/dealData";
+import { deals, stageConfig, getCompanyById, formatCompactValue } from "@/data/dealData";
 import { scoreText, selectedChip, unselectedChip } from "@/lib/tone";
 import { useSearchStore } from "@/stores/searchStore";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { useUIStore } from "@/stores/uiStore";
 
 // Format value as compact currency ($580K, $2.4M)
-const formatCompactValue = (value: number): string => {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`.replace('.0M', 'M');
-  }
-  return `$${Math.round(value / 1000)}K`;
-};
-
 // Format date as MM.DD.YY
 const formatCompactDate = (dateStr: string): string => {
   const date = new Date(dateStr);

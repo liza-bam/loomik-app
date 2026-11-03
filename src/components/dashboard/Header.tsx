@@ -12,6 +12,9 @@ import { executePullSignals } from "@/lib/simulation/pullSignals";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trendText } from "@/lib/tone";
+import { pipelineSummary } from "@/data/dealData";
+
+const { winRate, winRateChange, alignment, alignmentChange } = pipelineSummary;
 
 interface HeaderProps {
   isScrolled?: boolean;
@@ -69,11 +72,11 @@ const Header = ({ isScrolled = false }: HeaderProps) => {
               <span className="text-muted-foreground hidden lg:inline">Value</span><span className="hidden lg:inline">$8.0M</span>
               <span className="text-border hidden lg:inline">|</span>
               <span className="text-muted-foreground">Alignment</span>
-              <span className="font-semibold text-foreground">72%</span><span className={`font-semibold ${trendText(5)}`}>↑5%</span>
+              <span className="font-semibold text-foreground">{alignment}%</span><span className={`font-semibold ${trendText(alignmentChange)}`}>↑{alignmentChange}%</span>
               <span className="text-xs text-muted-foreground bg-muted px-1 rounded hidden 2xl:inline">vs last week</span>
               <span className="text-border">|</span>
               <span className="text-muted-foreground">Win</span>
-              <span className="font-semibold text-foreground">63%</span><span className={`font-semibold ${trendText(-3)}`}>↓3%</span>
+              <span className="font-semibold text-foreground">{winRate}%</span><span className={`font-semibold ${trendText(winRateChange)}`}>↓{Math.abs(winRateChange)}%</span>
               <span className="text-xs text-muted-foreground bg-muted px-1 rounded hidden 2xl:inline">vs last week</span>
             </>
           )}

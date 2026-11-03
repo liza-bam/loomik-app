@@ -104,6 +104,8 @@
     --text-3xl-leading: 2.25rem;
     --text-4xl: 2.25rem;
     --text-4xl-leading: 2.5rem;
+    --text-5xl: 3rem;
+    --text-5xl-leading: 1;
 
     --leading-none: 1;
     --leading-tight: 1.25;
@@ -492,6 +494,75 @@
     --chart-2: 200 80% 60%;
     --chart-3: 0 0% 70%;
     --shadow-color: 0 0% 0%;
+  }
+
+  /* Lime — sage canvas, soft grey cards, black + lime, light oversized numbers */
+  [data-theme="lime"] {
+    --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+    --font-weight-semibold: 500;
+    --font-weight-bold: 300;
+    --radius: 1.5rem;
+    --radius-control: 9999px;
+
+    --background: 140 10% 91%;
+    --card: 140 8% 96%;
+    --popover: 0 0% 100%;
+    --foreground: 0 0% 9%;
+    --card-foreground: 0 0% 9%;
+    --popover-foreground: 0 0% 9%;
+    --muted: 140 8% 90%;
+    --secondary: 140 8% 90%;
+    --muted-foreground: 150 5% 38%;
+    --border: 140 8% 86%;
+    --input: 140 8% 86%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 100%;
+    --primary-subtle: 72 90% 66%;
+    --accent: 140 8% 90%;
+    --accent-foreground: 0 0% 9%;
+    --ring: 0 0% 9%;
+    --brand-accent: 72 90% 60%;
+    --gradient-brand: linear-gradient(90deg, hsl(0 0% 9%), hsl(0 0% 22%));
+    --logo-wordmark: 0 0% 9%;
+    --logo-mark: 72 85% 50%;
+    --chart-1: 0 0% 12%;
+    --chart-2: 72 85% 55%;
+    --chart-3: 150 10% 55%;
+
+    --shadow-sm: none;
+    --shadow: 0 2px 8px -4px hsl(var(--shadow-color) / 0.08);
+    --shadow-md: 0 8px 24px -8px hsl(var(--shadow-color) / 0.12);
+    --shadow-lg: 0 16px 40px -12px hsl(var(--shadow-color) / 0.16);
+    --shadow-xl: 0 24px 56px -16px hsl(var(--shadow-color) / 0.2);
+  }
+
+  /* Crimson — warm grey canvas, white cards, crimson accent, black highlights */
+  [data-theme="crimson"] {
+    --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    --radius: 1.25rem;
+    --radius-control: 0.75rem;
+
+    --background: 30 10% 93%;
+    --muted: 30 10% 95%;
+    --secondary: 30 10% 95%;
+    --muted-foreground: 0 0% 40%;
+    --border: 30 8% 89%;
+    --input: 30 8% 89%;
+    --foreground: 0 0% 8%;
+    --card-foreground: 0 0% 8%;
+    --popover-foreground: 0 0% 8%;
+    --primary: 348 78% 46%;
+    --primary-subtle: 348 80% 96%;
+    --accent: 348 80% 96%;
+    --accent-foreground: 348 78% 46%;
+    --ring: 348 78% 46%;
+    --brand-accent: 348 78% 46%;
+    --gradient-brand: linear-gradient(90deg, hsl(348 78% 46%), hsl(348 78% 46%));
+    --logo-wordmark: 0 0% 8%;
+    --logo-mark: 348 78% 46%;
+    --chart-1: 348 78% 46%;
+    --chart-2: 0 0% 15%;
+    --chart-3: 30 10% 60%;
   }
 
   /* Frosted surfaces for skins that set --surface-blur */

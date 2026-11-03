@@ -66,7 +66,7 @@ export default {
       sans: ["var(--font-sans)"],
     },
     fontSize: Object.fromEntries(
-      ["xxs", "xs", "sm", "base", "lg", "xl", "2xl", "3xl", "4xl"].map((k) => [
+      ["xxs", "xs", "sm", "base", "lg", "xl", "2xl", "3xl", "4xl", "5xl"].map((k) => [
         k,
         [`var(--text-${k})`, { lineHeight: `var(--text-${k}-leading)` }],
       ]),
