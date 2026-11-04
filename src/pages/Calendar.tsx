@@ -155,7 +155,7 @@ const Calendar = () => {
       <Header isScrolled={false} />
       
       {/* Tab Navigation + AI Header */}
-      <div className="flex border-b border-border bg-card">
+      <div className="flex border-b border-border bg-card max-lg:hidden">
         <div className="flex-1">
           <TabNavigation isScrolled={false} activeTab="Calendar" />
         </div>

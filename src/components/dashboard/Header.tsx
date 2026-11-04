@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import Logo from "@/components/Logo";
 import SkinSwitcher from "@/components/SkinSwitcher";
+import MobileMenu from "@/components/MobileMenu";
 import userAvatar from "@/assets/user-avatar.jpg";
 import RisksSignalsDialog from "./RisksSignalsDialog";
 import { useSignalsStore } from "@/stores/signalsStore";
@@ -61,7 +62,7 @@ const Header = ({ isScrolled = false }: HeaderProps) => {
           
           {/* Mobile: Show deal count and value */}
           {isMobile && (
-            <span className="text-foreground font-medium">7 Deals • $8.0M</span>
+            <span className="text-foreground font-medium">7 deals · $8.0M</span>
           )}
           
           {/* Desktop metrics */}
@@ -95,7 +96,7 @@ const Header = ({ isScrolled = false }: HeaderProps) => {
             <span className="bg-danger text-danger-foreground text-xxs px-1.5 h-5 rounded-full inline-flex items-center justify-center min-w-5 font-semibold">{riskCount || 0}</span>
           </button>
           
-          <SkinSwitcher />
+          {isMobile ? <MobileMenu onPull={handlePull} /> : <SkinSwitcher />}
 
           {/* Pull button - hidden on mobile (in bottom nav) */}
           {!isMobile && (

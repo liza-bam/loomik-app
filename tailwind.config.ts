@@ -47,6 +47,7 @@ export default {
       ...theme("spacing"),
       dialog: "var(--layout-dialog-max-h)",
       popup: "var(--layout-popup-max-h)",
+      sheet: "var(--layout-sheet-max-h)",
       full: "100%",
       screen: "100vh",
     }),

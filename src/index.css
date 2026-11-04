@@ -151,6 +151,7 @@
     --layout-dialog-max-h: 90vh;
     --layout-popup-max-h: 85vh;
     --layout-drawer: 85svh;
+    --layout-sheet-max-h: 92svh;
     --layout-toast: 26.25rem;
     --layout-deals: 32px 48px minmax(120px, 1fr) 72px 80px 48px 48px 80px;
     --layout-deals-wide: 32px 48px minmax(120px, 1fr) 80px 72px 80px 100px 100px 80px;

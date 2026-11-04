@@ -451,7 +451,7 @@ const DealGPS = () => {
         </div>
         
         {/* Tab Navigation + AI Header - side by side */}
-        <div className="flex border-b border-border bg-card">
+        <div className="flex border-b border-border bg-card max-lg:hidden">
           <div className="flex-1">
             <TabNavigation isScrolled={isScrolled} activeTab="Deal GPS" />
           </div>
