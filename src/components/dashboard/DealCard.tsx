@@ -1,12 +1,9 @@
-import { Zap, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getCompanyById, stageConfig, formatCompactValue } from "@/data/dealData";
 import { scoreFill, scoreText } from "@/lib/tone";
 
-// Format value as compact currency ($580K, $2.4M)
 // Format date as MM.DD.YY
 const formatCompactDate = (dateStr: string): string => {
   const date = new Date(dateStr);
@@ -37,17 +34,12 @@ const DealCard = ({ deal }: DealCardProps) => {
   const company = getCompanyById(deal.companyId);
   const stageInfo = stageConfig[deal.stage];
 
-  const handleCardClick = () => {
-    navigate(`/deal-gps?deal=${deal.id}`);
-  };
+  const handleCardClick = () => navigate(`/deal-gps?deal=${deal.id}`);
 
   return (
-    <Card 
-      className="group p-4 interactive-card flex flex-col relative cursor-pointer"
-      onClick={handleCardClick}
-    >
-      {/* Header: Logo + Deal Info */}
-      <div className="flex items-start gap-3 mb-3">
+    <Card className="p-4 interactive-card cursor-pointer space-y-3" onClick={handleCardClick}>
+      {/* Who: logo, deal, company + close date, stage */}
+      <div className="flex items-center gap-3">
         <Avatar className="w-10 h-10 shrink-0">
           <AvatarImage src={company?.logo} alt={company?.name} className="object-contain p-1" />
           <AvatarFallback className="bg-muted text-foreground text-sm font-medium">
@@ -55,8 +47,11 @@ const DealCard = ({ deal }: DealCardProps) => {
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground text-sm line-clamp-1">{deal.name}</p>
-          <p className="text-xs text-muted-foreground truncate">{company?.name}</p>
+          <p className="flex items-center gap-1.5 font-medium text-foreground text-sm">
+            <span className="truncate">{deal.name}</span>
+            {deal.hasRisk && <span className="w-1.5 h-1.5 shrink-0 rounded-full bg-danger" title="At risk" />}
+          </p>
+          <p className="text-xs text-muted-foreground truncate">{company?.name} · Closes {formatCompactDate(deal.closeDate)}</p>
         </div>
         <div className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xxs font-medium border ${stageInfo.colorClass}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${stageInfo.dotColor}`} />
@@ -64,48 +59,21 @@ const DealCard = ({ deal }: DealCardProps) => {
         </div>
       </div>
 
-      {/* Metrics */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-4">
+      {/* Value, win, alignment */}
+      <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
         <div>
-          <p className="text-xxs text-muted-foreground uppercase tracking-wide mb-0.5">Value</p>
+          <p className="text-xxs text-muted-foreground">Value</p>
           <p className="text-sm font-semibold text-foreground">{formatCompactValue(deal.valueNumeric)}</p>
-        </div>
-        <div>
-          <p className="text-xxs text-muted-foreground uppercase tracking-wide mb-0.5">Close By</p>
-          <p className="text-sm font-semibold text-foreground">{formatCompactDate(deal.closeDate)}</p>
         </div>
         {([["Win", deal.winProbability], ["Alignment", deal.alignment]] as const).map(([label, value]) => (
           <div key={label}>
-            <div className="flex items-baseline justify-between mb-1">
-              <p className="text-xxs text-muted-foreground uppercase tracking-wide">{label}</p>
-              <p className={`text-sm font-semibold ${scoreText(value)}`}>{value}%</p>
-            </div>
-            <div className="h-1 rounded-full bg-muted">
+            <p className="text-xxs text-muted-foreground">{label}</p>
+            <p className={`text-sm font-semibold ${scoreText(value)}`}>{value}%</p>
+            <div className="h-1 mt-1 rounded-full bg-muted">
               <div className={`h-1 rounded-full ${scoreFill(value)}`} style={{ width: `${value}%` }} />
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-2 mt-auto pt-3 border-t border-border">
-        <div className="relative">
-          <Button
-            size="sm"
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              navigate(`/action-hub?company=${encodeURIComponent(company?.name || "")}`); 
-            }}
-            title="Actions"
-          >
-            <Zap className="w-4 h-4" />
-            Actions
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-          {deal.hasRisk && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-danger rounded-full border-2 border-card" title="At risk" />
-          )}
-        </div>
       </div>
     </Card>
   );

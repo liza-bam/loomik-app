@@ -8,18 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   ChevronLeft, 
   ChevronRight, 
-  RefreshCw, 
-  Pencil, 
   Upload, 
   Filter, 
   CheckCircle2, 
   AlertTriangle,
   TrendingUp,
   Tag,
-  FileText,
-  Layers,
-  Target,
-  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { scoreText, categoryBadge, selectedChip } from "@/lib/tone";
@@ -208,7 +202,6 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
   // Filter states
   const [alignmentFilter, setAlignmentFilter] = useState("all");
   const [bvmFilter, setBvmFilter] = useState("all");
-  const [svmFilter, setSvmFilter] = useState("all");
   const [svmViewMode, setSvmViewMode] = useState<"deal" | "full">("deal");
   
   // Calculate alignment stats
@@ -291,8 +284,8 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
     
     return (
-      <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-        <span className="text-sm text-muted-foreground">
+      <div className="flex items-center justify-end sm:justify-between px-4 py-3 border-t border-border">
+        <span className="hidden sm:inline text-sm text-muted-foreground">
           Showing {startItem} to {endItem} of {totalItems} entries
         </span>
         <div className="flex items-center gap-1">
@@ -304,7 +297,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
             className="gap-1"
           >
             <ChevronLeft className="w-4 h-4" />
-            Previous
+            <span className="hidden sm:inline">Previous</span>
           </Button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
             <Button
@@ -324,7 +317,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
             disabled={currentPage === totalPages}
             className="gap-1"
           >
-            Next
+            <span className="hidden sm:inline">Next</span>
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
@@ -334,29 +327,19 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Summary Box - matches Win Probability style */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" />
-          Summary
-        </h3>
-        <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-between">
-          <p className="text-base text-foreground leading-relaxed">
-            Review and manage BVM/SVM details, alignment status, and supporting proof.
-          </p>
-          <Button size="sm" className="gap-2 shrink-0 ml-4">
-            <Upload className="w-4 h-4" />
-            Upload
-          </Button>
-        </div>
+      <div className="flex justify-end">
+        <Button size="sm" variant="outline" className="gap-2">
+          <Upload className="w-4 h-4" />
+          Upload proof
+        </Button>
       </div>
       
       {/* BVM-SVM Alignment Analysis */}
       <Card className="overflow-hidden">
         <div className="px-4 py-4 border-b border-border">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold">BVM-SVM Alignment Analysis</h3>
+              <h3 className="text-base sm:text-lg font-semibold">BVM-SVM Alignment Analysis</h3>
               <p className="text-sm text-muted-foreground">Buyer Value Map to Seller Value Map alignment and gap analysis</p>
             </div>
             <div className="flex items-center gap-2">
@@ -372,12 +355,9 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                   <SelectItem value="gap">Gaps</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="icon" className="h-9 w-9" title="Refresh Analysis">
-                <RefreshCw className="w-4 h-4" />
-              </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2 mt-3">
+          <div className="flex flex-wrap items-center gap-2 mt-3">
             <Badge variant="secondary">
               Overall Alignment: {overallAlignment}%
             </Badge>
@@ -392,7 +372,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
         
         {/* Alignment Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-max lg:min-w-0">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">BVM Field</th>
@@ -453,9 +433,9 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
       {/* Buyer Value Map (BVM) */}
       <Card className="overflow-hidden">
         <div className="px-4 py-4 border-b border-border">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold">Buyer Value Map (BVM)</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Buyer Value Map (BVM)</h3>
               <p className="text-sm text-muted-foreground">Comprehensive value drivers (primitives) and areas of focus for buying team</p>
             </div>
             <div className="flex items-center gap-2">
@@ -471,22 +451,13 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                   ))}
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="icon" className="h-9 w-9" title="Refresh Data">
-                <RefreshCw className="w-4 h-4" />
-              </Button>
             </div>
-          </div>
-          <div className="flex items-center gap-2 mt-3">
-            <Badge variant="outline" className={`border-transparent ${categoryBadge}`}>
-              Complete Framework
-            </Badge>
-            <span className="text-xs text-muted-foreground">All BVM data displayed on platform</span>
           </div>
         </div>
         
         {/* BVM Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-max lg:min-w-0">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Category</th>
@@ -507,7 +478,7 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                    <p className="text-sm text-muted-foreground max-w-60">{item.description}</p>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <span className="text-muted-foreground">-</span>
@@ -529,9 +500,9 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
       {/* Seller Value Map (SVM) */}
       <Card className="overflow-hidden">
         <div className="px-4 py-4 border-b border-border">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold">Seller Value Map (SVM)</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Seller Value Map (SVM)</h3>
               <p className="text-sm text-muted-foreground">Core offering data fields and capability mapping</p>
             </div>
             <div className="flex items-center gap-2">
@@ -543,31 +514,13 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                 />
                 <span className="text-sm font-medium">Full SVM</span>
               </div>
-              <Select value={svmFilter} onValueChange={setSvmFilter}>
-                <SelectTrigger className="w-30">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="All Fields" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Fields</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="icon" className="h-9 w-9" title="Refresh Data">
-                <RefreshCw className="w-4 h-4" />
-              </Button>
             </div>
-          </div>
-          <div className="flex items-center gap-2 mt-3">
-            <Badge variant="outline" className={`border-transparent ${categoryBadge}`}>
-              Deal-Specific View
-            </Badge>
-            <span className="text-xs text-muted-foreground">Mapped info specific to current deal</span>
           </div>
         </div>
         
         {/* SVM Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-max lg:min-w-0">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Field</th>
@@ -586,10 +539,10 @@ export function BuyerProfileSection({ dealId }: BuyerProfileSectionProps) {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                    <p className="text-sm text-muted-foreground max-w-60">{item.description}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-muted-foreground">{item.whyNeeded}</p>
+                    <p className="text-sm text-muted-foreground max-w-60">{item.whyNeeded}</p>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">

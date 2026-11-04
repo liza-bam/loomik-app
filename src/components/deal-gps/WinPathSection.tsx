@@ -1,6 +1,6 @@
 // Win Path Section - Shows deal stages with tabs
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, Search, BadgeCheck, Users, Flag, LucideIcon, Pencil, Check, X, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Search, BadgeCheck, Users, Flag, LucideIcon, Pencil, Check, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -356,7 +356,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
   return (
     <div className="space-y-3">
       {/* Stage Pills */}
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center gap-1.5 overflow-x-auto">
         {stages.map((stage) => {
           const isActive = activeStage === stage.key;
           const StageIcon = stage.icon;
@@ -388,15 +388,11 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
         })}
       </div>
       
-      {/* Summary Box - matches Win Probability style */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" />
-          Summary
-        </h3>
+      {/* Stage summary */}
+      <div>
         <div className="bg-muted/30 rounded-lg p-4">
           <div className="space-y-3">
-            <p className="text-base text-foreground leading-relaxed">{activeStageData.description}</p>
+            <p className="text-sm sm:text-base text-foreground leading-relaxed">{activeStageData.description}</p>
             <div className="flex items-center gap-3">
               <div className="h-2 w-32 bg-muted rounded-full overflow-hidden">
                 <div 
@@ -419,7 +415,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
       <Card className="overflow-hidden">
         {/* Items Table */}
         <div className="divide-y divide-border">
-          <div className="grid grid-cols-win-path gap-4 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
+          <div className="hidden sm:grid grid-cols-win-path gap-4 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
             <span>Item</span>
             <span>Description</span>
             <span>Source</span>
@@ -428,7 +424,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
           {activeStageData.items.map((item) => (
             <div 
               key={item.id}
-              className="grid grid-cols-win-path gap-4 px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors"
+              className="grid gap-1 sm:grid-cols-win-path sm:gap-4 px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors"
             >
               <EditableField 
                 id={item.id} 
@@ -446,7 +442,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
                 field="source" 
                 value={getItemValue(item, 'source')} 
               />
-              <div className="flex justify-center">
+              <div className="flex sm:justify-center">
                 {item.status === 'complete' ? (
                   <CheckCircle2 className="w-4 h-4 text-success" />
                 ) : (

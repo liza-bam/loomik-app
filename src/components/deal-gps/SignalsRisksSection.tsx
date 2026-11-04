@@ -1,29 +1,23 @@
 // SignalsRisksSection - Side by side Signals & Risks for Deal GPS
 import { useState, useMemo } from "react";
-import { AlertTriangle, Zap, ChevronDown, ChevronUp, ArrowRight, Clock, Database, Pencil, Check, X } from "lucide-react";
+import { AlertTriangle, Zap, ChevronDown, ChevronUp, Database, Pencil, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { priorityDot, avatarFallback } from "@/lib/tone";
+import { DealSection } from "./DealSection";
 import { useSignalsStore, DetectedSignal } from "@/stores/signalsStore";
 import { useSignalProcessor } from "@/hooks/useSignalProcessor";
 import { toast } from "@/hooks/use-toast";
-import { CRITICAL_EVENT_LABELS } from "@/data/signalsData";
 
 interface SignalsRisksSectionProps {
   dealId: number;
   dealName: string;
-  isOpen: boolean;
-  onToggle: () => void;
+  compact: boolean;
 }
 
 // Helper to format time ago
@@ -42,7 +36,7 @@ const formatTimeAgo = (date: Date) => {
 
 const ITEMS_PER_PAGE = 5;
 
-export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: SignalsRisksSectionProps) => {
+export const SignalsRisksSection = ({ dealId, dealName, compact }: SignalsRisksSectionProps) => {
   const [expandedRiskId, setExpandedRiskId] = useState<string | null>(null);
   const [expandedSignalId, setExpandedSignalId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -412,43 +406,19 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
     </div>
   );
 
-  const totalCount = risks.length + signals.length;
+  const summary = `${risks.length} risk${risks.length !== 1 ? 's' : ''} · ${signals.length} signal${signals.length !== 1 ? 's' : ''}`;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={onToggle}>
-      <section className="space-y-4">
-        {/* Section Header */}
-        <CollapsibleTrigger asChild>
-          <Card className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary-subtle">
-                <AlertTriangle className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-foreground">Signals & Risks</h2>
-                  {totalCount > 0 && (
-                    <Badge variant="secondary" className="text-xs">
-                      {totalCount}
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {risks.length} risk{risks.length !== 1 ? 's' : ''} · {signals.length} signal{signals.length !== 1 ? 's' : ''} detected
-                </p>
-              </div>
-              {isOpen ? (
-                <ChevronUp className="w-5 h-5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-muted-foreground" />
-              )}
-            </div>
-          </Card>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent className="space-y-4">
+    <DealSection
+      title="Signals & Risks"
+      icon={AlertTriangle}
+      description={summary}
+      summary={summary}
+      compact={compact}
+      defaultOpen={!compact}
+    >
           {/* Split Screen Layout */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Risks Column */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -478,7 +448,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                 )}
               </div>
               <Card className="overflow-hidden border-muted">
-                <ScrollArea className="h-80">
+                <ScrollArea className="md:h-80">
                   <div className="p-2 space-y-1.5">
                     {risks.length === 0 ? (
                       <EmptyState type="risk" />
@@ -540,7 +510,7 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
                 )}
               </div>
               <Card className="overflow-hidden border-muted">
-                <ScrollArea className="h-80">
+                <ScrollArea className="md:h-80">
                   <div className="p-2 space-y-1.5">
                     {signals.length === 0 ? (
                       <EmptyState type="signal" />
@@ -573,8 +543,6 @@ export const SignalsRisksSection = ({ dealId, dealName, isOpen, onToggle }: Sign
               </Card>
             </div>
           </div>
-        </CollapsibleContent>
-      </section>
-    </Collapsible>
+    </DealSection>
   );
 };

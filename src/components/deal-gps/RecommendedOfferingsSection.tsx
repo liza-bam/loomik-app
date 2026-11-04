@@ -1,15 +1,10 @@
 // RecommendedOfferingsSection - Matched offerings based on unmet buyer needs
-import { useState } from "react";
-import { Star, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+import { Star, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { DealSection } from "./DealSection";
 import { scoreText, categoryBadge } from "@/lib/tone";
 
 // ==================== TYPES ====================
@@ -96,50 +91,34 @@ const BUYER_PRIORITIES = ["Risk Mitigation", "Cost Efficiency", "Time-to-Outcome
 // ==================== COMPONENT ====================
 
 interface RecommendedOfferingsSectionProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  compact: boolean;
   onCreateAction: (offering: RecommendedOffering) => void;
 }
 
 export const RecommendedOfferingsSection = ({
-  isOpen,
-  onToggle,
+  compact,
   onCreateAction,
 }: RecommendedOfferingsSectionProps) => {
 
   return (
-    <Collapsible open={isOpen} onOpenChange={onToggle}>
-      <section className="space-y-4">
-        {/* Section Header */}
-        <CollapsibleTrigger asChild>
-          <Card className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary-subtle">
-                <Star className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-foreground">RECOMMENDED OFFERINGS</h2>
-                </div>
-                <p className="text-sm text-muted-foreground">Matched to unmet buyer needs</p>
-              </div>
-              {/* Inline preview tags when collapsed */}
-              {!isOpen && (
-                <div className="hidden md:flex items-center gap-1.5 mr-2">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">Buyer priorities:</span>
-                  {BUYER_PRIORITIES.map((p) => (
-                    <Badge key={p} variant="outline" className={`text-xxs px-2 py-0 h-5 whitespace-nowrap border-transparent ${categoryBadge}`}>
-                      {p}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              {isOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" /> : <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />}
-            </div>
-          </Card>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent className="space-y-6">
+    <DealSection
+      title="Recommended offerings"
+      icon={Star}
+      description="Matched to unmet buyer needs"
+      summary={`${recommendedOfferings.length} matches`}
+      headerExtra={
+        <div className="hidden md:flex items-center gap-1.5 mr-2">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Buyer priorities:</span>
+          {BUYER_PRIORITIES.map((p) => (
+            <Badge key={p} variant="outline" className={`text-xxs px-2 py-0 h-5 whitespace-nowrap border-transparent ${categoryBadge}`}>
+              {p}
+            </Badge>
+          ))}
+        </div>
+      }
+      compact={compact}
+    >
+        <div className="space-y-6">
           {/* Section 1: Already Covered */}
           <div className="space-y-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Already Covered</p>
@@ -211,9 +190,8 @@ export const RecommendedOfferingsSection = ({
               ))}
             </div>
           </div>
-        </CollapsibleContent>
-      </section>
-    </Collapsible>
+        </div>
+    </DealSection>
   );
 };
 

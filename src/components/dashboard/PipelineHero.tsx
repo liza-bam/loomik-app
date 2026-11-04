@@ -24,49 +24,49 @@ const PipelineHero = () => {
   const company = getCompanyById(bestDeal.companyId);
 
   return (
-    <section className="mb-6 space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <section className="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3 sm:gap-4">
         <div>
           <p className="text-sm text-muted-foreground">Pipeline value</p>
           <div className="flex items-baseline gap-3">
-            <span className="text-5xl font-bold tracking-tight text-foreground">{formatCompactValue(total)}</span>
+            <span className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">{formatCompactValue(total)}</span>
             <span className="text-sm text-muted-foreground">{deals.length} open deals</span>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3 w-full sm:w-auto">
-          <div className="rounded-lg bg-primary-subtle p-4 sm:min-w-35">
+          <div className="rounded-lg bg-primary-subtle p-3 sm:p-4 sm:min-w-35">
             <p className="text-xs text-foreground">Win rate</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-foreground">{winRate}%</span>
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="text-xl sm:text-2xl font-bold text-foreground">{winRate}%</span>
               <Delta value={winRateChange} onAccent />
             </div>
           </div>
-          <div className="rounded-lg bg-card border border-border p-4 sm:min-w-35">
+          <div className="rounded-lg bg-card border border-border p-3 sm:p-4 sm:min-w-35">
             <p className="text-xs text-muted-foreground">Alignment</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-foreground">{alignment}%</span>
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="text-xl sm:text-2xl font-bold text-foreground">{alignment}%</span>
               <Delta value={alignmentChange} />
             </div>
           </div>
           <Link
             to={`/deal-gps?deal=${bestDeal.id}`}
-            className="group rounded-lg bg-foreground text-background p-4 sm:min-w-40 transition-opacity hover:opacity-90"
+            className="group rounded-lg bg-foreground text-background p-3 sm:p-4 sm:min-w-40 transition-opacity hover:opacity-90"
           >
             <p className="flex items-center justify-between text-xs opacity-70">
               Best deal
               <ArrowUpRight className="w-3.5 h-3.5" />
             </p>
-            <p className="text-2xl font-bold">{formatCompactValue(bestDeal.valueNumeric)}</p>
+            <p className="text-xl sm:text-2xl font-bold">{formatCompactValue(bestDeal.valueNumeric)}</p>
             <p className="text-xs opacity-70 truncate">{company?.name}</p>
           </Link>
         </div>
       </div>
 
-      {/* Value by stage */}
-      <div className="flex flex-wrap gap-2">
+      {/* Value by stage: scrolls sideways on phones */}
+      <div className="flex gap-2 overflow-x-auto sm:flex-wrap">
         {byStage.map(({ stage, value, share }) => (
-          <div key={stage} className="flex flex-1 min-w-35 items-center gap-2 rounded-full bg-card border border-border px-3 py-1.5 text-sm">
+          <div key={stage} className="flex shrink-0 sm:flex-1 sm:min-w-35 items-center gap-2 rounded-full bg-card border border-border px-3 py-1.5 text-sm">
             <span className={`w-2 h-2 rounded-full ${stageConfig[stage].dotColor}`} />
             <span className="text-muted-foreground">{stageConfig[stage].label}</span>
             <span className="ml-auto font-semibold text-foreground">{value ? formatCompactValue(value) : "—"}</span>

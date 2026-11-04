@@ -115,29 +115,93 @@ const DealsTable = () => {
   };
 
 
+  const stageChips = (compact: boolean) =>
+    stagePills.map((stage) => {
+      const selected = stageFilter === stage.key;
+      return (
+        <button
+          key={stage.key}
+          onClick={() => setStageFilter(stage.key)}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+            compact ? `h-10 px-4 border ${selected ? "border-transparent" : "border-border bg-card"}` : "px-3 py-1"
+          } ${selected ? selectedChip : unselectedChip}`}
+        >
+          {stage.dotColor && <span className={`w-1.5 h-1.5 rounded-full ${stage.dotColor}`} />}
+          {stage.label}
+        </button>
+      );
+    });
+
+  const sortMenu = showSortDropdown && (
+    <div className={`absolute top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-10 min-w-40 animate-fade-in ${isCompact ? "right-0" : "left-0"}`}>
+      {(Object.keys(sortLabels) as Array<keyof typeof sortLabels>).map((key) => (
+        <button
+          key={key}
+          className={`w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors ${sortBy === key ? `${selectedChip} font-medium` : ""}`}
+          onClick={() => { setSortBy(key); setShowSortDropdown(false); }}
+        >
+          {sortLabels[key]}
+        </button>
+      ))}
+      {isCompact && (
+        <button
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground border-t border-border hover:bg-muted transition-colors"
+          onClick={() => setSortAsc(!sortAsc)}
+        >
+          {sortAsc ? <ArrowUpNarrowWide className="w-4 h-4" /> : <ArrowDownNarrowWide className="w-4 h-4" />}
+          {sortAsc ? "Ascending" : "Descending"}
+        </button>
+      )}
+    </div>
+  );
+
+  const emptyState = (
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+        <Eye className="w-8 h-8 text-muted-foreground" />
+      </div>
+      <h3 className="text-lg font-semibold text-foreground mb-2">No deals found</h3>
+      <p className="text-sm text-muted-foreground max-w-sm mb-4">
+        {stageFilter !== "all"
+          ? `There are no deals in the "${stageFilter}" stage. Try selecting a different stage filter.`
+          : searchQuery
+            ? "No deals match your search criteria. Try adjusting your search terms."
+            : "No deals available at this time."
+        }
+      </p>
+      {stageFilter !== "all" && (
+        <Button variant="outline" size="sm" onClick={() => setStageFilter("all")}>
+          View all stages
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <TooltipProvider>
-      {/* Filter Bar - always in a card */}
+      {isCompact ? (
+        /* Phones: one scrolling chip row + a compact sort button */
+        <div className="flex items-center gap-2">
+          <div className="flex flex-1 gap-2 overflow-x-auto">{stageChips(true)}</div>
+          <div className="relative shrink-0">
+            <button
+              onClick={() => setShowSortDropdown(!showSortDropdown)}
+              className="flex items-center justify-center w-10 h-10 rounded-full border border-border bg-card text-foreground"
+              title={`Sort by ${sortLabels[sortBy]}`}
+            >
+              {sortAsc ? <ArrowUpNarrowWide className="w-4 h-4" /> : <ArrowDownNarrowWide className="w-4 h-4" />}
+            </button>
+            {sortMenu}
+          </div>
+        </div>
+      ) : (
       <Card className="p-0 overflow-visible">
-        <FilterBar className={isCompact ? "flex-col items-stretch gap-3" : ""}>
-          <FilterBarLeft className={isCompact ? "w-full flex-wrap" : ""}>
-            {/* Stage Filter Pills */}
-            <div className="flex items-center gap-1 flex-wrap">
-              {stagePills.map((stage) => (
-                <button
-                  key={stage.key}
-                  onClick={() => setStageFilter(stage.key)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${stageFilter === stage.key ? selectedChip : unselectedChip}`}
-                >
-                  {stage.dotColor && <span className={`w-1.5 h-1.5 rounded-full ${stage.dotColor}`} />}
-                  {stage.label}
-                </button>
-              ))}
-            </div>
+        <FilterBar>
+          <FilterBarLeft>
+            <div className="flex items-center gap-1 flex-wrap">{stageChips(false)}</div>
           </FilterBarLeft>
 
-          <FilterBarRight className={isCompact ? "w-full justify-start flex-wrap" : ""}>
-            {/* Sort Dropdown + Toggle - moved to right side for tablet 2-row layout */}
+          <FilterBarRight>
             <div className="flex items-center gap-2">
               <div className="relative">
                 <button 
@@ -147,69 +211,44 @@ const DealsTable = () => {
                   {sortLabels[sortBy]}
                   <ChevronDown className={`w-4 h-4 transition-transform ${showSortDropdown ? "rotate-180" : ""}`} />
                 </button>
-                {showSortDropdown && (
-                  <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 min-w-40 animate-fade-in">
-                    {(Object.keys(sortLabels) as Array<keyof typeof sortLabels>).map((key) => (
-                      <button
-                        key={key}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors ${sortBy === key ? `${selectedChip} font-medium` : ""}`}
-                        onClick={() => { setSortBy(key); setShowSortDropdown(false); }}
-                      >
-                        {sortLabels[key]}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {sortMenu}
               </div>
               <button 
                 onClick={() => setSortAsc(!sortAsc)}
                 className="flex items-center justify-center w-9 h-9 bg-muted rounded-lg text-foreground hover:bg-muted/80 transition-colors"
                 title={sortAsc ? "Ascending" : "Descending"}
               >
-                {sortAsc ? (
-                  <ArrowUpNarrowWide className="w-4 h-4" />
-                ) : (
-                  <ArrowDownNarrowWide className="w-4 h-4" />
-                )}
+                {sortAsc ? <ArrowUpNarrowWide className="w-4 h-4" /> : <ArrowDownNarrowWide className="w-4 h-4" />}
               </button>
             </div>
-            
-            {!isCompact && (
-              <span className="hidden 2xl:inline text-sm text-muted-foreground">Showing {sortedDeals.length} of {deals.length} deals</span>
-            )}
-            {/* Hide view toggle on tablet when AI panel is open */}
-            {!isCompact && (
-              <div className="flex border border-border rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 transition-colors ${viewMode === "list" ? selectedChip : unselectedChip}`}
-                  title="List view"
-                >
-                  <List className="w-4 h-4" />
+            <span className="hidden 2xl:inline text-sm text-muted-foreground">Showing {sortedDeals.length} of {deals.length} deals</span>
+            <div className="flex border border-border rounded-lg overflow-hidden">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 transition-colors ${viewMode === "list" ? selectedChip : unselectedChip}`}
+                title="List view"
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("cards")}
+                className={`p-2 transition-colors ${viewMode === "cards" ? selectedChip : unselectedChip}`}
+                title="Cards view"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="flex items-center gap-2 text-sm text-primary font-medium hover:underline">
+                  <span className="hidden 2xl:inline">Open CRM</span>
+                  <ExternalLink className="w-4 h-4" />
                 </button>
-                <button
-                  onClick={() => setViewMode("cards")}
-                  className={`p-2 transition-colors ${viewMode === "cards" ? selectedChip : unselectedChip}`}
-                  title="Cards view"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-            {/* Hide CRM button on tablet when AI panel is open */}
-            {!isCompact && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="flex items-center gap-2 text-sm text-primary font-medium hover:underline">
-                    <span className="hidden 2xl:inline">Open CRM</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Open CRM</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open CRM</p>
+              </TooltipContent>
+            </Tooltip>
           </FilterBarRight>
         </FilterBar>
 
@@ -232,29 +271,7 @@ const DealsTable = () => {
             {/* Deals List */}
             <div className="divide-y divide-border min-h-50">
               {sortedDeals.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                    <Eye className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No deals found</h3>
-                  <p className="text-sm text-muted-foreground max-w-sm mb-4">
-                    {stageFilter !== "all" 
-                      ? `There are no deals in the "${stageFilter}" stage. Try selecting a different stage filter.`
-                      : searchQuery 
-                        ? "No deals match your search criteria. Try adjusting your search terms."
-                        : "No deals available at this time."
-                    }
-                  </p>
-                  {stageFilter !== "all" && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setStageFilter("all")}
-                    >
-                      View all stages
-                    </Button>
-                  )}
-                </div>
+                emptyState
               ) : (
                 sortedDeals.map((deal) => {
                   const stageInfo = stageConfig[deal.stage];
@@ -378,38 +395,15 @@ const DealsTable = () => {
           </>
         )}
       </Card>
+      )}
 
       {/* Cards View - outside the card, directly on background */}
       {viewMode === "cards" && (
-        <div className="mt-4">
+        <div className={isCompact ? "mt-3" : "mt-4"}>
           {sortedDeals.length === 0 ? (
-            <Card className="p-0">
-              <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                  <Eye className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">No deals found</h3>
-                <p className="text-sm text-muted-foreground max-w-sm mb-4">
-                  {stageFilter !== "all" 
-                    ? `There are no deals in the "${stageFilter}" stage. Try selecting a different stage filter.`
-                    : searchQuery 
-                      ? "No deals match your search criteria. Try adjusting your search terms."
-                      : "No deals available at this time."
-                  }
-                </p>
-                {stageFilter !== "all" && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setStageFilter("all")}
-                  >
-                    View all stages
-                  </Button>
-                )}
-              </div>
-            </Card>
+            <Card className="p-0">{emptyState}</Card>
           ) : (
-            <div className={`grid gap-4 ${isCompact ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
+            <div className={`grid ${isCompact ? 'gap-3 grid-cols-1 sm:grid-cols-2' : 'gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
               {sortedDeals.map((deal) => (
                 <DealCard key={deal.id} deal={deal} />
               ))}
