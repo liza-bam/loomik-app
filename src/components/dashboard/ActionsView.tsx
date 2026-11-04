@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, Fragment, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { LayoutGrid, List, Mail, Video, Archive, ChevronRight, ChevronDown, ArrowUpNarrowWide, ArrowDownNarrowWide, Undo2, FileText, File, Users, Calendar, Sparkles } from "lucide-react";
-import { getPrimitivesForRole } from "@/lib/value-primitives/roleDefaults";
-import { getPrimitiveById } from "@/lib/value-primitives/types";
+import { LayoutGrid, List, Mail, Video, Archive, ChevronRight, ChevronDown, ArrowUpNarrowWide, ArrowDownNarrowWide, Undo2, FileText, File, Users, Sparkles, SlidersHorizontal } from "lucide-react";
+import { Disclosure } from "@/components/ui/disclosure";
 import SummaryBox from "@/components/ui/summary-box";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
@@ -32,7 +31,7 @@ import {
   deals,
   getCompanyById,
 } from "@/data/dealData";
-import { avatarFallback, categoryBadge, priorityDot, scoreText, selectedChip, sentimentBadge, unselectedChip } from "@/lib/tone";
+import { avatarFallback, priorityDot, scoreText, selectedChip, sentimentBadge, unselectedChip } from "@/lib/tone";
 import salesforceLogo from "@/assets/logos/salesforce.svg";
 import stripeLogo from "@/assets/logos/stripe.svg";
 import shopifyLogo from "@/assets/logos/shopify.svg";
@@ -421,112 +420,143 @@ const ActionsView = () => {
   };
 
 
+  const priorityChips = ["high", "medium", "low"].map((p) => (
+    <button
+      key={p}
+      onClick={() => togglePriority(p)}
+      className={`flex items-center gap-1.5 rounded-full text-xs font-medium capitalize transition-colors shrink-0 ${isCompact ? "h-10 px-3 border" : "px-2 py-1"} ${priorityFilter.includes(p) ? `${selectedChip} border-transparent` : `${unselectedChip} ${isCompact ? "bg-card border-border" : ""}`}`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${priorityDot(p)}`} />
+      {p}
+    </button>
+  ));
+
+  const typeChips = (["email", "meeting"] as const).map((t) => (
+    <button
+      key={t}
+      onClick={() => toggleType(t)}
+      className={`flex items-center justify-center rounded-full transition-colors shrink-0 ${isCompact ? "h-10 w-10 border" : "p-1.5"} ${typeFilter.includes(t) ? `${selectedChip} border-transparent` : `${unselectedChip} ${isCompact ? "bg-card border-border" : ""}`}`}
+      title={t}
+      aria-label={t}
+    >
+      {t === "email" ? <Mail className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
+    </button>
+  ));
+
+  const selectClass = isCompact ? "h-10 bg-card" : "min-w-35 max-w-48 h-9 bg-muted border-0 rounded-lg";
+
+  const dealSelect = (
+    <Select value={dealFilter} onValueChange={setDealFilter}>
+      <SelectTrigger className={selectClass} aria-label="Deal">
+        <SelectValue placeholder="Deal" className="truncate" />
+      </SelectTrigger>
+      <SelectContent className="bg-card border border-border z-50">
+        <SelectItem value="all">All Deals</SelectItem>
+        {[...new Set(allActions.map(a => a.dealName))].map((dealName) => (
+          <SelectItem key={dealName} value={dealName}>{dealName}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  const companySelect = (
+    <Select value={companyFilter} onValueChange={setCompanyFilter}>
+      <SelectTrigger className={selectClass} aria-label="Company">
+        <SelectValue placeholder="Company" />
+      </SelectTrigger>
+      <SelectContent className="bg-card border border-border z-50">
+        <SelectItem value="all">All Companies</SelectItem>
+        {[...new Set(allActions.map(a => a.companyName))].sort().map((companyName) => (
+          <SelectItem key={companyName} value={companyName}>{companyName}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  const sortControl = (
+    <div className="flex items-center gap-2">
+      <Select value={sortBy} onValueChange={(v) => setSortBy(v as "deadline" | "priority" | "company")}>
+        <SelectTrigger className={isCompact ? "h-10 flex-1 bg-card" : "w-28 bg-muted border-0"} aria-label="Sort by">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="bg-card border border-border z-50">
+          <SelectItem value="deadline">Deadline</SelectItem>
+          <SelectItem value="priority">Priority</SelectItem>
+          <SelectItem value="company">Company</SelectItem>
+        </SelectContent>
+      </Select>
+      <button
+        onClick={() => setSortAsc(!sortAsc)}
+        aria-label={sortAsc ? "Ascending" : "Descending"}
+        className={`flex items-center justify-center rounded-lg text-foreground transition-colors shrink-0 ${isCompact ? "w-10 h-10 bg-card border border-border hover:bg-muted" : "w-9 h-9 bg-muted hover:bg-muted/80"}`}
+      >
+        {sortAsc ? <ArrowUpNarrowWide className="w-4 h-4" /> : <ArrowDownNarrowWide className="w-4 h-4" />}
+      </button>
+    </div>
+  );
+
+  const activeFilterCount = (dealFilter !== "all" ? 1 : 0) + (companyFilter !== "all" ? 1 : 0);
+
   return (
     <div className="space-y-0">
-      {/* Controls - matching Dashboard style */}
+      {isCompact ? (
+        /* Phone: one scrolling chip row, the rest folded under "Filters" */
+        <div className="mb-4">
+          <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {priorityChips}
+            {typeChips}
+          </div>
+          <Disclosure
+            title={activeFilterCount ? `Filters & sort (${activeFilterCount})` : "Filters & sort"}
+            icon={SlidersHorizontal}
+            summary={`${sortedActions.length} actions`}
+          >
+            <div className="grid gap-2 sm:grid-cols-3">
+              {dealSelect}
+              {companySelect}
+              {sortControl}
+            </div>
+          </Disclosure>
+        </div>
+      ) : (
       <Card className={`p-0 overflow-hidden ${viewMode === "list" ? "rounded-b-none border-b-0" : "mb-4"}`}>
-        <FilterBar className={isCompact ? "flex-col items-stretch gap-3" : ""}>
-          <FilterBarLeft className={isCompact ? "w-full flex-wrap" : ""}>
-            {/* Priority Buttons */}
-            <div className="flex items-center gap-1">
-              {["high", "medium", "low"].map((p) => (
-                <button
-                  key={p}
-                  onClick={() => togglePriority(p)}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium capitalize transition-colors ${priorityFilter.includes(p) ? selectedChip : unselectedChip}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${priorityDot(p)}`} />
-                  {p}
-                </button>
-              ))}
-            </div>
-
-            {/* Type Pills - icons only */}
-            <div className="flex items-center gap-1">
-              {(["email", "meeting"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => toggleType(t)}
-                  className={`p-1.5 rounded-full transition-colors ${typeFilter.includes(t) ? selectedChip : unselectedChip}`}
-                  title={t}
-                >
-                  {t === "email" ? <Mail className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
-                </button>
-              ))}
-            </div>
-
-            {/* Deals Select */}
-            <Select value={dealFilter} onValueChange={setDealFilter}>
-              <SelectTrigger className="min-w-30 max-w-48 h-9 bg-muted border-0 rounded-lg">
-                <SelectValue placeholder="Deal" className="truncate" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border border-border z-50">
-                <SelectItem value="all">All Deals</SelectItem>
-                {[...new Set(allActions.map(a => a.dealName))].map((dealName) => (
-                  <SelectItem key={dealName} value={dealName}>{dealName}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {/* Company Filter */}
-            <Select value={companyFilter} onValueChange={setCompanyFilter}>
-              <SelectTrigger className="min-w-35 max-w-48 h-9 bg-muted border-0 rounded-lg">
-                <SelectValue placeholder="Company" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border border-border z-50">
-                <SelectItem value="all">All Companies</SelectItem>
-                {[...new Set(allActions.map(a => a.companyName))].sort().map((companyName) => (
-                  <SelectItem key={companyName} value={companyName}>{companyName}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <FilterBar>
+          <FilterBarLeft>
+            <div className="flex items-center gap-1">{priorityChips}</div>
+            <div className="flex items-center gap-1">{typeChips}</div>
+            {dealSelect}
+            {companySelect}
           </FilterBarLeft>
 
-          <FilterBarRight className={isCompact ? "w-full justify-start flex-wrap" : ""}>
-            {/* Sort - hidden on smaller screens, or shown on tablet 2-row layout */}
-            <div className={`${isCompact ? "flex" : "hidden xl:flex"} items-center gap-2`}>
+          <FilterBarRight>
+            <div className="hidden xl:flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Sort:</span>
-              <Select value={sortBy} onValueChange={(v) => setSortBy(v as "deadline" | "priority" | "company")}>
-                <SelectTrigger className="w-28 bg-muted border-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-card border border-border z-50">
-                  <SelectItem value="deadline">Deadline</SelectItem>
-                  <SelectItem value="priority">Priority</SelectItem>
-                  <SelectItem value="company">Company</SelectItem>
-                </SelectContent>
-              </Select>
-              <button 
-                onClick={() => setSortAsc(!sortAsc)}
-                className="flex items-center justify-center w-9 h-9 bg-muted rounded-lg text-foreground hover:bg-muted/80 transition-colors"
-              >
-                {sortAsc ? <ArrowUpNarrowWide className="w-4 h-4" /> : <ArrowDownNarrowWide className="w-4 h-4" />}
-              </button>
+              {sortControl}
             </div>
 
-            {/* Count + View Toggle - hide toggle on tablet with AI panel open */}
             <div className="flex items-center gap-3">
-              <span className={`${isCompact ? "inline" : "hidden 2xl:inline"} text-sm text-muted-foreground whitespace-nowrap`}>{sortedActions.length} actions</span>
-              {!isCompact && (
-                <div className="flex items-center border border-border rounded-lg overflow-hidden">
-                  <button
-                    className={`p-2 transition-colors ${viewMode === "list" ? selectedChip : unselectedChip}`}
-                    onClick={() => setViewMode("list")}
-                  >
-                    <List className="w-4 h-4" />
-                  </button>
-                  <button
-                    className={`p-2 transition-colors ${viewMode === "cards" ? selectedChip : unselectedChip}`}
-                    onClick={() => setViewMode("cards")}
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+              <span className="hidden 2xl:inline text-sm text-muted-foreground whitespace-nowrap">{sortedActions.length} actions</span>
+              <div className="flex items-center border border-border rounded-lg overflow-hidden">
+                <button
+                  className={`p-2 transition-colors ${viewMode === "list" ? selectedChip : unselectedChip}`}
+                  onClick={() => setViewMode("list")}
+                  aria-label="List view"
+                >
+                  <List className="w-4 h-4" />
+                </button>
+                <button
+                  className={`p-2 transition-colors ${viewMode === "cards" ? selectedChip : unselectedChip}`}
+                  onClick={() => setViewMode("cards")}
+                  aria-label="Card view"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </FilterBarRight>
         </FilterBar>
       </Card>
+      )}
 
       {/* Actions List - inside the card */}
       {viewMode === "list" && (
@@ -739,58 +769,33 @@ const ActionExpandedContent = ({ action, onGoToAction, onArchive }: ActionExpand
   const allStakeholders = action.stakeholders.map(s => getStakeholderById(s.id)).filter(Boolean);
 
   return (
-    <div className="bg-muted/30 p-6 space-y-6 animate-fade-in">
-      {/* Summary */}
-      <SummaryBox>
-        {reasoning}
-      </SummaryBox>
+    <div className="bg-muted/30 px-6 pt-4 pb-2 animate-fade-in">
+      {/* Essentials: why, and what to send */}
+      <SummaryBox>{reasoning}</SummaryBox>
+      <p className="mt-3 text-sm text-muted-foreground">
+        <FileText className="inline w-4 h-4 mr-1.5 text-primary align-text-bottom" />
+        <span className="font-medium text-foreground">{action.artifact}</span> · based on {action.basedOn}
+      </p>
 
-      {/* Artifact & Attachments Row */}
-      <div className="flex flex-wrap gap-6">
-        {/* Artifact */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-primary" />
-            <h4 className="font-semibold text-foreground">Artifact</h4>
-          </div>
-          <div className="pl-6">
-            <p className="text-sm font-medium text-foreground">{action.artifact}</p>
-            <p className="text-sm text-muted-foreground mt-1">Based on: {action.basedOn}</p>
-          </div>
-        </div>
-
-        {/* Attachments */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <File className="w-4 h-4 text-primary" />
-            <h4 className="font-semibold text-foreground">Attachments</h4>
-          </div>
-          <div className="flex gap-2 pl-6">
+      {/* Secondary detail, folded */}
+      <div className="mt-2">
+        <Disclosure title="Attachments" icon={File} summary={`${attachments.length} files`}>
+          <div className="flex flex-wrap gap-2">
             {attachments.map((att, i) => (
               <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-background border border-border rounded text-xs">
-                {att.type === "pdf" ? (
-                  <FileText className="w-3 h-3 text-muted-foreground" />
-                ) : (
-                  <File className="w-3 h-3 text-muted-foreground" />
-                )}
+                <File className="w-3 h-3 text-muted-foreground" />
                 <span className="text-foreground">{att.name}</span>
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Stakeholders - using cards like DealExpandedRow */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-primary" />
-          <h4 className="font-semibold text-foreground">Stakeholders</h4>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {allStakeholders.map((sh) => sh && (
-            <ActionStakeholderCard key={sh.id} stakeholder={sh} />
-          ))}
-        </div>
+        </Disclosure>
+        <Disclosure title="Stakeholders" icon={Users} summary={`${allStakeholders.length} people`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {allStakeholders.map((sh) => sh && (
+              <ActionStakeholderCard key={sh.id} stakeholder={sh} />
+            ))}
+          </div>
+        </Disclosure>
       </div>
     </div>
   );
@@ -846,19 +851,6 @@ const ActionStakeholderCard = ({ stakeholder }: ActionStakeholderCardProps) => {
         </div>
       </div>
 
-      {/* Focus Area Pills */}
-      <div className="flex flex-wrap gap-1.5 pt-1">
-        {getPrimitivesForRole(stakeholder.role).slice(0, 3).map((p) => {
-          const primitive = getPrimitiveById(p.primitiveId);
-          if (!primitive) return null;
-          const pillStyles = p.weight > 70 ? selectedChip : categoryBadge;
-          return (
-            <span key={p.primitiveId} className={`px-2 py-0.5 rounded-full text-xs font-medium ${pillStyles}`}>
-              {primitive.shortLabel}
-            </span>
-          );
-        })}
-      </div>
     </div>
   );
 };

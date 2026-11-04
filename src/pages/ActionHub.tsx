@@ -61,7 +61,7 @@ const ActionHub = () => {
       
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content - scrollable, full width on mobile */}
-        <main id="main-scroll" className="flex-1 overflow-y-auto px-6 pt-4 pb-20">
+        <main id="main-scroll" className="flex-1 overflow-y-auto px-4 sm:px-6 pt-4 pb-20">
           <ActionsView />
         </main>
 
