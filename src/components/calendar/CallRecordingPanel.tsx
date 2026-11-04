@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Play, Pause, Volume2, Clock, MessageSquare, Lightbulb, AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
+import { Play, Pause, Sparkles, ListChecks, AlertTriangle, Bookmark, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { categoryBadge, sentimentBadge } from "@/lib/tone";
+import { Disclosure } from "@/components/ui/disclosure";
+import { sentimentBadge } from "@/lib/tone";
 
 interface KeyMoment {
   id: number;
@@ -19,22 +18,21 @@ interface TranscriptEntry {
   id: number;
   timestamp: string;
   speaker: string;
-  isClient: boolean;
   content: string;
 }
 
 // Mock transcript data
 const mockTranscript: TranscriptEntry[] = [
-  { id: 1, timestamp: "00:00", speaker: "Ryan Anderson", isClient: false, content: "Thanks for joining today. Let's dive into the implementation timeline." },
-  { id: 2, timestamp: "00:45", speaker: "Sarah Chen", isClient: true, content: "We've been reviewing the proposal internally. The team is excited but we have some concerns about the integration complexity." },
-  { id: 3, timestamp: "01:30", speaker: "Ryan Anderson", isClient: false, content: "Absolutely, let me walk you through our phased approach. We've done similar integrations with companies of your size." },
-  { id: 4, timestamp: "02:15", speaker: "Michael Park", isClient: true, content: "What's the typical timeline for the data migration piece specifically?" },
-  { id: 5, timestamp: "03:00", speaker: "Mike Johnson", isClient: false, content: "For your data volume, we're looking at 2-3 weeks for full migration with minimal downtime." },
-  { id: 6, timestamp: "04:30", speaker: "Sarah Chen", isClient: true, content: "That's better than we expected. The CFO was concerned about a 6-week disruption we heard from another vendor." },
-  { id: 7, timestamp: "05:15", speaker: "Ryan Anderson", isClient: false, content: "We can definitely beat that. Let me share some case studies from similar implementations." },
-  { id: 8, timestamp: "06:00", speaker: "Michael Park", isClient: true, content: "Before we proceed, I need to loop in our security team. They'll want to review the SOC 2 compliance docs." },
-  { id: 9, timestamp: "07:30", speaker: "Ryan Anderson", isClient: false, content: "Happy to schedule a dedicated security review call. We can have our CISO join as well." },
-  { id: 10, timestamp: "08:15", speaker: "Sarah Chen", isClient: true, content: "That would be great. Let's aim for next week. I think we're moving in the right direction here." },
+  { id: 1, timestamp: "00:00", speaker: "Ryan Anderson", content: "Thanks for joining today. Let's dive into the implementation timeline." },
+  { id: 2, timestamp: "00:45", speaker: "Sarah Chen", content: "We've been reviewing the proposal internally. The team is excited but we have some concerns about the integration complexity." },
+  { id: 3, timestamp: "01:30", speaker: "Ryan Anderson", content: "Absolutely, let me walk you through our phased approach. We've done similar integrations with companies of your size." },
+  { id: 4, timestamp: "02:15", speaker: "Michael Park", content: "What's the typical timeline for the data migration piece specifically?" },
+  { id: 5, timestamp: "03:00", speaker: "Mike Johnson", content: "For your data volume, we're looking at 2-3 weeks for full migration with minimal downtime." },
+  { id: 6, timestamp: "04:30", speaker: "Sarah Chen", content: "That's better than we expected. The CFO was concerned about a 6-week disruption we heard from another vendor." },
+  { id: 7, timestamp: "05:15", speaker: "Ryan Anderson", content: "We can definitely beat that. Let me share some case studies from similar implementations." },
+  { id: 8, timestamp: "06:00", speaker: "Michael Park", content: "Before we proceed, I need to loop in our security team. They'll want to review the SOC 2 compliance docs." },
+  { id: 9, timestamp: "07:30", speaker: "Ryan Anderson", content: "Happy to schedule a dedicated security review call. We can have our CISO join as well." },
+  { id: 10, timestamp: "08:15", speaker: "Sarah Chen", content: "That would be great. Let's aim for next week. I think we're moving in the right direction here." },
 ];
 
 // Mock key moments
@@ -68,195 +66,93 @@ const mockSummary = {
   ],
 };
 
-const getMomentIcon = (type: KeyMoment["type"]) => {
-  switch (type) {
-    case "insight": return <Lightbulb className="w-3.5 h-3.5 text-muted-foreground" />;
-    case "risk": return <AlertTriangle className="w-3.5 h-3.5 text-danger" />;
-    case "action": return <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />;
-    case "question": return <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />;
-  }
-};
+const BulletList = ({ items }: { items: string[] }) => (
+  <ul className="list-disc space-y-1.5 pl-5 text-sm text-foreground">
+    {items.map((item) => (
+      <li key={item}>{item}</li>
+    ))}
+  </ul>
+);
 
-const getMomentBadgeClass = (type: KeyMoment["type"]) =>
-  type === "risk" ? "bg-danger-subtle text-danger" : categoryBadge;
-
-interface CallRecordingPanelProps {
-  eventTitle: string;
-  duration?: string;
-}
-
-export const CallRecordingPanel = ({ eventTitle, duration = "12:34" }: CallRecordingPanelProps) => {
+/** Recording of a finished call: player + AI headline first, the rest folded. */
+export const CallRecordingPanel = ({ duration = "12:34" }: { duration?: string }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  // Start at 100% - call just ended
-  const [playbackProgress, setPlaybackProgress] = useState(100);
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden bg-card">
-      {/* Loomik Recording Header */}
-      <div className="border-b border-border p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand-gradient rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary-foreground" />
+    <div className="rounded-lg border border-border bg-card">
+      <div className="space-y-3 p-4">
+        {/* Player */}
+        <div className="flex items-center gap-3">
+          <Button
+            size="icon"
+            className="h-10 w-10 shrink-0 rounded-full"
+            onClick={() => setIsPlaying(!isPlaying)}
+            aria-label={isPlaying ? "Pause recording" : "Play recording"}
+          >
+            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          </Button>
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Recording</span>
+              <span>{duration}</span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-foreground text-sm">Loomik Recording</h3>
-                <Badge variant="outline" className="border-transparent bg-muted text-muted-foreground text-xs">
-                  Just Ended
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">{eventTitle}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{duration}</span>
+            <Progress value={100} className="h-1.5" />
           </div>
         </div>
 
-        {/* Playback Controls */}
-        <div className="mt-4 flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-8 h-8 p-0 rounded-full"
-            onClick={() => setIsPlaying(!isPlaying)}
-          >
-            {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
-          </Button>
-          <div className="flex-1">
-            <Progress value={playbackProgress} className="h-1.5" />
-          </div>
-          <span className="text-xs text-muted-foreground font-mono">{duration} / {duration}</span>
-          <Button variant="ghost" size="sm" className="w-8 h-8 p-0">
-            <Volume2 className="w-3.5 h-3.5" />
-          </Button>
+        {/* AI headline */}
+        <div className="flex items-start gap-2">
+          <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+          <p className="flex-1 text-sm font-medium text-foreground">{mockSummary.headline}</p>
+          <Badge variant="outline" className={`shrink-0 border-transparent capitalize ${sentimentBadge(mockSummary.sentiment)}`}>
+            {mockSummary.sentiment}
+          </Badge>
         </div>
       </div>
 
-      {/* Tabs for Transcript, Key Moments, Summary */}
-      <Tabs defaultValue="summary" className="w-full">
-        <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-10 px-4">
-          <TabsTrigger value="summary" className="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
-            AI Summary
-          </TabsTrigger>
-          <TabsTrigger value="moments" className="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
-            Key Moments ({mockKeyMoments.length})
-          </TabsTrigger>
-          <TabsTrigger value="transcript" className="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
-            Transcript
-          </TabsTrigger>
-        </TabsList>
-
-        {/* AI Summary Tab */}
-        <TabsContent value="summary" className="m-0 p-4">
-          <div className="space-y-4">
-            {/* Headline */}
-            <div className="flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-foreground">{mockSummary.headline}</p>
-                <Badge variant="outline" className={`mt-1 text-xs border-transparent ${sentimentBadge(mockSummary.sentiment)}`}>
-                  {mockSummary.sentiment} sentiment
-                </Badge>
-              </div>
-            </div>
-
-            {/* Key Takeaways */}
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Key Takeaways</p>
-              <ul className="space-y-1.5">
-                {mockSummary.keyTakeaways.map((takeaway, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                    <span className="text-muted-foreground mt-1">•</span>
-                    {takeaway}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Next Steps */}
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Suggested Next Steps</p>
-              <ul className="space-y-1.5">
-                {mockSummary.nextSteps.map((step, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                    {step}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Risk Flags */}
-            {mockSummary.riskFlags.length > 0 && (
-              <div className="bg-danger-subtle rounded-lg p-3">
-                <p className="text-xs font-medium text-danger uppercase tracking-wide mb-2 flex items-center gap-1">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  Risk Flags
-                </p>
-                <ul className="space-y-1">
-                  {mockSummary.riskFlags.map((risk, idx) => (
-                    <li key={idx} className="text-sm text-foreground">{risk}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      <div className="border-t border-border px-4">
+        <Disclosure title="Takeaways & next steps" icon={ListChecks} summary={`${mockSummary.nextSteps.length} steps`}>
+          <div className="space-y-3">
+            <BulletList items={mockSummary.keyTakeaways} />
+            <p className="text-xs font-medium text-muted-foreground">Suggested next steps</p>
+            <BulletList items={mockSummary.nextSteps} />
           </div>
-        </TabsContent>
+        </Disclosure>
 
-        {/* Key Moments Tab */}
-        <TabsContent value="moments" className="m-0">
-          <ScrollArea className="h-70">
-            <div className="p-4 space-y-3">
-              {mockKeyMoments.map((moment) => (
-                <div 
-                  key={moment.id} 
-                  className="flex items-start gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center gap-2 shrink-0">
-                    {getMomentIcon(moment.type)}
-                    <span className="text-xs font-mono text-muted-foreground">{moment.timestamp}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-foreground">{moment.speaker}</span>
-                      <Badge variant="outline" className={`text-xxs border-transparent ${getMomentBadgeClass(moment.type)}`}>
-                        {moment.type}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{moment.content}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </TabsContent>
+        <Disclosure title="Risk flags" icon={AlertTriangle} summary={mockSummary.riskFlags.length}>
+          <BulletList items={mockSummary.riskFlags} />
+        </Disclosure>
 
-        {/* Transcript Tab */}
-        <TabsContent value="transcript" className="m-0">
-          <ScrollArea className="h-70">
-            <div className="p-4 space-y-3">
-              {mockTranscript.map((entry) => (
-                <div key={entry.id} className="flex items-start gap-3">
-                  <span className="text-xs font-mono text-muted-foreground shrink-0 w-10">{entry.timestamp}</span>
-                  <div className={`flex-1 p-2.5 rounded-lg ${
-                    entry.isClient 
-                      ? "bg-muted/50 border border-border" 
-                      : "bg-card border border-border"
-                  }`}>
-                    <p className="text-xs font-medium mb-1 text-foreground">
-                      {entry.speaker}
-                    </p>
-                    <p className="text-sm text-foreground">{entry.content}</p>
-                  </div>
+        <Disclosure title="Key moments" icon={Bookmark} summary={mockKeyMoments.length}>
+          <ul className="space-y-3">
+            {mockKeyMoments.map((m) => (
+              <li key={m.id} className="flex gap-3 text-sm">
+                <span className="w-10 shrink-0 font-mono text-xs text-muted-foreground pt-0.5">{m.timestamp}</span>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">
+                    {m.speaker} · <span className={m.type === "risk" ? "text-danger" : ""}>{m.type}</span>
+                  </p>
+                  <p className="text-foreground">{m.content}</p>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
+              </li>
+            ))}
+          </ul>
+        </Disclosure>
+
+        <Disclosure title="Transcript" icon={MessageSquare} summary={duration}>
+          <ul className="space-y-3">
+            {mockTranscript.map((entry) => (
+              <li key={entry.id} className="flex gap-3 text-sm">
+                <span className="w-10 shrink-0 font-mono text-xs text-muted-foreground pt-0.5">{entry.timestamp}</span>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-muted-foreground">{entry.speaker}</p>
+                  <p className="text-foreground">{entry.content}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Disclosure>
+      </div>
     </div>
   );
 };

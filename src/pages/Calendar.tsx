@@ -15,6 +15,7 @@ import { getAllDealNames, deals, getCompanyById } from "@/data/dealData";
 import { calendarEvents, getEventsForDate as getEventsForDateHelper, hasEventsOnDate as hasEventsOnDateHelper } from "@/data/calendarEvents";
 import type { CalendarEvent } from "@/contexts/EventPopupContext";
 import Logo from "@/components/Logo";
+import { selectedChip, unselectedChip } from "@/lib/tone";
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 21)); // January 21, 2026
@@ -284,9 +285,9 @@ const Calendar = () => {
               />
             ) : (
             /* Normal View: Events List */
-              <div className="p-6 overflow-y-auto h-full">
+              <div className="p-4 lg:p-6 overflow-y-auto h-full">
                 {/* Header with day navigation for tablet/mobile compact mode */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4 lg:mb-6">
                   <div className="flex items-center gap-2">
                     {isCompactMode && (
                       <button
@@ -313,10 +314,29 @@ const Calendar = () => {
                       </button>
                     )}
                   </div>
-                  <Button size="icon" className="w-9 h-9">
+                  <Button size="icon" className="w-10 h-10" aria-label="Add event">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
+
+                {/* Deal filter: one scrolling chip row when the sidebar is hidden */}
+                {isCompactMode && (
+                  <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4">
+                    {["All deals", ...dealNames].map((name) => {
+                      const isAll = name === "All deals";
+                      const active = isAll ? selectedDeals.length === dealNames.length : selectedDeals.includes(name) && selectedDeals.length < dealNames.length;
+                      return (
+                        <button
+                          key={name}
+                          onClick={() => (isAll ? setSelectedDeals(dealNames) : setSelectedDeals(active ? dealNames : [name]))}
+                          className={`h-8 px-3 shrink-0 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${active ? selectedChip : `border border-border ${unselectedChip}`}`}
+                        >
+                          {name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Events */}
                 <div className="space-y-3">
@@ -329,13 +349,9 @@ const Calendar = () => {
                     </Card>
                   ) : (
                     selectedDateEvents.map((event, index) => {
-                      // First event shows "in 15 min" with green pill
+                      // First event shows "in 15 min" with green pill; finished ones just offer the recording
                       const isFirstEvent = index === 0;
-                      const statusText = isFirstEvent ? "in 15 min" : event.status;
                       const isCompleted = !isFirstEvent && event.status === "completed";
-                      const statusClass = isFirstEvent 
-                        ? "bg-success-subtle text-success" 
-                        : "bg-muted text-muted-foreground";
                       
                       return (
                         <Card 
@@ -343,8 +359,8 @@ const Calendar = () => {
                           className="p-4 interactive-card"
                           onClick={() => handleEventClick(event)}
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-start gap-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-start gap-3 min-w-0">
                               <div className={`w-2.5 h-2.5 rounded-full mt-2 ${
                                 event.type === "call" ? "bg-muted-foreground" : "bg-primary"
                               }`} />
@@ -352,20 +368,19 @@ const Calendar = () => {
                                 <h3 className="text-base font-semibold text-foreground">
                                   {event.title}
                                 </h3>
-                                <p className="text-sm text-muted-foreground">{event.company}</p>
-                                <p className="text-sm text-muted-foreground">{event.time}</p>
+                                <p className="text-sm text-muted-foreground">{event.time} · {event.company}</p>
                               </div>
                             </div>
-                            <div className="flex flex-col items-end gap-2">
-                              <Badge
-                                variant="outline"
-                                className={`border-transparent whitespace-nowrap ${statusClass}`}
-                              >
-                                {isFirstEvent && (
-                                  <span className="h-1.5 w-1.5 mr-1.5 rounded-full bg-success" />
-                                )}
-                                {statusText}
-                              </Badge>
+                            <div className="flex shrink-0 flex-col items-end gap-2">
+                              {!isCompleted && (
+                                <Badge
+                                  variant="outline"
+                                  className={`border-transparent whitespace-nowrap ${isFirstEvent ? "bg-success-subtle text-success" : "bg-muted text-muted-foreground"}`}
+                                >
+                                  {isFirstEvent && <span className="h-1.5 w-1.5 mr-1.5 rounded-full bg-success" />}
+                                  {isFirstEvent ? "in 15 min" : event.status}
+                                </Badge>
+                              )}
                               {isCompleted && (
                                 <Button
                                   size="sm"
@@ -420,7 +435,7 @@ const Calendar = () => {
           </div>
 
           {/* Column 3: Compact Event List (CENTER in prep mode) */}
-          {isCallPrepMode && (
+          {isCallPrepMode && !isMobile && (
             <div className="w-calendar-detail border-l border-r border-border overflow-y-auto">
               <div className="p-4">
                 {/* Header with back button */}
