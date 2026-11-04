@@ -33,7 +33,7 @@ export default {
         spacingSteps.map((n) => [n, `calc(var(--spacing) * ${n})`]),
       ),
       // Named layout regions
-      ...tokenScale(["calendar-sidebar", "calendar-detail", "dialog", "sheet"], "layout"),
+      ...tokenScale(["calendar-sidebar", "calendar-detail", "dialog", "drawer"], "layout"),
     },
     maxWidth: ({ theme }) => ({
       ...theme("spacing"),

@@ -3,7 +3,7 @@ import { RefreshCw, History } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { executePullSignals } from "@/lib/simulation/pullSignals";
 import { useToast } from "@/hooks/use-toast";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import Logo from "@/components/Logo";
 
@@ -11,7 +11,7 @@ const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  // Local state so the AI sheet always starts closed on mobile (the persisted desktop panel state is separate)
+  // Local state so the AI drawer always starts closed on mobile (the persisted desktop panel state is separate)
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
 
@@ -57,12 +57,15 @@ const MobileBottomNav = () => {
         </button>
       </nav>
 
-      {/* AI Sheet Overlay - slides from RIGHT */}
-      <Sheet open={isAIPanelOpen} onOpenChange={setIsAIPanelOpen}>
-        <SheetContent side="right" className="w-sheet max-w-sm p-0">
-          <AIChatPanel />
-        </SheetContent>
-      </Sheet>
+      {/* Loomik AI - bottom drawer, drag down to close */}
+      <Drawer open={isAIPanelOpen} onOpenChange={setIsAIPanelOpen} shouldScaleBackground={false}>
+        <DrawerContent className="h-drawer bg-card">
+          <DrawerTitle className="sr-only">Ask Loomik</DrawerTitle>
+          <div className="flex-1 min-h-0">
+            <AIChatPanel />
+          </div>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 };

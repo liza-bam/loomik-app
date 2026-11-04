@@ -37,7 +37,7 @@ Naming maps 1:1: Figma `color/success/subtle` → CSS `--success-subtle` → Tai
 | Radius | `radius` → `radius-{sm,md,lg,xl,2xl}` | `rounded-lg` |
 | Elevation | `shadow-color`, `shadow-{sm,…,xl}` | `shadow-md` |
 | Motion | `duration-{fast,normal,slow,slower,slowest}` | `duration-200` |
-| Layout regions | `layout-{calendar-sidebar,calendar-detail,dialog,sheet,toast}`, `layout-dialog-max-h`, `layout-popup-max-h` | `w-calendar-sidebar`, `w-dialog`, `max-h-dialog` |
+| Layout regions | `layout-{calendar-sidebar,calendar-detail,dialog,drawer,toast}`, `layout-dialog-max-h`, `layout-popup-max-h` | `w-calendar-sidebar`, `w-dialog`, `max-h-dialog` |
 | Grid templates | `layout-{deals,deals-wide,win-path}` | `grid-cols-deals` |
 | Containers | `container-{xs…5xl}` | `max-w-md` |
 | Layering | `z-{base,raised,sticky,overlay,toast}` | `z-10`, `z-50`, `z-100` |
