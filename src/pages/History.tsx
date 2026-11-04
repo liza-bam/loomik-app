@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type ElementType } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSearchParams } from "react-router-dom";
@@ -6,32 +6,20 @@ import Header from "@/components/dashboard/Header";
 import TabNavigation from "@/components/dashboard/TabNavigation";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ChevronLeft, ChevronRight, Mail, Video, Calendar, CheckCircle2, Archive, Search, AlertTriangle, Bell, Clock, Users, MessageSquare, Phone, FileText, ArrowRight, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Video, Archive, Search, AlertTriangle, Bell, Clock, Users, MessageSquare, Phone, FileText, ArrowRight, RotateCcw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useActionsStore, Action } from "@/stores/actionsStore";
 import { useSignalsStore, DetectedSignal } from "@/stores/signalsStore";
-import { deals, getStakeholdersForDeal, getCompanyById } from "@/data/dealData";
 import { toast } from "@/hooks/use-toast";
+import { categoryBadge, priorityDot, selectedChip, unselectedChip } from "@/lib/tone";
 
-// Muted avatar background colors
-const avatarColors = [
-  "bg-slate-200 text-slate-600",
-  "bg-zinc-200 text-zinc-600",
-  "bg-stone-200 text-stone-600",
-  "bg-blue-100 text-blue-600",
-  "bg-violet-100 text-violet-600",
-  "bg-amber-100 text-amber-700",
-  "bg-cyan-100 text-cyan-600",
-  "bg-purple-100 text-purple-600",
-];
-
-const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
+const tabTrigger = "data-[state=active]:bg-primary-subtle data-[state=active]:text-primary data-[state=active]:shadow-none";
+const chip = (active: boolean) =>
+  `h-8 px-3 shrink-0 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${active ? selectedChip : `border border-border ${unselectedChip}`}`;
 
 // Helper to format time ago
 const formatTimeAgo = (date: Date) => {
@@ -49,6 +37,7 @@ const formatTimeAgo = (date: Date) => {
 
 // Import persistent timeline data
 import { timelineEvents, getAllParticipants, TimelineEvent, TimelineEventType } from "@/data/historyData";
+import Logo from "@/components/Logo";
 
 const History = () => {
   const [searchParams] = useSearchParams();
@@ -136,14 +125,14 @@ const History = () => {
   const allParticipants = getAllParticipants();
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-screen flex flex-col bg-background bg-canvas bg-cover overflow-hidden">
       {/* Header - hides on scroll */}
       <div className={`transition-all duration-200 ${isScrolled ? "h-0 opacity-0 overflow-hidden" : ""}`}>
         <Header isScrolled={isScrolled} />
       </div>
       
       {/* Tab Navigation + AI Header - side by side */}
-      <div className="flex border-b border-border bg-white">
+      <div className="flex border-b border-border bg-card max-lg:hidden">
         <div className="flex-1">
           <TabNavigation isScrolled={isScrolled} activeTab="History" />
         </div>
@@ -153,8 +142,8 @@ const History = () => {
           <div className={`flex items-center gap-2 px-2 md:px-4 border-l border-border transition-all duration-200 ${isAIPanelOpen ? "w-64 md:w-80" : "w-10 md:w-12"}`}>
             {isAIPanelOpen && (
               <>
-                <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
-                <div className="w-2 h-2 bg-green rounded-full" />
+                <Logo className="h-4 md:h-5" />
+                <div className="w-2 h-2 bg-success rounded-full" />
               </>
             )}
             <button 
@@ -169,103 +158,45 @@ const History = () => {
       
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content - scrollable, full width on mobile */}
-        <main id="main-scroll" className={`flex-1 overflow-y-auto ${isMobile ? 'pb-20' : ''}`}>
-          <div className="p-6 pt-6">
+        <main id="main-scroll" className="flex-1 overflow-y-auto pb-20">
+          <div className="p-4 lg:p-6">
             <Card className="p-0 overflow-hidden">
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "actions" | "signals" | "timeline")}>
-                {/* Header - wraps on smaller screens */}
+                {/* Header: tabs + search, then one scrolling chip row */}
                 <div className="p-4 border-b border-border space-y-3">
-                  {/* Row 1: Tabs */}
-                  <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <TabsList className="bg-muted/50">
-                      <TabsTrigger value="actions" className="data-[state=active]:bg-white gap-1.5">
-                        <Archive className="w-3.5 h-3.5" />
-                        Actions
-                      </TabsTrigger>
-                      <TabsTrigger value="signals" className="data-[state=active]:bg-white gap-1.5">
-                        <Bell className="w-3.5 h-3.5" />
-                        Signals & Risks
-                      </TabsTrigger>
-                      <TabsTrigger value="timeline" className="data-[state=active]:bg-white gap-1.5">
-                        <Clock className="w-3.5 h-3.5" />
-                        Timeline
-                      </TabsTrigger>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <TabsList className="grid grid-cols-3 bg-muted/50 sm:inline-flex">
+                      <TabsTrigger value="actions" className={tabTrigger}>Actions</TabsTrigger>
+                      <TabsTrigger value="signals" className={tabTrigger}>Signals</TabsTrigger>
+                      <TabsTrigger value="timeline" className={tabTrigger}>Timeline</TabsTrigger>
                     </TabsList>
-                    
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
-                        placeholder={activeTab === "timeline" ? "Search timeline..." : "Search history..."}
+                        placeholder="Search history..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 w-44 bg-muted border-0 text-xs h-8"
+                        className="pl-9 w-full sm:w-56 bg-muted border-0 h-10 sm:h-9"
                       />
                     </div>
                   </div>
-                  
-                  {/* Row 2: Sub-filters */}
-                  <div className="flex items-center justify-between gap-3">
-                    {activeTab === "actions" ? (
-                      <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-                        <button
-                          onClick={() => setActionFilter("all")}
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all duration-200 ${actionFilter === "all" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                          All
+
+                  <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4">
+                    {activeTab === "actions" &&
+                      ([["all", "All"], ["done", `Done ${doneActions.length}`], ["archived", `Archived ${archivedActions.length}`]] as const).map(([value, label]) => (
+                        <button key={value} onClick={() => setActionFilter(value)} className={chip(actionFilter === value)}>{label}</button>
+                      ))}
+                    {activeTab === "signals" &&
+                      ([["all", "All"], ["processed", "Processed"], ["ignored", "Ignored"]] as const).map(([value, label]) => (
+                        <button key={value} onClick={() => setSignalFilter(value)} className={chip(signalFilter === value)}>{label}</button>
+                      ))}
+                    {activeTab === "timeline" &&
+                      ["all", ...allParticipants.slice(0, 10)].map((p) => (
+                        <button key={p} onClick={() => setTimelineParticipant(p)} className={chip(timelineParticipant === p)}>
+                          {p === "all" ? "Everyone" : p}
                         </button>
-                        <button
-                          onClick={() => setActionFilter("done")}
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all duration-200 flex items-center gap-1 ${actionFilter === "done" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                          <CheckCircle2 className="w-3 h-3" />
-                          Done ({doneActions.length})
-                        </button>
-                        <button
-                          onClick={() => setActionFilter("archived")}
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all duration-200 flex items-center gap-1 ${actionFilter === "archived" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                          <Archive className="w-3 h-3" />
-                          Archived ({archivedActions.length})
-                        </button>
-                      </div>
-                    ) : activeTab === "signals" ? (
-                      <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-                        <button
-                          onClick={() => setSignalFilter("all")}
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all duration-200 ${signalFilter === "all" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                          All
-                        </button>
-                        <button
-                          onClick={() => setSignalFilter("processed")}
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all duration-200 flex items-center gap-1 ${signalFilter === "processed" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                          <CheckCircle2 className="w-3 h-3" />
-                          Processed
-                        </button>
-                        <button
-                          onClick={() => setSignalFilter("ignored")}
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all duration-200 flex items-center gap-1 ${signalFilter === "ignored" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                          <Archive className="w-3 h-3" />
-                          Ignored
-                        </button>
-                      </div>
-                    ) : (
-                      <Select value={timelineParticipant} onValueChange={setTimelineParticipant}>
-                        <SelectTrigger className="w-40 h-8 text-xs">
-                          <SelectValue placeholder="All Participants" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Participants</SelectItem>
-                          {allParticipants.slice(0, 10).map(p => (
-                            <SelectItem key={p} value={p}>{p}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                    
-                    <span className="text-xs text-muted-foreground">
+                      ))}
+                    <span className="ml-auto shrink-0 pl-2 text-xs text-muted-foreground whitespace-nowrap">
                       {activeTab === "actions" ? filteredActions.length : activeTab === "signals" ? filteredSignalsRisks.length : filteredTimeline.length} items
                     </span>
                   </div>
@@ -307,25 +238,6 @@ const History = () => {
 
                 {/* Timeline Tab Content */}
                 <TabsContent value="timeline" className="m-0">
-                  {/* Timeline Header */}
-                  <div className="flex items-center gap-3 p-4 border-b border-border bg-blue-50/50">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-blue-700">Stakeholder Engagement Timeline</h3>
-                      <p className="text-sm text-muted-foreground">Comprehensive tracking of all stakeholder interactions and engagement patterns</p>
-                    </div>
-                  </div>
-                  
-                  {/* Events count */}
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">{filteredTimeline.length} Events</span>
-                    <span className="text-xs text-muted-foreground">All timeline events</span>
-                    <Badge variant="outline" className="ml-auto text-xs">{filteredTimeline.length} Total</Badge>
-                  </div>
-
                   {filteredTimeline.length > 0 ? (
                     <div className="divide-y divide-border">
                       {filteredTimeline.map((event) => (
@@ -378,211 +290,101 @@ const EmptyState = ({ type }: { type: "actions" | "signals" | "timeline" }) => (
   </div>
 );
 
-// History Action Item Component
-const HistoryActionItem = ({ action, onUnarchive }: { action: Action; onUnarchive?: (actionId: number) => void }) => {
-  const ActionIcon = action.type === "email" ? Mail : Video;
-  const StatusIcon = action.status === "done" ? CheckCircle2 : Archive;
-  const statusColor = action.status === "done" ? "text-green bg-green/10" : "text-purple bg-purple/10";
-  const statusLabel = action.status === "done" ? "Done" : "Archived";
+const shortDate = (date: Date | string) => new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-  return (
-    <div className="group bg-card border border-border rounded-lg p-4 flex items-center gap-3 interactive-card-subtle">
-      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-        <ActionIcon className="w-4 h-4 text-muted-foreground" />
-      </div>
-
-      <div className="min-w-0 w-40 shrink-0">
-        <p className="font-medium text-foreground text-sm truncate">{action.title}</p>
-        <p className="text-xs text-muted-foreground truncate">{action.artifact}</p>
-      </div>
-
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <Avatar className="w-5 h-5 shrink-0">
-          <AvatarImage src={action.companyLogo} alt={action.companyName} className="object-contain p-0.5" />
-          <AvatarFallback className="bg-muted text-foreground text-xxs">
-            {action.companyName.slice(0, 2)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="text-xs min-w-0 truncate">
-          <span className="font-medium text-foreground">{action.companyName}</span>
-          <span className="text-muted-foreground"> · {action.dealName}</span>
-        </div>
-      </div>
-
-      <div className="flex items-center -space-x-1.5 shrink-0">
-        {action.stakeholders.slice(0, 2).map((sh) => (
-          <Avatar key={sh.id} className="w-5 h-5 border-2 border-white">
-            <AvatarImage src={sh.avatar} />
-            <AvatarFallback className={`${getAvatarColor(sh.id)} text-xxs`}>
-              {sh.name.split(" ").map(n => n[0]).join("")}
-            </AvatarFallback>
-          </Avatar>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-        <Calendar className="w-3 h-3" />
-        <span>
-          {action.completedAt
-            ? new Date(action.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-            : "—"}
-        </span>
-      </div>
-
-      <Badge variant="outline" className={`${statusColor} border-0 gap-1 shrink-0 text-xs`}>
-        <StatusIcon className="w-3 h-3" />
-        {statusLabel}
-      </Badge>
-
-      {/* Unarchive button - only for archived actions */}
-      {action.status === "archived" && onUnarchive && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onUnarchive(action.id)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-purple hover:bg-purple/10 gap-1 shrink-0 h-7 px-2"
-        >
-          <RotateCcw className="w-3 h-3" />
-          <span className="text-xs">Restore</span>
-        </Button>
-      )}
+/** One history row: icon, title + one meta line, status, and a restore button where it applies. */
+const HistoryRow = ({
+  icon: Icon,
+  title,
+  meta,
+  status,
+  done,
+  onRestore,
+}: {
+  icon: ElementType;
+  title: string;
+  meta: string;
+  status: string;
+  done: boolean;
+  onRestore?: () => void;
+}) => (
+  <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 sm:p-4">
+    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+      <Icon className="w-4 h-4 text-muted-foreground" />
     </div>
-  );
+    <div className="min-w-0 flex-1">
+      <p className="line-clamp-2 text-sm font-medium text-foreground">{title}</p>
+      <p className="truncate text-xs text-muted-foreground">{meta}</p>
+    </div>
+    {onRestore ? (
+      <Button variant="ghost" size="sm" onClick={onRestore} className="h-9 shrink-0 gap-1.5 text-muted-foreground">
+        <RotateCcw className="w-3.5 h-3.5" /> <span className="max-sm:sr-only">Restore</span>
+      </Button>
+    ) : (
+      <Badge variant="outline" className={`shrink-0 border-transparent ${done ? "bg-success-subtle text-success" : categoryBadge}`}>
+        {status}
+      </Badge>
+    )}
+  </div>
+);
+
+const HistoryActionItem = ({ action, onUnarchive }: { action: Action; onUnarchive?: (actionId: number) => void }) => (
+  <HistoryRow
+    icon={action.type === "email" ? Mail : Video}
+    title={action.title}
+    meta={[action.companyName, action.dealName, action.completedAt && shortDate(action.completedAt)].filter(Boolean).join(" · ")}
+    status={action.status === "done" ? "Done" : "Archived"}
+    done={action.status === "done"}
+    onRestore={action.status === "archived" && onUnarchive ? () => onUnarchive(action.id) : undefined}
+  />
+);
+
+const HistorySignalRiskItem = ({ item, onUnignore }: { item: DetectedSignal; onUnignore?: (signalId: string) => void }) => (
+  <HistoryRow
+    icon={item.type === "signal" ? Bell : AlertTriangle}
+    title={item.trigger}
+    meta={[item.name, item.dealName, item.stakeholder?.name, formatTimeAgo(item.processedAt || item.detectedAt)].filter(Boolean).join(" · ")}
+    status={item.status === "processed" ? "Processed" : "Ignored"}
+    done={item.status === "processed"}
+    onRestore={item.status === "ignored" && onUnignore ? () => onUnignore(item.id) : undefined}
+  />
+);
+
+const TIMELINE_ICON: Record<TimelineEventType, ElementType> = {
+  call: Phone,
+  email: Mail,
+  meeting: MessageSquare,
+  proposal: FileText,
+  demo: MessageSquare,
 };
 
-// History Signal/Risk Item Component
-const HistorySignalRiskItem = ({ item, onUnignore }: { item: DetectedSignal; onUnignore?: (signalId: string) => void }) => {
-  const TypeIcon = item.type === "signal" ? Bell : AlertTriangle;
-  const StatusIcon = item.status === "processed" ? CheckCircle2 : Archive;
-  const typeColor = item.type === "signal" ? "text-primary bg-primary/10" : "text-red bg-red/10";
-  const statusColor = item.status === "processed" ? "text-green bg-green/10" : "text-muted-foreground bg-muted";
-
-  const stakeholderName = item.stakeholder?.name || 'Unknown';
-
-  return (
-    <div className="group bg-card border border-border rounded-lg p-4 flex items-center gap-4 interactive-card-subtle">
-      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${typeColor}`}>
-        <TypeIcon className="w-4 h-4" />
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground truncate">{item.trigger}</p>
-        <p className="text-sm text-muted-foreground truncate">{item.name} · {item.dealName} · {stakeholderName}</p>
-      </div>
-
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-        <Calendar className="w-3 h-3" />
-        <span>{formatTimeAgo(item.processedAt || item.detectedAt)}</span>
-      </div>
-
-      <Badge variant="outline" className={`${statusColor} border-0 gap-1`}>
-        <StatusIcon className="w-3 h-3" />
-        {item.status === "processed" ? "Processed" : "Ignored"}
-      </Badge>
-
-      {/* Restore button - only for ignored signals/risks */}
-      {item.status === "ignored" && onUnignore && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onUnignore(item.id)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-purple hover:bg-purple/10 gap-1.5"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span className="text-xs">Restore</span>
-        </Button>
-      )}
-    </div>
-  );
-};
-
-// Timeline Event Card Component
+/** Timeline entry: title + meta first; who and the next action stay on one muted line each. */
 const TimelineEventCard = ({ event }: { event: TimelineEvent }) => {
-  const getEventIcon = (type: TimelineEventType) => {
-    switch (type) {
-      case "call": return Phone;
-      case "email": return Mail;
-      case "meeting": return MessageSquare;
-      case "proposal": return FileText;
-      case "demo": return MessageSquare;
-      default: return MessageSquare;
-    }
-  };
-  
-  const getEventColor = (type: TimelineEventType) => {
-    switch (type) {
-      case "call": return "bg-green-100 text-green-600";
-      case "email": return "bg-blue-100 text-blue-600";
-      case "meeting": return "bg-blue-100 text-blue-600";
-      case "proposal": return "bg-orange-100 text-orange-600";
-      case "demo": return "bg-purple-100 text-purple-600";
-      default: return "bg-blue-100 text-blue-600";
-    }
-  };
-
-  const getSentimentBadge = (sentiment: "positive" | "neutral" | "pending") => {
-    switch (sentiment) {
-      case "positive": return { bg: "bg-green-100 text-green-700 border-green-200", label: "✓ Positive" };
-      case "neutral": return { bg: "bg-blue-100 text-blue-700 border-blue-200", label: "◎ Neutral" };
-      case "pending": return { bg: "bg-yellow-100 text-yellow-700 border-yellow-200", label: "⏳ Pending" };
-    }
-  };
-
-  const getPriorityBadge = (priority: "high" | "medium" | "low") => {
-    switch (priority) {
-      case "high": return { bg: "bg-red-100 text-red-700 border-red-200", label: "⚡ High" };
-      case "medium": return { bg: "bg-yellow-100 text-yellow-700 border-yellow-200", label: "↗ Medium" };
-      case "low": return { bg: "bg-gray-100 text-gray-600 border-gray-200", label: "→ Low" };
-    }
-  };
-
-  const EventIcon = getEventIcon(event.type);
-  const eventColor = getEventColor(event.type);
-  const sentimentBadge = getSentimentBadge(event.sentiment);
-  const priorityBadge = getPriorityBadge(event.priority);
-
+  const EventIcon = TIMELINE_ICON[event.type] ?? MessageSquare;
   return (
-    <div className="p-4 hover:bg-muted/30 transition-colors">
-      <div className="flex items-start gap-4">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${eventColor}`}>
-          <EventIcon className="w-5 h-5" />
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4 mb-1">
-            <h4 className="font-semibold text-blue-700">{event.title}</h4>
-            <div className="flex items-center gap-2 shrink-0">
-              <Badge variant="outline" className={`text-xxs px-2 py-0 h-5 ${sentimentBadge.bg}`}>
-                {sentimentBadge.label}
-              </Badge>
-              <Badge variant="outline" className={`text-xxs px-2 py-0 h-5 ${priorityBadge.bg}`}>
-                {priorityBadge.label}
-              </Badge>
-            </div>
-          </div>
-          
-          <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
-          
-          <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span>{new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} at {event.time}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="w-3 h-3" />
-              <span>{event.stakeholders.join(", ")}, {event.stakeholderTeam}</span>
-            </div>
-          </div>
-          
-          {event.nextAction && (
-            <div className="bg-green-50 rounded-lg px-3 py-2 flex items-center gap-2">
-              <ArrowRight className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-700">
-                <span className="font-medium">Next Action:</span> {event.nextAction}
-              </span>
-            </div>
-          )}
-        </div>
+    <div className="flex items-start gap-3 p-4">
+      <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-muted text-muted-foreground">
+        <EventIcon className="w-4 h-4" />
+      </div>
+      <div className="min-w-0 flex-1 space-y-1">
+        <p className="font-medium text-foreground">{event.title}</p>
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${priorityDot(event.priority)}`} />
+          <span className="truncate">
+            {shortDate(event.date)} {event.time} · <span className="capitalize">{event.sentiment}</span>
+          </span>
+        </p>
+        <p className="text-sm text-muted-foreground">{event.description}</p>
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Users className="w-3 h-3 shrink-0" />
+          <span className="truncate">{[...event.stakeholders, event.stakeholderTeam].join(", ")}</span>
+        </p>
+        {event.nextAction && (
+          <p className="flex items-center gap-1.5 text-sm text-foreground">
+            <ArrowRight className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+            {event.nextAction}
+          </p>
+        )}
       </div>
     </div>
   );

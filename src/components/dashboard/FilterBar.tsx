@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface FilterBarProps {
   children: ReactNode;
@@ -11,7 +12,7 @@ interface FilterBarProps {
  */
 const FilterBar = ({ children, className = "" }: FilterBarProps) => {
   return (
-    <div className={`flex items-center justify-between p-4 border-b border-border ${className}`}>
+    <div className={cn("flex items-center justify-between p-4 border-b border-border", className)}>
       {children}
     </div>
   );
@@ -27,7 +28,7 @@ interface FilterBarLeftProps {
  */
 const FilterBarLeft = ({ children, className = "" }: FilterBarLeftProps) => {
   return (
-    <div className={`flex items-center gap-2 sm:gap-3 flex-nowrap ${className}`}>
+    <div className={cn("flex items-center gap-2 sm:gap-3 flex-nowrap", className)}>
       {children}
     </div>
   );
@@ -43,7 +44,7 @@ interface FilterBarRightProps {
  */
 const FilterBarRight = ({ children, className = "" }: FilterBarRightProps) => {
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={cn("flex items-center gap-3", className)}>
       {children}
     </div>
   );

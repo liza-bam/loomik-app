@@ -32,7 +32,7 @@ export function MobileSearchModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="top-0 translate-y-0 max-w-full h-auto min-h-[200px] rounded-none rounded-b-xl p-0 gap-0">
+      <DialogContent className="top-0 translate-y-0 max-w-full h-auto min-h-50 rounded-none rounded-b-xl p-0 gap-0 max-sm:top-0 max-sm:bottom-auto max-sm:rounded-t-none max-sm:rounded-b-xl max-sm:data-[state=open]:slide-in-from-top">
         <div className="flex items-center gap-3 p-4 border-b border-border">
           <Search className="w-5 h-5 text-muted-foreground shrink-0" />
           <Input

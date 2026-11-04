@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
-import { ChevronLeft, ChevronRight, Plus, Phone, Video, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Phone, Video, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,8 @@ import EventDetailPanel from "@/components/calendar/EventDetailPanel";
 import { getAllDealNames, deals, getCompanyById } from "@/data/dealData";
 import { calendarEvents, getEventsForDate as getEventsForDateHelper, hasEventsOnDate as hasEventsOnDateHelper } from "@/data/calendarEvents";
 import type { CalendarEvent } from "@/contexts/EventPopupContext";
+import Logo from "@/components/Logo";
+import { selectedChip, unselectedChip } from "@/lib/tone";
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 21)); // January 21, 2026
@@ -150,11 +152,11 @@ const Calendar = () => {
   const isCompactMode = isTabletCompact || isMobile;
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-screen flex flex-col bg-background bg-canvas bg-cover overflow-hidden">
       <Header isScrolled={false} />
       
       {/* Tab Navigation + AI Header */}
-      <div className="flex border-b border-border bg-white">
+      <div className="flex border-b border-border bg-card max-lg:hidden">
         <div className="flex-1">
           <TabNavigation isScrolled={false} activeTab="Calendar" />
         </div>
@@ -164,8 +166,8 @@ const Calendar = () => {
           <div className={`flex items-center gap-2 px-2 md:px-4 border-l border-border transition-all duration-200 ${isAIPanelOpen ? "w-64 md:w-80" : "w-10 md:w-12"}`}>
             {isAIPanelOpen && (
               <>
-                <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
-                <div className="w-2 h-2 bg-green rounded-full" />
+                <Logo className="h-4 md:h-5" />
+                <div className="w-2 h-2 bg-success rounded-full" />
               </>
             )}
             <button 
@@ -183,103 +185,91 @@ const Calendar = () => {
         <div className="flex-1 flex overflow-hidden">
           
           {/* Column 1: Calendar & Filters - Hidden in prep mode OR tablet/mobile compact mode */}
-          {!isCompactMode && (
-            <div className={`border-r border-border overflow-y-auto transition-all duration-300 ${
-              isCallPrepMode ? "w-[300px]" : "w-[380px]"
-            }`}>
-              {/* Calendar Grid - Hidden in prep mode */}
-              {!isCallPrepMode && (
-                <div className="p-6 pb-0">
-                  <Card className="p-4 mb-6">
-                    {/* Month Navigation */}
-                    <div className="flex items-center justify-between mb-4">
-                      <button
-                        onClick={() => navigateMonth("prev")}
-                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+          {!isCompactMode && !isCallPrepMode && (
+            <div className="w-calendar-sidebar border-r border-border overflow-y-auto">
+              <div className="p-6 pb-0">
+                <Card className="p-4 mb-6">
+                  {/* Month Navigation */}
+                  <div className="flex items-center justify-between mb-4">
+                    <button
+                      onClick={() => navigateMonth("prev")}
+                      className="p-2 hover:bg-muted rounded-lg transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <h2 className="text-base font-semibold text-foreground">
+                      {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                    </h2>
+                    <button
+                      onClick={() => navigateMonth("next")}
+                      className="p-2 hover:bg-muted rounded-lg transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Days of Week */}
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {daysOfWeek.map((day, i) => (
+                      <div
+                        key={i}
+                        className="text-center text-sm font-medium text-muted-foreground py-2"
                       >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <h2 className="text-base font-semibold text-foreground">
-                        {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-                      </h2>
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {calendarDays.map((day, i) => (
                       <button
-                        onClick={() => navigateMonth("next")}
-                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+                        key={i}
+                        onClick={() => day.isCurrentMonth && setSelectedDate(day.fullDate)}
+                        className={`
+                          relative h-10 rounded-lg text-sm font-medium transition-all
+                          ${!day.isCurrentMonth ? "text-muted-foreground/40" : "text-foreground"}
+                          ${isSelected(day.fullDate) ? "bg-primary text-primary-foreground" : "hover:bg-muted"}
+                          ${isToday(day.fullDate) && !isSelected(day.fullDate) ? "ring-2 ring-primary ring-inset" : ""}
+                        `}
+                        disabled={!day.isCurrentMonth}
                       >
-                        <ChevronRight className="w-4 h-4" />
+                        {day.date}
+                        {hasEventsOnDate(day.fullDate) && !isSelected(day.fullDate) && (
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full" />
+                        )}
                       </button>
-                    </div>
+                    ))}
+                  </div>
+                </Card>
 
-                    {/* Days of Week */}
-                    <div className="grid grid-cols-7 gap-1 mb-2">
-                      {daysOfWeek.map((day, i) => (
-                        <div
-                          key={i}
-                          className="text-center text-sm font-medium text-muted-foreground py-2"
+                {/* Deal Filters */}
+                <div className="pb-20">
+                  <h3 className="text-sm font-medium text-foreground mb-3">Filter by Deal</h3>
+                  <div className="space-y-2">
+                    {dealNames.map((dealName) => {
+                      const isChecked = selectedDeals.includes(dealName);
+                      return (
+                        <label
+                          key={dealName}
+                          className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                         >
-                          {day}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Calendar Grid */}
-                    <div className="grid grid-cols-7 gap-1">
-                      {calendarDays.map((day, i) => (
-                        <button
-                          key={i}
-                          onClick={() => day.isCurrentMonth && setSelectedDate(day.fullDate)}
-                          className={`
-                            relative h-10 rounded-lg text-sm font-medium transition-all
-                            ${!day.isCurrentMonth ? "text-muted-foreground/40" : "text-foreground"}
-                            ${isSelected(day.fullDate) ? "bg-purple text-white" : "hover:bg-muted"}
-                            ${isToday(day.fullDate) && !isSelected(day.fullDate) ? "ring-2 ring-purple ring-inset" : ""}
-                          `}
-                          disabled={!day.isCurrentMonth}
-                        >
-                          {day.date}
-                          {hasEventsOnDate(day.fullDate) && !isSelected(day.fullDate) && (
-                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-purple rounded-full" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </Card>
-
-                  {/* Deal Filters */}
-                  <div className="pb-6">
-                    <h3 className="text-sm font-medium text-foreground mb-3">Filter by Deal</h3>
-                    <div className="space-y-2">
-                      {dealNames.map((dealName) => {
-                        const isChecked = selectedDeals.includes(dealName);
-                        return (
-                          <label
-                            key={dealName}
-                            className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                          >
-                            <div className="relative flex items-center justify-center">
-                              <Checkbox
-                                checked={isChecked}
-                                onCheckedChange={() => toggleDeal(dealName)}
-                                className="h-5 w-5 rounded border-2 border-muted-foreground/30 data-[state=checked]:bg-purple data-[state=checked]:border-purple"
-                              />
-                            </div>
-                            <span className={`text-sm font-medium ${isChecked ? 'text-foreground' : 'text-muted-foreground'}`}>
-                              {dealName}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
+                          <div className="relative flex items-center justify-center">
+                            <Checkbox
+                              checked={isChecked}
+                              onCheckedChange={() => toggleDeal(dealName)}
+                              className="h-5 w-5 rounded border-2 border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                            />
+                          </div>
+                          <span className={`text-sm font-medium ${isChecked ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {dealName}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
-              )}
-
-              {/* Event List - Hidden in prep mode */}
-              {!isCallPrepMode && (
-                <div className="hidden">
-                  {/* This space intentionally left empty in normal mode */}
-                </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -295,9 +285,9 @@ const Calendar = () => {
               />
             ) : (
             /* Normal View: Events List */
-              <div className="p-6 overflow-y-auto h-full">
+              <div className="p-4 lg:p-6 overflow-y-auto h-full">
                 {/* Header with day navigation for tablet/mobile compact mode */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4 lg:mb-6">
                   <div className="flex items-center gap-2">
                     {isCompactMode && (
                       <button
@@ -324,10 +314,29 @@ const Calendar = () => {
                       </button>
                     )}
                   </div>
-                  <Button className="bg-gradient-to-r from-purple to-orange-500 hover:from-purple/90 hover:to-orange-500/90 text-white w-9 h-9 p-0">
+                  <Button size="icon" className="w-10 h-10" aria-label="Add event">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
+
+                {/* Deal filter: one scrolling chip row when the sidebar is hidden */}
+                {isCompactMode && (
+                  <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4">
+                    {["All deals", ...dealNames].map((name) => {
+                      const isAll = name === "All deals";
+                      const active = isAll ? selectedDeals.length === dealNames.length : selectedDeals.includes(name) && selectedDeals.length < dealNames.length;
+                      return (
+                        <button
+                          key={name}
+                          onClick={() => (isAll ? setSelectedDeals(dealNames) : setSelectedDeals(active ? dealNames : [name]))}
+                          className={`h-8 px-3 shrink-0 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${active ? selectedChip : `border border-border ${unselectedChip}`}`}
+                        >
+                          {name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Events */}
                 <div className="space-y-3">
@@ -340,48 +349,53 @@ const Calendar = () => {
                     </Card>
                   ) : (
                     selectedDateEvents.map((event, index) => {
-                      // First event shows "in 15 min" with green pill
+                      // First event shows "in 15 min" with green pill; finished ones just offer the recording
                       const isFirstEvent = index === 0;
-                      const statusText = isFirstEvent ? "in 15 min" : event.status;
-                      const statusClass = isFirstEvent 
-                        ? "bg-green/10 text-green border-green/20" 
-                        : "bg-muted text-muted-foreground border-border";
+                      const isCompleted = !isFirstEvent && event.status === "completed";
                       
                       return (
                         <Card 
                           key={event.id} 
-                          className="p-4 group relative interactive-card interactive-card-gradient"
+                          className="p-4 interactive-card"
                           onClick={() => handleEventClick(event)}
                         >
-                          {/* Ambient glow effect */}
-                          <div className="absolute -inset-px rounded-lg bg-gradient-to-r from-purple/20 via-primary/10 to-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-start gap-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-start gap-3 min-w-0">
                               <div className={`w-2.5 h-2.5 rounded-full mt-2 ${
-                                event.type === "call" ? "bg-green" : "bg-purple"
+                                event.type === "call" ? "bg-muted-foreground" : "bg-primary"
                               }`} />
                               <div>
                                 <h3 className="text-base font-semibold text-foreground">
                                   {event.title}
                                 </h3>
-                                <p className="text-sm text-muted-foreground">{event.company}</p>
-                                <p className="text-sm text-muted-foreground">{event.time}</p>
+                                <p className="text-sm text-muted-foreground">{event.time} · {event.company}</p>
                               </div>
                             </div>
-                            <div className="flex flex-col items-end gap-2">
-                              <Badge
-                                variant="outline"
-                                className={`${statusClass} ${isFirstEvent ? "animate-pulse" : ""}`}
-                              >
-                                {isFirstEvent && (
-                                  <span className="relative flex h-2 w-2 mr-1.5">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green"></span>
-                                  </span>
-                                )}
-                                {statusText}
-                              </Badge>
-                              {event.type === "call" && (
+                            <div className="flex shrink-0 flex-col items-end gap-2">
+                              {!isCompleted && (
+                                <Badge
+                                  variant="outline"
+                                  className={`border-transparent whitespace-nowrap ${isFirstEvent ? "bg-success-subtle text-success" : "bg-muted text-muted-foreground"}`}
+                                >
+                                  {isFirstEvent && <span className="h-1.5 w-1.5 mr-1.5 rounded-full bg-success" />}
+                                  {isFirstEvent ? "in 15 min" : event.status}
+                                </Badge>
+                              )}
+                              {isCompleted && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEventClick(event);
+                                  }}
+                                  className="gap-1.5 text-muted-foreground"
+                                >
+                                  <Play className="w-3.5 h-3.5" />
+                                  Recording
+                                </Button>
+                              )}
+                              {!isCompleted && event.type === "call" && (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -389,13 +403,13 @@ const Calendar = () => {
                                     e.stopPropagation();
                                     console.log("Starting call:", event.id);
                                   }}
-                                   className="border-purple text-purple bg-white hover:!bg-gradient-to-r hover:!from-purple hover:!to-orange-500 hover:!text-white hover:!border-transparent gap-1.5"
+                                  className="gap-1.5"
                                 >
                                   <Phone className="w-3.5 h-3.5" />
                                   Call
                                 </Button>
                               )}
-                              {event.type === "meeting" && (
+                              {!isCompleted && event.type === "meeting" && (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -403,7 +417,7 @@ const Calendar = () => {
                                     e.stopPropagation();
                                     console.log("Joining meeting:", event.id);
                                   }}
-                                  className="border-purple text-purple bg-white hover:!bg-gradient-to-r hover:!from-purple hover:!to-orange-500 hover:!text-white hover:!border-transparent gap-1.5"
+                                  className="gap-1.5"
                                 >
                                   <Video className="w-3.5 h-3.5" />
                                   Join
@@ -421,8 +435,8 @@ const Calendar = () => {
           </div>
 
           {/* Column 3: Compact Event List (CENTER in prep mode) */}
-          {isCallPrepMode && (
-            <div className="w-[280px] border-l border-r border-border overflow-y-auto">
+          {isCallPrepMode && !isMobile && (
+            <div className="w-calendar-detail border-l border-r border-border overflow-y-auto">
               <div className="p-4">
                 {/* Header with back button */}
                 <div className="flex items-center gap-2 mb-4">
@@ -448,14 +462,14 @@ const Calendar = () => {
                       key={event.id} 
                       className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                         selectedEvent?.id === event.id 
-                          ? "bg-purple/10 border border-purple/30" 
+                          ? "bg-primary-subtle border border-primary/30" 
                           : "hover:bg-muted border border-transparent"
                       }`}
                       onClick={() => handleEventClick(event)}
                     >
                       <div className="flex items-start gap-2">
                         <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                          event.type === "call" ? "bg-green" : "bg-purple"
+                          event.type === "call" ? "bg-muted-foreground" : "bg-primary"
                         }`} />
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">

@@ -48,45 +48,24 @@ import {
 } from "@/components/ui/table";
 import { useAssetsStore, Asset, AssetType, ASSET_CATEGORIES } from "@/stores/assetsStore";
 import { toast } from "@/hooks/use-toast";
+import { categoryBadge, selectedChip, unselectedChip } from "@/lib/tone";
 
-// Get icon and color based on asset type
+// Get icon based on asset type
 const getAssetIcon = (type: AssetType) => {
   switch (type) {
     case "PDF":
-      return { icon: FileText, color: "text-red-500", bg: "bg-red-50" };
-    case "VIDEO":
-      return { icon: Video, color: "text-purple", bg: "bg-purple/10" };
-    case "XLSX":
-      return { icon: FileSpreadsheet, color: "text-green", bg: "bg-green/10" };
     case "DOCX":
-      return { icon: FileText, color: "text-blue-500", bg: "bg-blue-50" };
     case "PPTX":
-      return { icon: FileText, color: "text-orange-500", bg: "bg-orange-50" };
+      return FileText;
+    case "VIDEO":
+      return Video;
+    case "XLSX":
+      return FileSpreadsheet;
     case "IMG":
-      return { icon: Image, color: "text-pink-500", bg: "bg-pink-50" };
+      return Image;
     default:
-      return { icon: File, color: "text-muted-foreground", bg: "bg-muted" };
+      return File;
   }
-};
-
-// Get category badge color
-const getCategoryColor = (category: string) => {
-  const colors: Record<string, string> = {
-    "Presentations": "bg-purple/10 text-purple border-purple/20",
-    "Marketing": "bg-pink-50 text-pink-600 border-pink-200",
-    "Case Studies": "bg-blue-50 text-blue-600 border-blue-200",
-    "Tools": "bg-green/10 text-green border-green/20",
-    "Branding": "bg-orange-50 text-orange-600 border-orange-200",
-    "Compliance": "bg-red-50 text-red-600 border-red-200",
-    "Documentation": "bg-slate-100 text-slate-600 border-slate-200",
-    "Templates": "bg-indigo-50 text-indigo-600 border-indigo-200",
-    "Proposals": "bg-cyan-50 text-cyan-600 border-cyan-200",
-    "Security": "bg-amber-50 text-amber-700 border-amber-200",
-    "Contracts": "bg-violet-50 text-violet-600 border-violet-200",
-    "Financial": "bg-emerald-50 text-emerald-600 border-emerald-200",
-    "Technical": "bg-zinc-100 text-zinc-600 border-zinc-200",
-  };
-  return colors[category] || "bg-muted text-muted-foreground border-border";
 };
 
 // Format date
@@ -180,17 +159,17 @@ export const AssetsSection = () => {
       <Card className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple/10">
-              <FolderOpen className="w-5 h-5 text-purple" />
+            <div className="p-2 rounded-lg bg-primary-subtle">
+              <FolderOpen className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-purple">Assets Library</h3>
+              <h3 className="font-semibold text-foreground">Assets Library</h3>
               <p className="text-sm text-muted-foreground">Manage and organize your deal documents and files</p>
             </div>
           </div>
           <Button 
             onClick={handleUpload}
-            className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white gap-2"
+            className="gap-2"
           >
             <Upload className="w-4 h-4" />
             Upload Files
@@ -207,7 +186,7 @@ export const AssetsSection = () => {
             placeholder="Search files, descriptions, or tags..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-white"
+            className="pl-9 bg-card"
           />
         </div>
 
@@ -215,7 +194,7 @@ export const AssetsSection = () => {
           {/* Category Filter */}
           <Filter className="w-4 h-4 text-muted-foreground" />
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-40 bg-white">
+            <SelectTrigger className="w-40 bg-card">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -230,13 +209,13 @@ export const AssetsSection = () => {
           <div className="flex items-center border rounded-lg overflow-hidden">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 transition-colors ${viewMode === "grid" ? "bg-purple text-white" : "bg-white text-muted-foreground hover:bg-muted"}`}
+              className={`p-2 transition-colors ${viewMode === "grid" ? selectedChip : unselectedChip}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 transition-colors ${viewMode === "list" ? "bg-purple text-white" : "bg-white text-muted-foreground hover:bg-muted"}`}
+              className={`p-2 transition-colors ${viewMode === "list" ? selectedChip : unselectedChip}`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -248,14 +227,12 @@ export const AssetsSection = () => {
       {viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {filteredAssets.map((asset) => {
-            const { icon: Icon, color, bg } = getAssetIcon(asset.type);
+            const Icon = getAssetIcon(asset.type);
             return (
-              <Card key={asset.id} className="group relative p-4 border-0 bg-muted/30 interactive-card interactive-card-gradient">
-                {/* Ambient glow effect */}
-                <div className="absolute -inset-px rounded-lg bg-gradient-to-r from-purple/20 via-primary/10 to-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
+              <Card key={asset.id} className="group relative p-4 border-0 bg-muted/30 interactive-card">
                 <div className="flex items-start gap-3 mb-3">
-                  <div className={`p-2 rounded-lg ${bg}`}>
-                    <Icon className={`w-5 h-5 ${color}`} />
+                  <div className="p-2 rounded-lg bg-muted">
+                    <Icon className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-sm truncate" title={asset.name}>
@@ -265,7 +242,7 @@ export const AssetsSection = () => {
                   </div>
                 </div>
 
-                <Badge variant="outline" className={`mb-2 text-xs ${getCategoryColor(asset.category)}`}>
+                <Badge variant="outline" className={`mb-2 text-xs border-transparent ${categoryBadge}`}>
                   {asset.category}
                 </Badge>
 
@@ -291,7 +268,7 @@ export const AssetsSection = () => {
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
                   <div className="flex items-center gap-1">
                     <User className="w-3 h-3" />
-                    <span className="truncate max-w-[80px]">{asset.uploadedBy}</span>
+                    <span className="truncate max-w-20">{asset.uploadedBy}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
@@ -322,7 +299,7 @@ export const AssetsSection = () => {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                    className="h-8 w-8 text-danger hover:text-danger hover:bg-danger-subtle"
                     onClick={() => handleDeleteClick(asset)}
                     title="Delete"
                   >
@@ -338,24 +315,24 @@ export const AssetsSection = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
-                <TableHead className="w-[400px]">Name</TableHead>
-                <TableHead className="w-[80px]">Type</TableHead>
-                <TableHead className="w-[100px]">Size</TableHead>
-                <TableHead className="w-[120px]">Category</TableHead>
-                <TableHead className="w-[140px]">Uploaded By</TableHead>
-                <TableHead className="w-[100px]">Date</TableHead>
-                <TableHead className="w-[120px] text-right">Actions</TableHead>
+                <TableHead className="w-100">Name</TableHead>
+                <TableHead className="w-20">Type</TableHead>
+                <TableHead className="w-25">Size</TableHead>
+                <TableHead className="w-30">Category</TableHead>
+                <TableHead className="w-35">Uploaded By</TableHead>
+                <TableHead className="w-25">Date</TableHead>
+                <TableHead className="w-30 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredAssets.map((asset) => {
-                const { icon: Icon, color, bg } = getAssetIcon(asset.type);
+                const Icon = getAssetIcon(asset.type);
                 return (
                   <TableRow key={asset.id} className="group">
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded ${bg}`}>
-                          <Icon className={`w-4 h-4 ${color}`} />
+                        <div className="p-1.5 rounded bg-muted">
+                          <Icon className="w-4 h-4 text-muted-foreground" />
                         </div>
                         <div>
                           <p className="font-medium text-sm">{asset.name}</p>
@@ -372,7 +349,7 @@ export const AssetsSection = () => {
                       {asset.size}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`text-xs ${getCategoryColor(asset.category)}`}>
+                      <Badge variant="outline" className={`text-xs border-transparent ${categoryBadge}`}>
                         {asset.category}
                       </Badge>
                     </TableCell>
@@ -405,7 +382,7 @@ export const AssetsSection = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          className="h-8 w-8 text-danger hover:text-danger hover:bg-danger-subtle"
                           onClick={() => handleDeleteClick(asset)}
                           title="Delete"
                         >
@@ -453,7 +430,7 @@ export const AssetsSection = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-danger text-danger-foreground hover:bg-danger/90"
             >
               Move to Trash
             </AlertDialogAction>

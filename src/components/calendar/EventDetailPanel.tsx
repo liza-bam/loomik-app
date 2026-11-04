@@ -1,373 +1,198 @@
-import { Phone, Video, Users, TrendingUp, DollarSign, Share2, Check, X, Circle, FileText, Link2 } from "lucide-react";
+import { Phone, Video, Share2, X, Users, Briefcase, Paperclip, FileText, Link2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { 
-  avatarColors, 
-  deals, 
-  getStakeholdersForDeal, 
-  stageConfig,
-  getCompanyById,
-  companies,
-  type Stakeholder,
-  type Deal,
-  type Company
-} from "@/data/dealData";
+import { Disclosure } from "@/components/ui/disclosure";
+import { deals, getStakeholdersForDeal, stageConfig, companies, type Stakeholder } from "@/data/dealData";
 import userAvatar from "@/assets/user-avatar.jpg";
 import type { CalendarEvent } from "@/contexts/EventPopupContext";
 import CallRecordingPanel from "./CallRecordingPanel";
+import { avatarFallback, scoreText } from "@/lib/tone";
 
-const getAvatarColor = (index: number) => avatarColors[index % avatarColors.length];
+type Rsvp = "accepted" | "declined" | "maybe" | "pending";
 
-const getStatusBadgeColor = (status: "positive" | "neutral" | "negative") => {
-  switch (status) {
-    case "positive": return "bg-green/10 text-green border-green/20";
-    case "neutral": return "bg-yellow/10 text-yellow border-yellow/20";
-    case "negative": return "bg-red/10 text-red border-red/20";
-  }
-};
+const RSVP_LABEL: Record<Rsvp, string> = { accepted: "Accepted", declined: "Declined", maybe: "Maybe", pending: "No reply" };
 
-type RsvpStatus = "accepted" | "declined" | "maybe" | "pending";
+interface Person {
+  name: string;
+  role: string;
+  avatar?: string;
+  rsvp: Rsvp;
+}
 
-const RsvpIcon = ({ status }: { status: RsvpStatus }) => {
-  switch (status) {
-    case "accepted":
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="w-4 h-4 rounded-full bg-green flex items-center justify-center">
-              <Check className="w-2.5 h-2.5 text-white" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>Accepted</TooltipContent>
-        </Tooltip>
-      );
-    case "declined":
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="w-4 h-4 rounded-full bg-red flex items-center justify-center">
-              <X className="w-2.5 h-2.5 text-white" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>Declined</TooltipContent>
-        </Tooltip>
-      );
-    case "maybe":
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="w-4 h-4 rounded-full bg-yellow flex items-center justify-center">
-              <span className="text-xxs font-bold text-white leading-none">?</span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>Maybe</TooltipContent>
-        </Tooltip>
-      );
-    case "pending":
-    default:
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Circle className="w-4 h-4 text-muted-foreground/40" strokeWidth={1.5} />
-          </TooltipTrigger>
-          <TooltipContent>No response</TooltipContent>
-        </Tooltip>
-      );
-  }
-};
-
-// Host info
-const host = {
-  name: "Ryan Anderson",
-  role: "Deal Manager",
-  company: "Acme",
-  avatar: userAvatar,
-  rsvp: "accepted" as RsvpStatus,
-};
-
-// Sales team data with RSVP status
-const salesTeam = [
-  { name: "Sarah Chen", role: "Account Executive", status: "Active", rsvp: "accepted" as RsvpStatus },
-  { name: "Mike Johnson", role: "Technical Sales", status: "Active", rsvp: "accepted" as RsvpStatus },
-  { name: "Lisa Wang", role: "Sales Manager", status: "Observer", rsvp: "maybe" as RsvpStatus },
+// Our side of the call (mock)
+const team: Person[] = [
+  { name: "Ryan Anderson", role: "Host · Deal Manager", avatar: userAvatar, rsvp: "accepted" },
+  { name: "Sarah Chen", role: "Account Executive", rsvp: "accepted" },
+  { name: "Mike Johnson", role: "Technical Sales", rsvp: "accepted" },
+  { name: "Lisa Wang", role: "Sales Manager", rsvp: "maybe" },
 ];
 
 // Mock meeting materials
-const mockMaterials = [
-  { id: 1, name: "Q1 Proposal Deck.pdf", type: "pdf", size: "2.4 MB" },
-  { id: 2, name: "ROI Calculator.xlsx", type: "excel", size: "156 KB" },
-  { id: 3, name: "Meeting Agenda", type: "link", url: "https://notion.so/..." },
+const materials = [
+  { name: "Q1 Proposal Deck.pdf", isLink: false },
+  { name: "ROI Calculator.xlsx", isLink: false },
+  { name: "Meeting Agenda", isLink: true },
 ];
 
-// Mock RSVP statuses for stakeholders (based on their sentiment)
-const getStakeholderRsvp = (stakeholder: Stakeholder): RsvpStatus => {
-  if (stakeholder.status === "positive") return "accepted";
-  if (stakeholder.status === "negative") return "declined";
-  return stakeholder.id % 2 === 0 ? "maybe" : "pending";
-};
+// Mock RSVP for client stakeholders, based on their sentiment
+const stakeholderRsvp = (s: Stakeholder): Rsvp =>
+  s.status === "positive" ? "accepted" : s.status === "negative" ? "declined" : s.id % 2 === 0 ? "maybe" : "pending";
+
+const initials = (name: string) => name.split(" ").map((n) => n[0]).join("");
+
+const PersonRow = ({ person }: { person: Person }) => (
+  <li className="flex items-center gap-3">
+    <Avatar className="w-8 h-8">
+      <AvatarImage src={person.avatar} />
+      <AvatarFallback className={`${avatarFallback} text-xs font-medium`}>{initials(person.name)}</AvatarFallback>
+    </Avatar>
+    <div className="min-w-0 flex-1">
+      <p className="truncate text-sm font-medium text-foreground">{person.name}</p>
+      <p className="truncate text-xs text-muted-foreground">{person.role}</p>
+    </div>
+    <span className={`text-xs ${person.rsvp === "declined" ? "text-danger" : "text-muted-foreground"}`}>{RSVP_LABEL[person.rsvp]}</span>
+  </li>
+);
 
 interface EventDetailPanelProps {
   event: CalendarEvent;
-  onClose: () => void;
+  /** Shows a close button. Omit inside a Dialog, which has its own. */
+  onClose?: () => void;
 }
 
+/**
+ * Calendar event: header (title, time, company), who, then the main thing —
+ * the recording for a finished call, or Join / Call in the footer for an upcoming one.
+ * Deal context, participants and materials are folded.
+ */
 export const EventDetailPanel = ({ event, onClose }: EventDetailPanelProps) => {
-  // Find the deal by matching company name from event to our companies
-  const company = companies.find(c => c.name === event.company);
-  const deal: Deal | undefined = company ? deals.find(d => d.companyId === company.id) : undefined;
-  
-  // Get real stakeholders for this deal
-  const dealStakeholders: Stakeholder[] = deal ? getStakeholdersForDeal(deal.id) : [];
+  const company = companies.find((c) => c.name === event.company);
+  const deal = company ? deals.find((d) => d.companyId === company.id) : undefined;
+  const stage = deal ? stageConfig[deal.stage] : null;
+  const isCompleted = event.status === "completed";
 
-  const handleStartCall = () => {
-    console.log("Starting call for event:", event.id);
-  };
+  const people: Person[] = [
+    ...team,
+    ...(deal ? getStakeholdersForDeal(deal.id) : []).map((s) => ({
+      name: s.name,
+      role: s.role,
+      avatar: s.avatar,
+      rsvp: stakeholderRsvp(s),
+    })),
+  ];
+  const clients = people.slice(team.length);
 
-  const handleShareInvite = () => {
-    console.log("Sharing invite for event:", event.id);
-  };
+  const meta = [
+    event.time,
+    event.date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
+    event.type === "call" ? "Phone call" : "Zoom",
+    event.company,
+  ].join(" · ");
 
-  const stageInfo = deal ? stageConfig[deal.stage] : null;
+  const handleStart = () => console.log("Starting call for event:", event.id);
+  const handleShare = () => console.log("Sharing invite for event:", event.id);
 
   return (
-    <div className="h-full flex flex-col bg-background">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border p-5 pb-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Badge className={`${event.type === "call" ? "bg-green text-white" : "bg-purple text-white"}`}>
-                {event.type}
-              </Badge>
-              <Badge variant="outline" className="bg-muted text-muted-foreground border-border">
-                {event.status}
-              </Badge>
-            </div>
-            <h2 className="text-xl font-semibold text-foreground">{event.title}</h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              {deal?.summary.headline || "Discuss key topics and next steps"}
-            </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-              <span>{event.time}</span>
-              <span>•</span>
-              <span>{event.date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
-              <span>•</span>
-              <span>{event.type === "call" ? "Phone Call" : "Zoom Meeting"}</span>
-            </div>
+    <div className="relative h-full min-h-0 flex-1 flex flex-col bg-background">
+      {onClose && (
+        <Button variant="ghost" size="icon" onClick={onClose} className="absolute right-3 top-3 z-10" aria-label="Close">
+          <X className="w-4 h-4" />
+        </Button>
+      )}
+
+      {/* Header: title + meta, then who */}
+      <div className="shrink-0 space-y-3 p-4 pr-12 sm:p-6 sm:pr-14 sm:pb-4">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground sm:text-xl">{event.title}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{meta}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex -space-x-2">
+            {people.slice(0, 4).map((p) => (
+              <Avatar key={p.name} className="w-7 h-7 border-2 border-background">
+                <AvatarImage src={p.avatar} />
+                <AvatarFallback className={`${avatarFallback} text-xxs`}>{initials(p.name)}</AvatarFallback>
+              </Avatar>
+            ))}
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShareInvite}
-              className="gap-1.5"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              Share
-            </Button>
-            {event.type === "call" ? (
-              <Button
-                size="sm"
-                onClick={handleStartCall}
-                className="bg-gradient-to-r from-green to-emerald-500 hover:from-green/90 hover:to-emerald-500/90 text-white gap-1.5"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                Start Call
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                onClick={handleStartCall}
-                className="bg-gradient-to-r from-purple to-violet-500 hover:from-purple/90 hover:to-violet-500/90 text-white gap-1.5"
-              >
-                <Video className="w-3.5 h-3.5" />
-                Join Meeting
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+          <p className="truncate text-sm text-muted-foreground">
+            {clients.length > 0 ? clients.slice(0, 2).map((c) => c.name).join(", ") : team[0].name}
+            {people.length > 2 && ` +${people.length - 2}`}
+          </p>
         </div>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-5">
-        {/* Deal Information Card */}
-        {deal && (
-          <div className="bg-muted/30 border border-border rounded-lg p-4">
-            <div className="flex items-center gap-4">
-              <img 
-                src={company?.logo} 
-                alt={company?.name} 
-                className="h-10 w-auto max-w-[100px] object-contain"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-foreground">{company?.name}</h3>
-                  {stageInfo && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="outline" className={stageInfo.colorClass}>
-                          {stageInfo.label}
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>{stageInfo.tooltip}</TooltipContent>
-                    </Tooltip>
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 sm:px-6 space-y-4">
+        {/* Main task */}
+        {event.description && <p className="text-sm text-foreground">{event.description}</p>}
+        {isCompleted && <CallRecordingPanel />}
+
+        {/* Everything else folded */}
+        <div>
+          {deal && company && (
+            <Disclosure title="Deal" icon={Briefcase} summary={`${deal.value} · ${deal.winProbability}% win`}>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-foreground">{company.name}</span>
+                  {stage && (
+                    <Badge variant="outline" className={`gap-1.5 ${stage.colorClass}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${stage.dotColor}`} />
+                      {stage.label}
+                    </Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">{company?.industry}</p>
-              </div>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="text-center">
-                  <div className="flex items-center gap-1 text-green">
-                    <DollarSign className="w-3.5 h-3.5" />
-                    <span className="font-semibold">{deal.value}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Value</p>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center gap-1 text-purple">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span className="font-semibold">{deal.winProbability}%</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Win Prob</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Participants - Two Column Layout */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="w-4 h-4 text-muted-foreground" />
-            <h3 className="text-sm font-medium text-foreground">Participants</h3>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Left Column: Host + Sales Team */}
-            <div className="space-y-4">
-              {/* Host */}
-              <div>
-                <p className="text-xs font-medium text-purple mb-2">Call Host</p>
-                <div className="flex items-center gap-3 p-2 rounded-lg border border-border">
-                  <Avatar className="w-9 h-9">
-                    <AvatarImage src={host.avatar} />
-                    <AvatarFallback className="bg-purple/10 text-purple text-sm font-medium">
-                      RA
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-foreground text-sm">{host.name}</p>
-                    <p className="text-sm text-muted-foreground">{host.role}, {host.company}</p>
-                  </div>
-                  <RsvpIcon status={host.rsvp} />
-                </div>
-              </div>
-
-              {/* Sales Team */}
-              <div>
-                <p className="text-xs font-medium text-purple mb-2">
-                  Sales Team ({salesTeam.length})
+                <p className="text-sm text-muted-foreground">{deal.summary.headline}</p>
+                <p className="text-sm text-muted-foreground">
+                  {deal.value} · <span className={`font-medium ${scoreText(deal.winProbability)}`}>{deal.winProbability}%</span> win probability
                 </p>
-                <div className="space-y-2">
-                  {salesTeam.map((member, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-2 rounded-lg border border-border">
-                      <Avatar className="w-9 h-9">
-                        <AvatarFallback className={`${getAvatarColor(idx + 10)} text-xs font-medium`}>
-                          {member.name.split(" ").map(n => n[0]).join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
-                        <p className="text-sm text-muted-foreground truncate">{member.role}</p>
-                      </div>
-                      <RsvpIcon status={member.rsvp} />
-                    </div>
-                  ))}
+              </div>
+            </Disclosure>
+          )}
+
+          <Disclosure title="Participants" icon={Users} summary={people.length}>
+            <div className="space-y-4">
+              {clients.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">{event.company}</p>
+                  <ul className="space-y-3">
+                    {clients.map((p) => <PersonRow key={p.name} person={p} />)}
+                  </ul>
                 </div>
+              )}
+              <div>
+                <p className="mb-2 text-xs font-medium text-muted-foreground">Our team</p>
+                <ul className="space-y-3">
+                  {team.map((p) => <PersonRow key={p.name} person={p} />)}
+                </ul>
               </div>
             </div>
+          </Disclosure>
 
-            {/* Right Column: Client Stakeholders */}
-            <div>
-              <p className="text-xs font-medium text-green mb-2">
-                Client Stakeholders ({dealStakeholders.length})
-              </p>
-              <div className="space-y-2">
-                {dealStakeholders.slice(0, 5).map((stakeholder, idx) => (
-                  <div key={stakeholder.id} className="flex items-center gap-3 p-2 rounded-lg border border-border">
-                    <Avatar className="w-9 h-9">
-                      <AvatarImage src={stakeholder.avatar} />
-                      <AvatarFallback className={`${getAvatarColor(idx)} text-xs font-medium`}>
-                        {stakeholder.name.split(" ").map(n => n[0]).join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-foreground text-sm truncate">
-                        {stakeholder.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground truncate">{stakeholder.role}</p>
-                    </div>
-                    <RsvpIcon status={getStakeholderRsvp(stakeholder)} />
-                  </div>
-                ))}
-                {dealStakeholders.length > 5 && (
-                  <p className="text-xs text-muted-foreground text-center py-1">
-                    +{dealStakeholders.length - 5} more
-                  </p>
-                )}
-                {dealStakeholders.length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-4 border border-dashed border-border rounded-lg">
-                    No stakeholders linked
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+          <Disclosure title="Materials" icon={Paperclip} summary={`${materials.length} files`}>
+            <ul className="space-y-2">
+              {materials.map((m) => (
+                <li key={m.name} className="flex items-center gap-2 text-sm text-foreground">
+                  {m.isLink ? <Link2 className="w-4 h-4 text-muted-foreground" /> : <FileText className="w-4 h-4 text-muted-foreground" />}
+                  {m.name}
+                </li>
+              ))}
+            </ul>
+          </Disclosure>
         </div>
+      </div>
 
-        {/* Loomik Call Recording - Simulated */}
-        <CallRecordingPanel eventTitle={event.title} duration="12:34" />
-
-        {/* Meeting Materials - Inline */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-foreground">Meeting Materials</h3>
-            <Button variant="ghost" size="sm" className="text-xs h-6 text-purple hover:text-purple hover:bg-purple/10">
-              + Add
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            {mockMaterials.map((material) => (
-              <div 
-                key={material.id} 
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-purple cursor-pointer transition-colors"
-              >
-                {material.type === "link" ? (
-                  <Link2 className="w-3.5 h-3.5 text-blue-500" />
-                ) : (
-                  <FileText className={`w-3.5 h-3.5 ${
-                    material.type === "pdf" ? "text-red-500" : "text-green-500"
-                  }`} />
-                )}
-                <span>{material.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Sticky footer: one primary action */}
+      <div className="shrink-0 flex flex-col-reverse gap-2 border-t border-border p-4 sm:flex-row sm:justify-end sm:px-6">
+        <Button variant="outline" onClick={handleShare} className="w-full sm:w-auto gap-1.5">
+          <Share2 className="w-4 h-4" /> Share
+        </Button>
+        {!isCompleted && (
+          <Button onClick={handleStart} className="w-full sm:w-auto gap-1.5">
+            {event.type === "call" ? <Phone className="w-4 h-4" /> : <Video className="w-4 h-4" />}
+            {event.type === "call" ? "Start call" : "Join meeting"}
+          </Button>
+        )}
       </div>
     </div>
   );

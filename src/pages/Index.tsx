@@ -4,9 +4,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Header from "@/components/dashboard/Header";
 import TabNavigation from "@/components/dashboard/TabNavigation";
 import DealsTable from "@/components/dashboard/DealsTable";
+import PipelineHero from "@/components/dashboard/PipelineHero";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const Index = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -27,14 +29,14 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-screen flex flex-col bg-background bg-canvas bg-cover overflow-hidden">
       {/* Header - hides on scroll */}
       <div className={`transition-all duration-200 ${isScrolled ? "h-0 opacity-0 overflow-hidden" : ""}`}>
         <Header isScrolled={isScrolled} />
       </div>
       
       {/* Tab Navigation + AI Header - side by side */}
-      <div className="flex border-b border-border bg-white">
+      <div className="flex border-b border-border bg-card max-lg:hidden">
         <div className="flex-1">
           <TabNavigation isScrolled={isScrolled} activeTab="Dashboard" />
         </div>
@@ -44,8 +46,8 @@ const Index = () => {
           <div className={`flex items-center gap-2 px-2 md:px-4 border-l border-border transition-all duration-200 ${isAIPanelOpen ? "w-64 md:w-80" : "w-10 md:w-12"}`}>
             {isAIPanelOpen && (
               <>
-                <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
-                <div className="w-2 h-2 bg-green rounded-full" />
+                <Logo className="h-4 md:h-5" />
+                <div className="w-2 h-2 bg-success rounded-full" />
               </>
             )}
             <button 
@@ -60,7 +62,8 @@ const Index = () => {
       
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content - scrollable, full width on mobile */}
-        <main id="main-scroll" className={`flex-1 overflow-y-auto px-6 py-4 ${isMobile ? 'pb-20' : ''}`}>
+        <main id="main-scroll" className="flex-1 overflow-y-auto px-6 pt-4 pb-20">
+          <PipelineHero />
           <DealsTable />
         </main>
 

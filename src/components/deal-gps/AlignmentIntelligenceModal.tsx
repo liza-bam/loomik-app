@@ -1,21 +1,9 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Target, BarChart3, Users, TrendingUp, TrendingDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-} from "recharts";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Disclosure } from "@/components/ui/disclosure";
+import { BarChart3, Users, History, Lightbulb } from "lucide-react";
 import type { Stakeholder } from "@/data/dealData";
+import { scoreText, trendText, categoryBadge } from "@/lib/tone";
+import { ScoreDrivers } from "./DealSection";
 
 interface AlignmentIntelligenceModalProps {
   open: boolean;
@@ -27,25 +15,6 @@ interface AlignmentIntelligenceModalProps {
   messageFitPct: number;
   valueTranslationPct: number;
 }
-
-// Color coding helper
-const getBarColor = (value: number) => {
-  if (value > 70) return "bg-green";
-  if (value >= 50) return "bg-yellow";
-  return "bg-red";
-};
-
-const getTextColor = (value: number) => {
-  if (value > 70) return "text-green";
-  if (value >= 50) return "text-yellow-600";
-  return "text-red";
-};
-
-const getDonutColor = (value: number) => {
-  if (value > 70) return "hsl(var(--green))";
-  if (value >= 50) return "hsl(var(--yellow))";
-  return "hsl(var(--red))";
-};
 
 // Hardcoded timeline data from screenshots
 const timelineEvents = [
@@ -82,6 +51,20 @@ const stakeholderGridData = [
   { name: "Emma Davis", role: "VP Engineering", threatMitigation: 64, costReduction: 79, speedToValue: 78, innovation: 95, overall: 79, status: "Aligned" },
 ];
 
+const totalGaps = alignmentMatrixData.reduce((sum, row) => sum + row.gaps, 0);
+const matrixColumns = [
+  { key: "capability", label: "Cap." },
+  { key: "messageFit", label: "Msg" },
+  { key: "valueTranslation", label: "Value" },
+] as const;
+const gridColumns = [
+  { key: "threatMitigation", label: "Threat" },
+  { key: "costReduction", label: "Cost" },
+  { key: "speedToValue", label: "Speed" },
+  { key: "innovation", label: "Innov." },
+  { key: "overall", label: "All" },
+] as const;
+
 const AlignmentIntelligenceModal = ({
   open,
   onOpenChange,
@@ -90,282 +73,128 @@ const AlignmentIntelligenceModal = ({
   capabilityPct,
   messageFitPct,
   valueTranslationPct,
-}: AlignmentIntelligenceModalProps) => {
-  const pieData = [
-    { name: "Score", value: overallScore },
-    { name: "Remaining", value: 100 - overallScore },
-  ];
+}: AlignmentIntelligenceModalProps) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="w-dialog max-w-3xl max-h-dialog p-0 gap-0 flex flex-col overflow-hidden max-sm:overflow-hidden">
+      {/* Header: one line + meta */}
+      <div className="p-4 sm:px-6 pr-12 border-b border-border shrink-0">
+        <DialogTitle className="flex items-center gap-2 text-base">
+          <Users className="w-4 h-4 text-primary" />
+          Alignment
+        </DialogTitle>
+        <DialogDescription className="text-xs mt-1">
+          {companyName} · {totalGaps} gaps across {alignmentMatrixData.length} value drivers
+        </DialogDescription>
+      </div>
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[80vw] max-w-5xl max-h-[90vh] overflow-hidden p-0 flex flex-col">
-        {/* Header - Fixed */}
-        <div className="px-5 py-3 pr-14 flex items-center gap-3 border-b border-border bg-muted/30 shrink-0">
-          <div className="p-2 rounded-lg bg-purple/10">
-            <Target className="w-5 h-5 text-purple" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold">Alignment Intelligence - {companyName}</h2>
-              <Badge className="bg-purple text-white">{overallScore}%</Badge>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Comprehensive alignment analysis including capability alignment, message fit, and value translation
-            </p>
-          </div>
-        </div>
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+        {/* Score and its drivers */}
+        <ScoreDrivers
+          score={overallScore}
+          drivers={[
+            { label: "Capability", value: capabilityPct },
+            { label: "Message fit", value: messageFitPct },
+            { label: "Value translation", value: valueTranslationPct },
+          ]}
+        />
 
-        {/* Content - Scrollable */}
-        <div className="p-5 pb-4 space-y-6 overflow-y-auto flex-1">
-          {/* Section 1: Two Columns - Score + Timeline */}
-          <div className="grid grid-cols-2 gap-5">
-            {/* Left - Alignment Score */}
-            <div className="bg-muted/20 rounded-xl p-4">
-              <h3 className="text-sm font-semibold mb-3">Alignment Score</h3>
-              <div className="flex items-center gap-5">
-                {/* Donut */}
-                <div className="relative w-24 h-24 shrink-0">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={35}
-                        outerRadius={45}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        <Cell fill={getDonutColor(overallScore)} />
-                        <Cell fill="hsl(var(--muted))" />
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className={`text-xl font-bold ${getTextColor(overallScore)}`}>{overallScore}%</span>
+        {/* Everything else folded */}
+        <div>
+          <Disclosure title="What to fix" icon={Lightbulb} summary={`${notes.length} notes`}>
+            <ul className="space-y-1.5 text-sm">
+              {notes.map((note) => (
+                <li key={note.driver}>
+                  <span className="font-medium">{note.driver}:</span> <span className="text-muted-foreground">{note.note}</span>
+                </li>
+              ))}
+            </ul>
+          </Disclosure>
+
+          <Disclosure title="Timeline" icon={History} summary={`${timelineEvents.length} events`}>
+            <div className="divide-y divide-border">
+              {timelineEvents.map((event) => (
+                <div key={event.date} className="flex items-start gap-3 py-2 first:pt-0 last:pb-0 text-sm">
+                  <div className="flex-1">
+                    <p>{event.event}</p>
+                    <p className="text-xs text-muted-foreground">{event.date}</p>
                   </div>
+                  <span className={`text-xs font-medium ${trendText(event.impact)}`}>
+                    {event.impact > 0 ? "+" : ""}{event.impact}%
+                  </span>
                 </div>
-                {/* Metric Bars */}
-                <div className="flex-1 space-y-2.5">
-                  {[
-                    { label: "Capability Alignment", value: capabilityPct },
-                    { label: "Message Fit", value: messageFitPct },
-                    { label: "Value Translation", value: valueTranslationPct },
-                  ].map((m) => (
-                    <div key={m.label} className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">{m.label}</span>
-                      <span className={`text-xs font-semibold ${getTextColor(m.value)}`}>{m.value}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
+          </Disclosure>
 
-            {/* Right - Alignment Timeline */}
-            <div className="bg-muted/10 rounded-xl p-4">
-              <h3 className="text-sm font-semibold mb-3">Alignment Timeline</h3>
-              <div className="space-y-1">
-                {timelineEvents.map((event, idx) => (
-                  <div key={idx} className="group relative flex items-start gap-2.5 p-2 rounded-lg cursor-pointer
-                    transition-all duration-300 ease-out
-                    hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5
-                    before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-purple/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
-                    hover:before:opacity-100">
-                    <div
-                      className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${
-                        event.impact > 0 ? "bg-green" : "bg-red"
-                      }`}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs text-muted-foreground">{event.date}</span>
-                        <span
-                          className={`text-xs font-medium ${
-                            event.impact > 0 ? "text-green" : "text-red"
-                          }`}
-                        >
-                          {event.impact > 0 ? (
-                            <span className="flex items-center gap-0.5">
-                              <TrendingUp className="w-3 h-3" />+{event.impact}%
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-0.5">
-                              <TrendingDown className="w-3 h-3" />{event.impact}%
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                      <p className="text-sm text-foreground truncate">{event.event}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Section 2: Alignment Matrix Table */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <BarChart3 className="w-4 h-4 text-purple" />
-              <h3 className="text-sm font-semibold">Alignment Matrix</h3>
-            </div>
-            <div className="rounded-lg border border-border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground">Buyer Value Driver</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Capability %</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Msg Fit %</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Value Trans %</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Gaps</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground">Exec Goal Alignment</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+          <Disclosure title="Value driver matrix" icon={BarChart3} summary={`${totalGaps} gaps`}>
+            <div className="rounded-lg border border-border overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-muted/50 border-b border-border text-muted-foreground">
+                    <th className="text-left p-2 font-medium">Driver</th>
+                    {matrixColumns.map((c) => (
+                      <th key={c.key} className="text-center p-2 font-medium">{c.label}</th>
+                    ))}
+                    <th className="text-left p-2 font-medium">Execs</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {alignmentMatrixData.map((row) => (
-                    <TableRow key={row.driver}>
-                      <TableCell className="text-sm font-medium">{row.driver}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${getBarColor(row.capability)}`} style={{ width: `${row.capability}%` }} />
-                          </div>
-                          <span className={`text-xs font-medium ${getTextColor(row.capability)}`}>{row.capability}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${getBarColor(row.messageFit)}`} style={{ width: `${Math.min(row.messageFit, 100)}%` }} />
-                          </div>
-                          <span className={`text-xs font-medium ${getTextColor(row.messageFit)}`}>{row.messageFit}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${getBarColor(row.valueTranslation)}`} style={{ width: `${Math.min(row.valueTranslation, 100)}%` }} />
-                          </div>
-                          <span className={`text-xs font-medium ${row.valueTranslation > 100 ? "text-purple" : getTextColor(row.valueTranslation)}`}>{row.valueTranslation}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className={`text-xs font-medium ${row.gaps > 0 ? "text-red" : "text-green"}`}>
-                          {row.gaps} gap{row.gaps !== 1 ? "s" : ""}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                    <tr key={row.driver} className="border-b border-border last:border-0">
+                      <td className="p-2">
+                        <p className="font-medium text-foreground">{row.driver}</p>
+                        {row.gaps > 0 && <p className="text-danger">{row.gaps} gap</p>}
+                      </td>
+                      {matrixColumns.map((c) => (
+                        <td key={c.key} className={`p-2 text-center font-semibold ${scoreText(row[c.key])}`}>{row[c.key]}%</td>
+                      ))}
+                      <td className="p-2">
+                        <div className="flex flex-wrap gap-1">
                           {row.execs.map((exec) => (
-                            <span
-                              key={exec.role}
-                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green/10 text-green-700 border border-green/20"
-                            >
+                            <span key={exec.role} className={`px-1.5 py-0.5 rounded-full whitespace-nowrap ${categoryBadge}`}>
                               {exec.role} {exec.pct}%
                             </span>
                           ))}
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
-          </div>
+          </Disclosure>
 
-          {/* Section 3: Notes */}
-          <div className="bg-muted/30 rounded-lg p-4">
-            <h3 className="text-sm font-semibold mb-3">Notes</h3>
-            <ul className="space-y-1.5">
-              {notes.map((note) => (
-                <li key={note.driver} className="flex items-start gap-2 text-sm">
-                  <span className="text-muted-foreground">•</span>
-                  <span>
-                    <span className="font-medium">{note.driver}:</span>{" "}
-                    <span className="text-muted-foreground">{note.note}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Section 4: Stakeholder Alignment Grid */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Users className="w-4 h-4 text-purple" />
-              <h3 className="text-sm font-semibold">Stakeholder Alignment Grid</h3>
-            </div>
-            <div className="rounded-lg border border-border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground">Stakeholder</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground">Role</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Threat Mitigation</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Cost Reduction</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Speed to Value</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Innovation</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Overall</TableHead>
-                    <TableHead className="text-xs font-medium uppercase text-muted-foreground text-center">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+          <Disclosure title="Stakeholders" icon={Users} summary={`${stakeholderGridData.length} people`}>
+            <div className="rounded-lg border border-border overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-muted/50 border-b border-border text-muted-foreground">
+                    <th className="text-left p-2 font-medium">Stakeholder</th>
+                    {gridColumns.map((c) => (
+                      <th key={c.key} className="text-center p-2 font-medium">{c.label}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
                   {stakeholderGridData.map((sh) => (
-                    <TableRow key={sh.name}>
-                      <TableCell className="text-sm font-medium">{sh.name}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{sh.role}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <div className="w-10 h-1 bg-muted rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${getBarColor(sh.threatMitigation)}`} style={{ width: `${sh.threatMitigation}%` }} />
-                          </div>
-                          <span className={`text-xs ${getTextColor(sh.threatMitigation)}`}>{sh.threatMitigation}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <div className="w-10 h-1 bg-muted rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${getBarColor(sh.costReduction)}`} style={{ width: `${sh.costReduction}%` }} />
-                          </div>
-                          <span className={`text-xs ${getTextColor(sh.costReduction)}`}>{sh.costReduction}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <div className="w-10 h-1 bg-muted rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${getBarColor(sh.speedToValue)}`} style={{ width: `${sh.speedToValue}%` }} />
-                          </div>
-                          <span className={`text-xs ${getTextColor(sh.speedToValue)}`}>{sh.speedToValue}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <div className="w-10 h-1 bg-muted rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${getBarColor(sh.innovation)}`} style={{ width: `${sh.innovation}%` }} />
-                          </div>
-                          <span className={`text-xs ${getTextColor(sh.innovation)}`}>{sh.innovation}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className={`text-sm font-semibold ${getTextColor(sh.overall)}`}>{sh.overall}%</span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {sh.status === "Aligned" ? (
-                          <Badge className="bg-green/10 text-green border border-green/20 hover:bg-green/20">Aligned</Badge>
-                        ) : (
-                          <Badge className="bg-yellow/10 text-yellow-600 border border-yellow/20 hover:bg-yellow/20">Partial</Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
+                    <tr key={sh.name} className="border-b border-border last:border-0">
+                      <td className="p-2">
+                        <p className="font-medium text-foreground">{sh.name}</p>
+                        <p className="text-muted-foreground">{sh.role}</p>
+                      </td>
+                      {gridColumns.map((c) => (
+                        <td key={c.key} className={`p-2 text-center font-semibold ${scoreText(sh[c.key])}`}>{sh[c.key]}%</td>
+                      ))}
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
-          </div>
+          </Disclosure>
         </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
+      </div>
+    </DialogContent>
+  </Dialog>
+);
 
 export default AlignmentIntelligenceModal;

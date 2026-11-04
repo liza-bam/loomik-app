@@ -1,16 +1,11 @@
 // RecommendedOfferingsSection - Matched offerings based on unmet buyer needs
-import { useState } from "react";
-import { Star, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+import { Star, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
+import { DealSection } from "./DealSection";
+import { scoreText, categoryBadge } from "@/lib/tone";
 
 // ==================== TYPES ====================
 
@@ -96,56 +91,34 @@ const BUYER_PRIORITIES = ["Risk Mitigation", "Cost Efficiency", "Time-to-Outcome
 // ==================== COMPONENT ====================
 
 interface RecommendedOfferingsSectionProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  compact: boolean;
   onCreateAction: (offering: RecommendedOffering) => void;
 }
 
 export const RecommendedOfferingsSection = ({
-  isOpen,
-  onToggle,
+  compact,
   onCreateAction,
 }: RecommendedOfferingsSectionProps) => {
 
-  const getAlignmentBadgeStyle = (pct: number) => {
-    if (pct >= 80) return "bg-green/10 text-green border-green/30";
-    if (pct >= 70) return "bg-yellow/10 text-yellow border-yellow/30";
-    return "bg-muted text-muted-foreground border-border";
-  };
-
   return (
-    <Collapsible open={isOpen} onOpenChange={onToggle}>
-      <section className="space-y-4">
-        {/* Section Header */}
-        <CollapsibleTrigger asChild>
-          <Card className="p-4 bg-gradient-to-r from-purple/5 to-transparent border-l-4 border-l-purple cursor-pointer hover:bg-purple/5 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple/10">
-                <Star className="w-5 h-5 text-purple fill-purple" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-foreground">RECOMMENDED OFFERINGS</h2>
-                </div>
-                <p className="text-sm text-muted-foreground">Matched to unmet buyer needs</p>
-              </div>
-              {/* Inline preview tags when collapsed */}
-              {!isOpen && (
-                <div className="hidden md:flex items-center gap-1.5 mr-2">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">Buyer priorities:</span>
-                  {BUYER_PRIORITIES.map((p) => (
-                    <Badge key={p} variant="outline" className="text-xxs px-2 py-0 h-5 whitespace-nowrap border-purple/30 text-purple bg-purple/5">
-                      {p}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              {isOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" /> : <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />}
-            </div>
-          </Card>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent className="space-y-6">
+    <DealSection
+      title="Recommended offerings"
+      icon={Star}
+      description="Matched to unmet buyer needs"
+      summary={`${recommendedOfferings.length} matches`}
+      headerExtra={
+        <div className="hidden md:flex items-center gap-1.5 mr-2">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Buyer priorities:</span>
+          {BUYER_PRIORITIES.map((p) => (
+            <Badge key={p} variant="outline" className={`text-xxs px-2 py-0 h-5 whitespace-nowrap border-transparent ${categoryBadge}`}>
+              {p}
+            </Badge>
+          ))}
+        </div>
+      }
+      compact={compact}
+    >
+        <div className="space-y-6">
           {/* Section 1: Already Covered */}
           <div className="space-y-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Already Covered</p>
@@ -154,12 +127,12 @@ export const RecommendedOfferingsSection = ({
                 <Card key={offering.name} className="p-4 space-y-2.5">
                   <p className="text-sm font-semibold text-foreground">{offering.name}</p>
                   <p className="text-xs text-muted-foreground italic line-clamp-2">"{offering.buyerSignalQuote}"</p>
-                  <Progress value={offering.alignmentPct} className="h-2 bg-muted [&>div]:bg-green" />
+                  <Progress value={offering.alignmentPct} className="h-2 bg-muted" />
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-xxs h-5 border-green/30 text-green bg-green/5">
+                    <Badge variant="outline" className="text-xxs h-5 border-transparent bg-success-subtle text-success">
                       Mentioned
                     </Badge>
-                    <span className="text-xs font-medium text-green">{offering.alignmentPct}%</span>
+                    <span className={`text-xs font-medium ${scoreText(offering.alignmentPct)}`}>{offering.alignmentPct}%</span>
                   </div>
                 </Card>
               ))}
@@ -178,7 +151,7 @@ export const RecommendedOfferingsSection = ({
                   {/* Row 1: Name + Badge */}
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-foreground">{offering.name}</p>
-                    <Badge variant="outline" className={cn("text-xs font-medium", getAlignmentBadgeStyle(offering.alignmentPct))}>
+                    <Badge variant="secondary" className="text-xs font-medium">
                       {offering.alignmentPct}%
                     </Badge>
                   </div>
@@ -206,7 +179,7 @@ export const RecommendedOfferingsSection = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-purple text-purple hover:bg-purple/10 gap-1.5"
+                      className="gap-1.5"
                       onClick={() => onCreateAction(offering)}
                     >
                       Create action
@@ -217,9 +190,8 @@ export const RecommendedOfferingsSection = ({
               ))}
             </div>
           </div>
-        </CollapsibleContent>
-      </section>
-    </Collapsible>
+        </div>
+    </DealSection>
   );
 };
 

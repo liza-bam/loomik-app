@@ -38,7 +38,7 @@ export function AIThinking({
 
   return (
     <div className={cn("flex items-center gap-3 p-3 rounded-lg bg-muted/50", className)}>
-      <div className="w-8 h-8 bg-gradient-to-br from-purple to-primary rounded-lg flex items-center justify-center flex-shrink-0">
+      <div className="w-8 h-8 bg-brand-gradient rounded-lg flex items-center justify-center flex-shrink-0">
         <svg 
           width="14" 
           height="14" 

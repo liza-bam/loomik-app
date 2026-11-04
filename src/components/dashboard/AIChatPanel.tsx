@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import type { CalendarEvent } from "@/contexts/EventPopupContext";
+import Logo from "@/components/Logo";
 
 interface AIChatPanelProps {
   hideHeader?: boolean;
@@ -122,10 +123,10 @@ Keep it concise and actionable.`;
   return (
     <div className="h-full flex flex-col">
       {!hideHeader && (
-        <div className="px-4 py-1 border-b border-border bg-white flex-shrink-0">
+        <div className="px-4 py-1 border-b border-border bg-card flex-shrink-0">
           <div className="flex items-center gap-2">
-            <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-5 w-auto" />
-            <div className="w-2 h-2 bg-green rounded-full" />
+            <Logo className="h-5" />
+            <div className="w-2 h-2 bg-success rounded-full" />
           </div>
         </div>
       )}
@@ -136,7 +137,7 @@ Keep it concise and actionable.`;
             {/* Welcome Message */}
             <div className="mb-4">
               <div className="flex-1">
-                <div className="bg-purple/10 rounded-lg p-3">
+                <div className="bg-primary-subtle rounded-lg p-3">
                   <p className="text-base text-foreground">
                     Good morning! I'm analyzing your pipeline in real-time. Ask me about deals, risks, or strategies.
                   </p>
@@ -152,7 +153,7 @@ Keep it concise and actionable.`;
                 <button
                   key={index}
                   onClick={() => sendMessage(action)}
-                  className="w-full text-left px-3 py-2 bg-muted hover:bg-muted/80 rounded-lg text-base text-foreground transition-colors"
+                  className="w-full text-left px-3 py-2 bg-muted hover:bg-accent rounded-lg text-base text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {action}
                 </button>
@@ -165,8 +166,8 @@ Keep it concise and actionable.`;
               <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                 <div className={`max-w-[90%] rounded-lg p-3 ${
                   msg.role === 'user' 
-                    ? 'bg-[hsl(262,80%,20%)] text-white' 
-                    : 'bg-purple/10 text-foreground'
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-primary-subtle text-foreground'
                 }`}>
                   <p className="text-base whitespace-pre-wrap">{msg.content}</p>
                 </div>
@@ -180,24 +181,24 @@ Keep it concise and actionable.`;
                       title="Copy message"
                     >
                       {copiedMessageId === idx ? (
-                        <Check className="w-3.5 h-3.5 text-green" />
+                        <Check className="w-3.5 h-3.5 text-success" />
                       ) : (
                         <Copy className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground" />
                       )}
                     </button>
                     <button
                       onClick={() => handleFeedback(idx, 'up')}
-                      className={`p-1.5 rounded hover:bg-muted transition-colors group ${feedbackGiven[idx] === 'up' ? 'bg-green/10' : ''}`}
+                      className={`p-1.5 rounded hover:bg-muted transition-colors group ${feedbackGiven[idx] === 'up' ? 'bg-success-subtle' : ''}`}
                       title="Good response"
                     >
-                      <ThumbsUp className={`w-3.5 h-3.5 ${feedbackGiven[idx] === 'up' ? 'text-green fill-green' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                      <ThumbsUp className={`w-3.5 h-3.5 ${feedbackGiven[idx] === 'up' ? 'text-success fill-success' : 'text-muted-foreground group-hover:text-foreground'}`} />
                     </button>
                     <button
                       onClick={() => handleFeedback(idx, 'down')}
-                      className={`p-1.5 rounded hover:bg-muted transition-colors group ${feedbackGiven[idx] === 'down' ? 'bg-red/10' : ''}`}
+                      className={`p-1.5 rounded hover:bg-muted transition-colors group ${feedbackGiven[idx] === 'down' ? 'bg-danger-subtle' : ''}`}
                       title="Poor response"
                     >
-                      <ThumbsDown className={`w-3.5 h-3.5 ${feedbackGiven[idx] === 'down' ? 'text-red fill-red' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                      <ThumbsDown className={`w-3.5 h-3.5 ${feedbackGiven[idx] === 'down' ? 'text-danger fill-danger' : 'text-muted-foreground group-hover:text-foreground'}`} />
                     </button>
                   </div>
                 )}
@@ -217,7 +218,7 @@ Keep it concise and actionable.`;
             onClick={handleCopyPrepNotes}
             variant="outline"
             size="sm"
-            className="w-full border-purple text-purple bg-white hover:!bg-gradient-to-r hover:!from-purple hover:!to-orange-500 hover:!text-white hover:!border-transparent gap-2"
+            className="w-full gap-2"
           >
             {copied ? (
               <>
@@ -233,20 +234,20 @@ Keep it concise and actionable.`;
           </Button>
         )}
         <div className="flex items-center gap-2">
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0">
             <Input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask Loomik anything..."
-              className="pr-10 bg-muted border-0"
+              className="bg-muted border-0"
               disabled={isLoading}
             />
           </div>
           {isLoading ? (
             <button 
               onClick={cancelRequest}
-              className="w-10 h-10 bg-red text-white rounded-lg flex items-center justify-center hover:bg-red/90 transition-colors"
+              className="w-10 h-10 shrink-0 bg-danger text-danger-foreground rounded-lg flex items-center justify-center hover:bg-danger/90 transition-colors"
             >
               <Square className="w-4 h-4" />
             </button>
@@ -254,12 +255,12 @@ Keep it concise and actionable.`;
             <button 
               onClick={handleSend}
               disabled={!inputValue.trim()}
-              className="w-10 h-10 bg-primary text-primary-foreground rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className="w-10 h-10 shrink-0 bg-brand-gradient text-primary-foreground rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
             </button>
           )}
-          <button className="w-10 h-10 bg-muted text-muted-foreground rounded-lg flex items-center justify-center hover:bg-muted/80 transition-colors">
+          <button className="w-10 h-10 shrink-0 bg-muted text-muted-foreground rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
             <Mic className="w-4 h-4" />
           </button>
         </div>

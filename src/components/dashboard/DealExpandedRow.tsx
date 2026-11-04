@@ -14,6 +14,7 @@ import {
   getStakeholderById,
   type Action,
 } from "@/data/dealData";
+import { priorityDot } from "@/lib/tone";
 
 interface DealExpandedRowProps {
   dealId: number;
@@ -119,30 +120,29 @@ const DealExpandedRow = ({ dealId, company, hasRisk }: DealExpandedRowProps) => 
           {priorityActions.length > 0 ? (
             <div className="flex flex-wrap gap-3">
               {priorityActions.map((action) => {
-                const borderColor = action.priority === "high" ? "border-l-red" : action.priority === "medium" ? "border-l-yellow" : "border-l-muted-foreground/30";
                 const ActionIcon = action.type === "email" ? Mail : Video;
                 
                 return (
                   <div
                     key={action.id}
-                    className={`group relative bg-card border border-border rounded-lg p-4 space-y-3 border-l-4 ${borderColor} w-fit max-w-sm interactive-card interactive-card-gradient cursor-pointer`}
+                    className="group relative bg-card border border-border rounded-lg p-4 space-y-3 w-fit max-w-sm interactive-card cursor-pointer"
                     onClick={() => handleGoToAction(action)}
                   >
-                    {/* Ambient glow effect */}
-                    <div className="absolute -inset-px rounded-lg bg-gradient-to-r from-purple/20 via-primary/10 to-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
-                    
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple/10 flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110">
-                        <ActionIcon className="w-4 h-4 text-purple" />
+                      <div className="w-8 h-8 rounded-lg bg-primary-subtle flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110">
+                        <ActionIcon className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{action.stakeholderName}</p>
+                        <p className="flex items-center gap-1.5 font-medium text-foreground">
+                          {action.stakeholderName}
+                          <span className={`w-1.5 h-1.5 rounded-full ${priorityDot(action.priority)}`} title={`${action.priority} priority`} />
+                        </p>
                         <p className="text-sm text-muted-foreground">{action.stakeholderRole}</p>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-3.5 h-3.5 text-accent" />
+                        <FileText className="w-3.5 h-3.5 text-muted-foreground" />
                         <span className="text-sm font-medium text-foreground">{action.artifact}</span>
                       </div>
                       <p className="text-sm text-muted-foreground">Based on: {action.basedOn}</p>
@@ -150,7 +150,6 @@ const DealExpandedRow = ({ dealId, company, hasRisk }: DealExpandedRowProps) => 
                     <Button 
                       size="sm" 
                       variant="outline"
-                      className="border-purple text-purple bg-white group-hover:bg-purple group-hover:text-white hover:!bg-gradient-to-r hover:!from-purple hover:!to-orange-500 hover:!text-white hover:!border-transparent transition-all duration-200"
                       onClick={(e) => { e.stopPropagation(); handleGoToAction(action); }}
                     >
                       Go to Action
@@ -161,7 +160,7 @@ const DealExpandedRow = ({ dealId, company, hasRisk }: DealExpandedRowProps) => 
               })}
               <Button 
                 size="sm" 
-                className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white self-center"
+                className="self-center"
                 onClick={handleViewAllActions}
               >
                 <Zap className="w-4 h-4" />
@@ -174,7 +173,7 @@ const DealExpandedRow = ({ dealId, company, hasRisk }: DealExpandedRowProps) => 
               <p className="text-sm text-muted-foreground/60 italic">No priority actions for this deal</p>
               <Button 
                 size="sm" 
-                className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white text-xs"
+                className="text-xs"
                 onClick={handleViewAllActions}
               >
                 <Zap className="w-3 h-3" />

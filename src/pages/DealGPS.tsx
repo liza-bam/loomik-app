@@ -1,26 +1,9 @@
 // DealGPS Page - Deal Analysis and Stakeholder Management
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ElementType, type ReactNode } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
 import { useSearchParams, Link } from "react-router-dom";
-import { 
-  ExternalLink, 
-  Users, 
-  TrendingUp, 
-  ChevronRight,
-  ChevronLeft,
-  ChevronDown,
-  ChevronUp,
-  Mail,
-  Info,
-  Calendar,
-  Sparkles,
-  MoreHorizontal,
-  Video,
-  ArrowRight,
-  Target,
-  Zap
-} from "lucide-react";
+import { ExternalLink, Users, TrendingUp, ChevronRight, ChevronLeft, Mail, Info, Sparkles, MoreHorizontal, Video, Target, Zap, Building2 } from "lucide-react";
 import { getPrimitivesForRole } from "@/lib/value-primitives/roleDefaults";
 import { getPrimitiveById } from "@/lib/value-primitives/types";
 import {
@@ -31,11 +14,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Disclosure } from "@/components/ui/disclosure";
 import ActionEmailDialog from "@/components/dashboard/ActionEmailDialog";
 import ActionMeetingDialog from "@/components/dashboard/ActionMeetingDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,7 +31,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import Header from "@/components/dashboard/Header";
 import TabNavigation from "@/components/dashboard/TabNavigation";
@@ -60,64 +38,126 @@ import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { WinPathSection } from "@/components/deal-gps/WinPathSection";
 import { BuyerProfileSection } from "@/components/deal-gps/BuyerProfileSection";
-
+import { DealSection, ScoreRing } from "@/components/deal-gps/DealSection";
 import { SignalsRisksSection } from "@/components/deal-gps/SignalsRisksSection";
 import { RecommendedOfferingsSection, type RecommendedOffering } from "@/components/deal-gps/RecommendedOfferingsSection";
 import { type CrossSellData } from "@/components/dashboard/ActionEmailDialog";
 import AlignmentIntelligenceModal from "@/components/deal-gps/AlignmentIntelligenceModal";
 import WinProbabilityIntelligenceModal from "@/components/deal-gps/WinProbabilityIntelligenceModal";
 
-
-import {
-  deals,
-  getDealById,
-  getStakeholdersForDeal,
-  getActionsForDeal,
-  stageConfig,
-  getProgressColor,
-  getDonutColor,
-  avatarColors,
-  getCompanyById,
-  type Deal,
-  type Stakeholder,
-  type Action,
-} from "@/data/dealData";
+import { deals, getDealById, getStakeholdersForDeal, getActionsForDeal, stageConfig, getCompanyById, type Deal, type Stakeholder, type Action, formatCompactValue } from "@/data/dealData";
 import { 
   getScoreForDeal, 
   metricToPercent, 
-  METRIC_LABELS,
   STAKEHOLDER_METRIC_LABELS,
   calculateStakeholderAlignment,
-  type DealMetrics,
-  type StakeholderMetrics
 } from "@/lib/scoring";
 import { useStakeholderPopup } from "@/contexts/StakeholderPopupContext";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   Area,
   AreaChart,
 } from "recharts";
+import { scoreText, trendText, sentimentBadge, priorityDot, categoryBadge, avatarFallback, selectedChip, chartTooltip, chartTick } from "@/lib/tone";
+import Logo from "@/components/Logo";
 
-const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
+const initials = (name: string) => name.split(" ").map(n => n[0]).join("");
 
-// Format value as compact currency ($580K, $2.4M)
-const formatCompactValue = (value: number): string => {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`.replace('.0M', 'M');
-  }
-  return `$${(value / 1000).toFixed(0)}K`;
+const TrendIndicator = ({ value, size = "sm" }: { value: number; size?: "sm" | "md" }) => (
+  <span className={`${size === "sm" ? "text-xs" : "text-sm"} font-medium ${trendText(value)}`}>
+    {value > 0 ? "↑" : "↓"}{Math.abs(value)}%
+  </span>
+);
+
+interface Metric { label: string; value: number; trend: number }
+
+// Legend colours must be literal class names; they match chart-1..3 below
+const legendColor = ["bg-chart-1", "bg-chart-2", "bg-chart-3"];
+
+/** Trend lines for three metrics since the deal started. */
+const TrendChart = ({ data, series }: { data: object[]; series: { label: string; key?: string }[] }) => {
+  const keys = series.map(s => s.key ?? s.label.toLowerCase());
+  return (
+    <div>
+      <div className="h-28">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
+            <XAxis dataKey="date" tick={chartTick} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+            <YAxis hide domain={[0, 100]} />
+            <RechartsTooltip contentStyle={chartTooltip} />
+            {series.map((s, i) => (
+              <Area key={keys[i]} type="natural" dataKey={keys[i]} name={s.label} stroke={`hsl(var(--chart-${i + 1}))`} strokeWidth={2} fill="none" dot={false} activeDot={{ r: 5, fill: `hsl(var(--chart-${i + 1}))`, stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+            ))}
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="flex items-center justify-center gap-4 mt-3 flex-wrap">
+        {series.map((s, i) => (
+          <div key={s.label} className="flex items-center gap-2"><div className={`w-4 h-1 rounded ${legendColor[i]}`} /><span className="text-xs text-muted-foreground">{s.label}</span></div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-// Format date as MM.DD.YY
+/** Desktop score card: ring, metrics and trend chart; click opens the intelligence modal. */
+const ScoreCard = ({ title, icon: Icon, score, trend, metrics, badge, onOpen, children }: {
+  title: string; icon: ElementType; score: number; trend: number; metrics: Metric[]; badge?: ReactNode; onOpen: () => void; children: ReactNode;
+}) => (
+  <div
+    onClick={onOpen}
+    className="cursor-pointer rounded-xl transition-shadow p-5 space-y-5 border border-border bg-card hover:bg-muted/30 hover:shadow-md"
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => e.key === 'Enter' && onOpen()}
+  >
+    <div className="flex items-center justify-between">
+      <h3 className="font-semibold text-foreground flex items-center gap-2">
+        <Icon className="w-4 h-4 text-primary" />
+        {title}
+      </h3>
+      {badge}
+    </div>
+    <div className="bg-muted/20 rounded-xl p-5 flex items-center gap-6">
+      <div className="flex flex-col items-center gap-2">
+        <ScoreRing value={score} />
+        <TrendIndicator value={trend} size="md" />
+      </div>
+      <div className="flex-1 space-y-3">
+        {metrics.map(m => (
+          <div key={m.label} className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">{m.label}</span>
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-semibold ${scoreText(m.value)}`}>{m.value}%</span>
+              <TrendIndicator value={m.trend} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div className="bg-muted/20 rounded-xl p-5">
+      <p className="text-sm text-muted-foreground mb-3">Trend since deal start</p>
+      {children}
+    </div>
+  </div>
+);
+
+/** Phone score tile: ring + trend; tap opens the intelligence modal. */
+const ScoreTile = ({ title, score, trend, onOpen }: { title: string; score: number; trend: number; onOpen: () => void }) => (
+  <button onClick={onOpen} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 text-left hover:bg-muted/50 transition-colors">
+    <ScoreRing value={score} className="w-14 h-14 text-sm" />
+    <div className="min-w-0">
+      <p className="text-xs text-muted-foreground">{title}</p>
+      <TrendIndicator value={trend} size="md" />
+    </div>
+  </button>
+);
+
 const formatCompactDate = (dateStr: string): string => {
   const date = new Date(dateStr);
   const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -135,14 +175,8 @@ const DealGPS = () => {
   const { isAIPanelOpen, toggleAIPanel } = useUIStore();
   const isTablet = useIsTablet();
   const isMobile = useIsMobile();
-  const isTabletCompact = isTablet && isAIPanelOpen;
-  const [isWinPathOpen, setIsWinPathOpen] = useState(true);
-  const [isAnalysisOpen, setIsAnalysisOpen] = useState(true);
-  const [isBuyerProfileOpen, setIsBuyerProfileOpen] = useState(false);
-  
-  const [isStakeholdersOpen, setIsStakeholdersOpen] = useState(true);
-  const [isSignalsRisksOpen, setIsSignalsRisksOpen] = useState(true);
-  const [isRecommendedOfferingsOpen, setIsRecommendedOfferingsOpen] = useState(false);
+  // Compact layout on phones, and on tablets when the AI panel is open
+  const isCompact = isMobile || (isTablet && isAIPanelOpen);
   const [crossSellData, setCrossSellData] = useState<CrossSellData | null>(null);
   const [selectedAction, setSelectedAction] = useState<{
     id: number;
@@ -249,10 +283,6 @@ const DealGPS = () => {
   const consensusPct = metricToPercent(dealScore.metrics.consensus);
   const sentimentPct = metricToPercent(dealScore.metrics.sentiment);
   
-  // Risk detection - the lowest metric
-  const primaryRiskMetric = dealScore.primaryRiskMetric;
-  const isGuardrailActive = dealScore.isGuardrailActive;
-  
   // Calculate stakeholder alignment using the new 4-metric system
   const stakeholderAlignmentInput = {
     stakeholders: stakeholders.map(s => ({
@@ -274,17 +304,6 @@ const DealGPS = () => {
   const stakeholderAlignmentScore = stakeholderAlignment.alignmentScore;
   const stakeholderPrimaryRisk = stakeholderAlignment.primaryRiskMetric;
   
-  // Legacy averages for trend calculation - guard against division by zero
-  const avgAlignment = stakeholders.length > 0 
-    ? Math.round(stakeholders.reduce((acc, s) => acc + s.alignment, 0) / stakeholders.length) 
-    : 0;
-  const avgPriority = stakeholders.length > 0 
-    ? Math.round(stakeholders.reduce((acc, s) => acc + s.priority, 0) / stakeholders.length) 
-    : 0;
-  const avgSentiment = stakeholders.length > 0 
-    ? Math.round(stakeholders.reduce((acc, s) => acc + s.sentiment, 0) / stakeholders.length) 
-    : 0;
-
   // Engagement categorization
   const engagedStakeholders = stakeholders.filter(s => s.engagementCategory === "engaged");
   const silentStakeholders = stakeholders.filter(s => s.engagementCategory === "silent");
@@ -292,10 +311,6 @@ const DealGPS = () => {
 
   // Pie chart data - use calculated win probability
   const winProb = dealScore.winProbability;
-  const pieData = [
-    { name: "Win Probability", value: winProb },
-    { name: "Remaining", value: 100 - winProb },
-  ];
 
   // Generate interesting, wavy trend data with peaks and valleys - 3 metrics
   const generateWinProbTrendData = () => {
@@ -384,13 +399,6 @@ const DealGPS = () => {
     return Math.round(last - first);
   };
 
-  // Helper to get score color based on value
-  const getScoreColor = (value: number) => {
-    if (value > 70) return 'text-green';
-    if (value >= 50) return 'text-yellow-600';
-    return 'text-red';
-  };
-
   // Generate stakeholder alignment trend data (3 new metrics) with organic wavy curves
   const generateAlignmentTrendData = () => {
     const startDate = new Date(deal.dealStartDate);
@@ -450,27 +458,206 @@ const DealGPS = () => {
   // Stakeholder alignment overall trend
   const stakeholderAlignmentTrend = Math.round((capabilityTrend + messageFitTrend + valueTranslationTrend) / 3);
 
-  // Trend indicator component
-  const TrendIndicator = ({ value, size = "sm" }: { value: number; size?: "sm" | "md" }) => {
-    const isPositive = value > 0;
-    const textSize = size === "sm" ? "text-xs" : "text-sm";
-    return (
-      <span className={`${textSize} font-medium ${isPositive ? "text-green" : "text-red"}`}>
-        {isPositive ? "↑" : "↓"}{Math.abs(value)}%
-      </span>
-    );
+  const winMetrics = [
+    { label: "Alignment", value: alignmentPct, trend: alignmentTrend },
+    { label: "Consensus", value: consensusPct, trend: consensusTrend },
+    { label: "Sentiment", value: sentimentPct, trend: sentimentTrend },
+  ];
+  const alignMetrics = [
+    { label: "Capability", key: "capability", value: capabilityPct, trend: capabilityTrend },
+    { label: "Message Fit", key: "messageFit", value: messageFitPct, trend: messageFitTrend },
+    { label: "Value Translation", key: "valueTranslation", value: valueTranslationPct, trend: valueTranslationTrend },
+  ];
+  const winChart = <TrendChart data={winProbTrendData} series={winMetrics} />;
+  const alignChart = <TrendChart data={alignmentTrendData} series={alignMetrics} />;
+
+  const summaryText = (
+    <p className="text-sm sm:text-base text-foreground leading-relaxed">
+      {deal.summary.context} The deal has progressed through {deal.stage === 'diagnose' ? 'discovery phase' : deal.stage === 'validate' ? 'validation stage' : deal.stage === 'align' ? 'alignment phase' : 'closing stage'} with {engagedStakeholders.length} actively engaged stakeholders.{silentStakeholders.length > 0 ? ` ${silentStakeholders.length} stakeholder${silentStakeholders.length > 1 ? 's remain' : ' remains'} silent and may need re-engagement.` : ' All stakeholders are actively participating.'}
+    </p>
+  );
+
+  // Actions, highest priority first
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  const sortedActions = [...dealActions].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  const totalPages = Math.ceil(sortedActions.length / ACTIONS_PER_PAGE);
+  const paginatedActions = sortedActions.slice((actionsPage - 1) * ACTIONS_PER_PAGE, actionsPage * ACTIONS_PER_PAGE);
+  const actionHubLink = `/action-hub?deal=${encodeURIComponent(deal.name)}`;
+
+  const openAction = (action: Action) => {
+    const primaryStakeholder = stakeholders.find(s => action.stakeholderIds.includes(s.id));
+    setCrossSellData(null);
+    setSelectedAction({
+      id: action.id,
+      stakeholderIds: action.stakeholderIds,
+      stakeholderName: primaryStakeholder?.name || "Unknown",
+      stakeholderRole: primaryStakeholder?.role || "Unknown",
+      artifact: action.artifact,
+      basedOn: action.basedOn,
+      priority: action.priority,
+    });
+    if (action.type === 'email') setEmailDialogOpen(true);
+    else setMeetingDialogOpen(true);
   };
+
+  const actionList = (
+    <>
+      <div className={`grid gap-3 ${isCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
+        {paginatedActions.map((action) => {
+          const primaryStakeholder = stakeholders.find(s => action.stakeholderIds.includes(s.id));
+          return (
+            <button
+              key={action.id}
+              onClick={() => openAction(action)}
+              className="bg-card border border-border rounded-lg p-3 text-left hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-start gap-2">
+                <div className="p-1.5 rounded bg-muted/50 shrink-0">
+                  {action.type === 'email' ? <Mail className="w-3.5 h-3.5 text-muted-foreground" /> : <Video className="w-3.5 h-3.5 text-muted-foreground" />}
+                </div>
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <p className="text-xs font-medium text-foreground line-clamp-2 leading-tight">{action.title}</p>
+                  <div className="flex items-center gap-2">
+                    {primaryStakeholder && (
+                      <div className="flex items-center gap-1">
+                        <Avatar className="w-4 h-4">
+                          <AvatarImage src={primaryStakeholder.avatar} alt={primaryStakeholder.name} />
+                          <AvatarFallback className={`${avatarFallback} text-xxs`}>{initials(primaryStakeholder.name)}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-xxs text-muted-foreground truncate max-w-15">{primaryStakeholder.name.split(' ')[0]}</span>
+                      </div>
+                    )}
+                    <span className="text-xxs text-muted-foreground">{action.deadline}</span>
+                    <span className={`w-1.5 h-1.5 rounded-full ml-auto shrink-0 ${priorityDot(action.priority)}`} title={`${action.priority} priority`} />
+                  </div>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center pt-2">
+          <Pagination>
+            <PaginationContent className="gap-1">
+              <PaginationItem>
+                <PaginationPrevious onClick={() => setActionsPage(p => Math.max(1, p - 1))} className={`h-7 text-xs ${actionsPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`} />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <PaginationItem key={page}>
+                  <PaginationLink onClick={() => setActionsPage(page)} isActive={actionsPage === page} className="h-7 w-7 text-xs cursor-pointer">{page}</PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext onClick={() => setActionsPage(p => Math.min(totalPages, p + 1))} className={`h-7 text-xs ${actionsPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`} />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+    </>
+  );
+
+  const engagementGroups = [
+    { label: "Engaged", dot: "bg-success", people: engagedStakeholders, max: 4 },
+    { label: "Silent", dot: "bg-warning", people: silentStakeholders, max: 3 },
+    { label: "Hidden", dot: "bg-danger", people: hiddenStakeholders, max: 2 },
+  ].filter(g => g.people.length > 0);
+
+  // Sections shared by both layouts: cards with headers on desktop, folded disclosures on phones
+  const sections = (
+    <>
+      <SignalsRisksSection dealId={dealId} dealName={deal.name} compact={isCompact} />
+
+      <RecommendedOfferingsSection compact={isCompact} onCreateAction={handleCreateCrossSellAction} />
+
+      <DealSection
+        title="Stakeholders"
+        icon={Users}
+        summary={`${stakeholders.length} people${silentStakeholders.length ? ` · ${silentStakeholders.length} silent` : ''}`}
+        compact={isCompact}
+        defaultOpen={!isCompact}
+        headerExtra={
+          <div className="flex items-center gap-5">
+            {engagementGroups.map(g => (
+              <div key={g.label} className="flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${g.dot}`} />
+                <span className="text-sm text-muted-foreground">{g.label}</span>
+                <div className="flex -space-x-2">
+                  {g.people.slice(0, g.max).map(s => (
+                    <Tooltip key={s.id}>
+                      <TooltipTrigger asChild>
+                        <Avatar
+                          className="w-7 h-7 border-2 border-card cursor-pointer hover:scale-110 transition-transform"
+                          onClick={(e) => { e.stopPropagation(); openPopup(s); }}
+                        >
+                          <AvatarImage src={s.avatar} />
+                          <AvatarFallback className={`${avatarFallback} text-xs`}>{initials(s.name)}</AvatarFallback>
+                        </Avatar>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="font-medium">{s.name}</p>
+                        <p className="text-xs text-muted-foreground">{s.role}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                  {g.people.length > g.max && (
+                    <div className="w-7 h-7 rounded-full bg-muted border-2 border-card flex items-center justify-center text-xs font-medium">
+                      +{g.people.length - g.max}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        }
+      >
+        <div className={`grid gap-4 ${isCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'}`}>
+          {stakeholders.map(stakeholder => (
+            <StakeholderCardExtended
+              key={stakeholder.id}
+              stakeholder={stakeholder}
+              deal={deal}
+              actions={dealActions.filter(a => a.stakeholderIds.includes(stakeholder.id))}
+              compact={isCompact}
+            />
+          ))}
+        </div>
+      </DealSection>
+
+      <DealSection
+        title="Win Path"
+        icon={Target}
+        description="Track progress through each stage of the deal lifecycle"
+        summary={`${stageInfo.label} stage`}
+        compact={isCompact}
+        defaultOpen={!isCompact}
+      >
+        <WinPathSection deal={deal} stakeholders={stakeholders} winProbability={winProb} alignmentScore={stakeholderAlignmentScore} />
+      </DealSection>
+
+      <DealSection
+        title="Buyer Profile"
+        icon={Building2}
+        description="BVM/SVM alignment, value drivers, and capability mapping"
+        summary="3 value maps"
+        compact={isCompact}
+      >
+        <BuyerProfileSection dealId={dealId} />
+      </DealSection>
+    </>
+  );
 
   return (
     <TooltipProvider>
-      <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <div className="h-screen flex flex-col bg-background bg-canvas bg-cover overflow-hidden">
         {/* Header - hides on scroll */}
         <div className={`transition-all duration-200 ${isScrolled ? "h-0 opacity-0 overflow-hidden" : ""}`}>
           <Header isScrolled={isScrolled} />
         </div>
         
         {/* Tab Navigation + AI Header - side by side */}
-        <div className="flex border-b border-border bg-white">
+        <div className="flex border-b border-border bg-card max-lg:hidden">
           <div className="flex-1">
             <TabNavigation isScrolled={isScrolled} activeTab="Deal GPS" />
           </div>
@@ -480,8 +667,8 @@ const DealGPS = () => {
             <div className={`flex items-center gap-2 px-2 md:px-4 border-l border-border transition-all duration-200 ${isAIPanelOpen ? "w-64 md:w-80" : "w-10 md:w-12"}`}>
               {isAIPanelOpen && (
                 <>
-                  <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
-                  <div className="w-2 h-2 bg-green rounded-full" />
+                  <Logo className="h-4 md:h-5" />
+                  <div className="w-2 h-2 bg-success rounded-full" />
                 </>
               )}
               <button 
@@ -494,73 +681,71 @@ const DealGPS = () => {
           )}
         </div>
 
-        <div className={`flex flex-1 overflow-hidden p-6 gap-6 ${isMobile ? 'pb-20' : ''}`}>
+        <div className="flex flex-1 overflow-hidden">
           {/* Left column: Deal Tab Bar + Main Content */}
+          <div className={`flex-1 flex overflow-hidden ${isMobile ? 'p-3 pb-20' : 'p-6'}`}>
           <Card className="flex-1 flex flex-col overflow-hidden p-0">
-            {/* Unified Deal Header */}
-            <div className={`p-4 border-b border-border shrink-0 ${isTabletCompact ? 'space-y-2' : 'flex items-center justify-between'}`}>
-              {/* Row 1: Avatar + Deal Name + Company (+ Stage for tablet compact) */}
-              <div className="flex items-center gap-3">
-                <Avatar className={`${isTabletCompact ? 'w-8 h-8' : 'w-10 h-10'}`}>
+            {/* Deal header: name (switches deal) + one meta line on phones */}
+            <div className={`border-b border-border shrink-0 ${isCompact ? 'p-4' : 'p-4 flex items-center justify-between'}`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar className={`shrink-0 ${isCompact ? 'w-9 h-9' : 'w-10 h-10'}`}>
                   <AvatarImage src={company?.logo} alt={company?.name} className="object-contain p-1" />
                   <AvatarFallback className="text-sm font-semibold">{company?.name.slice(0, 2)}</AvatarFallback>
                 </Avatar>
-                <Select value={dealId.toString()} onValueChange={(value) => handleDealChange(parseInt(value))}>
-                  <SelectTrigger className="w-auto border-0 bg-transparent p-0 h-auto focus:ring-0 gap-2">
-                    <span className={`font-semibold ${isTabletCompact ? 'text-base' : 'text-lg'}`}>{deal.name}</span>
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border border-border z-50">
-                    {deals.map(d => {
-                      const dCompany = getCompanyById(d.companyId);
-                      return (
+                <div className="min-w-0">
+                  <Select value={dealId.toString()} onValueChange={(value) => handleDealChange(parseInt(value))}>
+                    <SelectTrigger className="w-auto max-w-full border-0 bg-transparent p-0 h-auto focus:ring-0 gap-2">
+                      <span className={`font-semibold truncate ${isCompact ? 'text-base' : 'text-lg'}`}>{deal.name}</span>
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border border-border z-50">
+                      {deals.map(d => (
                         <SelectItem key={d.id} value={d.id.toString()}>
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{d.name}</span>
-                            <span className="text-muted-foreground text-xs">({dCompany?.name})</span>
-                            {d.hasRisk && (
-                              <div className="w-2 h-2 bg-red rounded-full" />
-                            )}
+                            <span className="text-muted-foreground text-xs">({getCompanyById(d.companyId)?.name})</span>
+                            {d.hasRisk && <div className="w-2 h-2 bg-danger rounded-full" />}
                           </div>
                         </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-                {!isTabletCompact && <span className="text-xs text-muted-foreground">({company?.name})</span>}
-                {!isTabletCompact && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border cursor-help ${stageInfo.colorClass}`}>
-                        {stageInfo.label}
-                        <Info className="w-3 h-3 opacity-60" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>{stageInfo.tooltip}</p>
-                    </TooltipContent>
-                  </Tooltip>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {isCompact && (
+                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                      {company?.name}
+                      <span>·</span>
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${stageInfo.dotColor}`} />
+                      {stageInfo.label}
+                      <span>·</span>
+                      {formatCompactDate(deal.closeDate)}
+                      <span>·</span>
+                      <span className="font-medium text-foreground">{formatCompactValue(deal.valueNumeric)}</span>
+                    </p>
+                  )}
+                </div>
+                {!isCompact && (
+                  <>
+                    <span className="text-xs text-muted-foreground">({company?.name})</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border cursor-help ${stageInfo.colorClass}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${stageInfo.dotColor}`} />
+                          {stageInfo.label}
+                          <Info className="w-3 h-3 opacity-60" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>{stageInfo.tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </>
                 )}
               </div>
 
-              {/* Row 2 (tablet compact) or Right side (desktop): Stage + Metadata + CRM */}
-              <div className="flex items-center gap-3 text-sm">
-                {isTabletCompact && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border cursor-help ${stageInfo.colorClass}`}>
-                        {stageInfo.label}
-                        <Info className="w-3 h-3 opacity-60" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>{stageInfo.tooltip}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                <span className="font-medium text-muted-foreground">{formatCompactDate(deal.closeDate)}</span>
-                <span className="text-border">|</span>
-                <span className="font-medium">{formatCompactValue(deal.valueNumeric)}</span>
-                {!isTabletCompact && (
+              {!isCompact && (
+                <div className="flex items-center gap-3 text-sm">
+                  <span className="font-medium text-muted-foreground">{formatCompactDate(deal.closeDate)}</span>
+                  <span className="text-border">|</span>
+                  <span className="font-medium">{formatCompactValue(deal.valueNumeric)}</span>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button className="flex items-center gap-2 text-sm text-primary font-medium hover:underline ml-2" title="Open CRM">
@@ -571,728 +756,111 @@ const DealGPS = () => {
                       <p>Open CRM</p>
                     </TooltipContent>
                   </Tooltip>
-                )}
-              </div>
+                </div>
+              )}
             </div>
             
             {/* Main Content - scrollable */}
-            <main id="main-scroll" className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Section 1: Win Probability */}
-              <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
-                <section className="space-y-4">
-                  {/* Section Header Card */}
-                  <CollapsibleTrigger asChild>
-                    <Card className="p-4 bg-gradient-to-r from-purple/5 to-transparent border-l-4 border-l-purple cursor-pointer hover:bg-purple/5 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-purple/10">
-                          <TrendingUp className="w-5 h-5 text-purple" />
-                        </div>
-                        <div className="flex-1">
-                          <h2 className="text-lg font-semibold text-foreground">Win Probability</h2>
-                          {!isTabletCompact && (
-                            <p className="text-sm text-muted-foreground">
-                              {deal.summary.headline}
-                            </p>
-                          )}
-                        </div>
-                        {isAnalysisOpen ? (
-                          <ChevronUp className="w-5 h-5 text-muted-foreground ml-auto" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-muted-foreground ml-auto" />
-                        )}
-                      </div>
-                    </Card>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-4">
-
-                {/* Summary Box */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-purple" />
-                    Summary
-                  </h3>
-                  <div className="bg-muted/30 rounded-lg p-4">
-                    <p className="text-base text-foreground leading-relaxed">
-                      {deal.summary.context} The deal has progressed through {deal.stage === 'diagnose' ? 'discovery phase' : deal.stage === 'validate' ? 'validation stage' : deal.stage === 'align' ? 'alignment phase' : 'closing stage'} with {engagedStakeholders.length} actively engaged stakeholders.{silentStakeholders.length > 0 ? ` ${silentStakeholders.length} stakeholder${silentStakeholders.length > 1 ? 's remain' : ' remains'} silent and may need re-engagement.` : ' All stakeholders are actively participating.'}
-                    </p>
+            <main id="main-scroll" className={`flex-1 overflow-y-auto ${isCompact ? 'p-4 pb-8 space-y-4' : 'px-6 pt-6 pb-20 space-y-6'}`}>
+              {isCompact ? (
+                <>
+                  {/* The two scores first; tap for the breakdown */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <ScoreTile title="Win probability" score={winProb} trend={winProbTrend} onOpen={() => setWinProbModalOpen(true)} />
+                    <ScoreTile title="Alignment" score={stakeholderAlignmentScore} trend={stakeholderAlignmentTrend} onOpen={() => setAlignmentModalOpen(true)} />
                   </div>
-                </div>
 
-                {/* Two Analysis Cards */}
-                <div className={`${isTabletCompact ? 'flex flex-col gap-3' : 'grid grid-cols-2 gap-5'}`}>
-                  {/* Win Probability Analysis Card */}
-                  {isTabletCompact ? (
-                    <div className="bg-muted/30 border border-border rounded-lg p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <TrendingUp className="w-4 h-4 text-purple" />
-                        <span className="font-semibold text-foreground text-sm">Win Probability</span>
-                      </div>
-                      <div className="flex flex-col items-center gap-3">
-                        {/* Score Badge (Top) */}
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg ${
-                          winProb > 70 ? 'bg-green' : winProb >= 50 ? 'bg-yellow' : 'bg-red'
-                        }`}>
-                          {winProb}%
+                  {/* Only the first section open, the rest folded */}
+                  <div>
+                    {sortedActions.length > 0 && (
+                      <Disclosure title="Actions" icon={Zap} summary={`${sortedActions.length} open`} defaultOpen>
+                        {actionList}
+                        <Button asChild variant="outline" className="w-full mt-3">
+                          <Link to={actionHubLink}>Open in Action Hub<ChevronRight className="w-4 h-4" /></Link>
+                        </Button>
+                      </Disclosure>
+                    )}
+                    <Disclosure title="Summary" icon={Sparkles}>
+                      {summaryText}
+                    </Disclosure>
+                    <Disclosure title="Score trends" icon={TrendingUp} summary="Since deal start">
+                      <div className="space-y-6">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Win probability</p>
+                          {winChart}
                         </div>
-                        
-                        {/* Overall Trend */}
-                        <TrendIndicator value={winProbTrend} size="md" />
-                        
-                        {/* Metrics List (Bottom) - 3 metrics with trends */}
-                        <div className="w-full space-y-1 pt-2 border-t border-border">
-                          {[
-                            { label: 'Alignment', value: alignmentPct, trend: alignmentTrend },
-                            { label: 'Consensus', value: consensusPct, trend: consensusTrend },
-                            { label: 'Sentiment', value: sentimentPct, trend: sentimentTrend },
-                          ].map(m => (
-                            <div key={m.label} className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">{m.label}</span>
-                              <div className="flex items-center gap-2">
-                                <span className={`font-medium ${getScoreColor(m.value)}`}>{m.value}%</span>
-                                <TrendIndicator value={m.trend} size="sm" />
-                              </div>
-                            </div>
-                          ))}
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Alignment</p>
+                          {alignChart}
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div 
-                      onClick={() => setWinProbModalOpen(true)}
-                      className="group cursor-pointer rounded-xl transition-all duration-300 ease-out p-5 space-y-5 border border-border bg-card hover:bg-purple/5 hover:border-purple/30 hover:shadow-lg hover:shadow-purple/20"
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => e.key === 'Enter' && setWinProbModalOpen(true)}
-                    >
-                      <div className="flex items-center justify-between pointer-events-none">
+                    </Disclosure>
+                    {sections}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <DealSection title="Win Probability" icon={TrendingUp} description={deal.summary.headline} compact={false} defaultOpen>
+                    <div className="space-y-4">
+                      {/* Summary */}
+                      <div className="space-y-3">
                         <h3 className="font-semibold text-foreground flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-purple" />
-                          Win Probability
+                          <Sparkles className="w-4 h-4 text-primary" />
+                          Summary
                         </h3>
+                        <div className="bg-muted/30 rounded-lg p-4">{summaryText}</div>
                       </div>
-                      
-                      {/* Donut + Score Bars Group */}
-                      <div className="bg-muted/20 rounded-xl p-5 pointer-events-none">
-                        <div className="flex items-center gap-6">
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="relative w-24 h-24 shrink-0">
-                              <div className="absolute inset-0 rounded-full blur-xl opacity-40 transition-opacity duration-500" style={{ backgroundColor: winProb > 70 ? 'hsl(142 70% 30%)' : winProb >= 50 ? 'hsl(45 90% 40%)' : 'hsl(0 70% 30%)' }} />
-                              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
-                              <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                  <defs>
-                                    <filter id="donutGlow1" x="-50%" y="-50%" width="200%" height="200%">
-                                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                    </filter>
-                                    <linearGradient id="donutGradient1" x1="0" y1="0" x2="1" y2="1">
-                                      <stop offset="0%" stopColor={getDonutColor(winProb)} stopOpacity={1}/>
-                                      <stop offset="100%" stopColor={getDonutColor(winProb)} stopOpacity={0.7}/>
-                                    </linearGradient>
-                                  </defs>
-                                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" filter="url(#donutGlow1)">
-                                    <Cell fill="url(#donutGradient1)" />
-                                    <Cell fill="hsl(var(--muted)/0.3)" />
-                                  </Pie>
-                                </PieChart>
-                              </ResponsiveContainer>
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className={`text-xl font-bold drop-shadow-lg ${getScoreColor(winProb)}`}>{winProb}%</span>
-                              </div>
-                            </div>
-                            <TrendIndicator value={winProbTrend} size="md" />
-                          </div>
-                          <div className="flex-1 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Alignment</span>
-                              <div className="flex items-center gap-2">
-                                <span className={`text-sm font-semibold ${getScoreColor(alignmentPct)}`}>{alignmentPct}%</span>
-                                <TrendIndicator value={alignmentTrend} size="sm" />
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Consensus</span>
-                              <div className="flex items-center gap-2">
-                                <span className={`text-sm font-semibold ${getScoreColor(consensusPct)}`}>{consensusPct}%</span>
-                                <TrendIndicator value={consensusTrend} size="sm" />
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Sentiment</span>
-                              <div className="flex items-center gap-2">
-                                <span className={`text-sm font-semibold ${getScoreColor(sentimentPct)}`}>{sentimentPct}%</span>
-                                <TrendIndicator value={sentimentTrend} size="sm" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Trend Chart Group */}
-                      <div className="bg-muted/20 rounded-xl p-5 pointer-events-none">
-                        <p className="text-sm text-muted-foreground mb-3">Trend since deal start</p>
-                        <div className="h-28">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={winProbTrendData}>
-                              <defs>
-                                <linearGradient id="gradAlignment" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--purple))" stopOpacity={0.6}/>
-                                  <stop offset="50%" stopColor="hsl(var(--purple))" stopOpacity={0.3}/>
-                                  <stop offset="100%" stopColor="hsl(var(--purple))" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <linearGradient id="gradConsensus" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5}/>
-                                  <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.25}/>
-                                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <linearGradient id="gradSentiment" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--green))" stopOpacity={0.5}/>
-                                  <stop offset="50%" stopColor="hsl(var(--green))" stopOpacity={0.2}/>
-                                  <stop offset="100%" stopColor="hsl(var(--green))" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
-                                  <feGaussianBlur stdDeviation="2" result="blur"/>
-                                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                </filter>
-                              </defs>
-                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                              <YAxis hide domain={[0, 100]} />
-                              <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} />
-                              <Area type="natural" dataKey="alignment" name="Alignment" stroke="hsl(var(--purple))" strokeWidth={2.5} fill="url(#gradAlignment)" dot={false} activeDot={{ r: 6, fill: 'hsl(var(--purple))', stroke: 'white', strokeWidth: 2 }} filter="url(#lineGlow)" />
-                              <Area type="natural" dataKey="consensus" name="Consensus" stroke="#3b82f6" strokeWidth={2} fill="url(#gradConsensus)" dot={false} activeDot={{ r: 6, fill: '#3b82f6', stroke: 'white', strokeWidth: 2 }} />
-                              <Area type="natural" dataKey="sentiment" name="Sentiment" stroke="hsl(var(--green))" strokeWidth={2} fill="url(#gradSentiment)" dot={false} activeDot={{ r: 6, fill: 'hsl(var(--green))', stroke: 'white', strokeWidth: 2 }} />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-                        <div className="flex items-center justify-center gap-4 mt-3 flex-wrap">
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-purple rounded" /><span className="text-xs text-muted-foreground">Alignment</span></div>
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-blue-500 rounded" /><span className="text-xs text-muted-foreground">Consensus</span></div>
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-green rounded" /><span className="text-xs text-muted-foreground">Sentiment</span></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
-                  {/* Stakeholder Alignment Card */}
-                  {isTabletCompact ? (
-                    <div className="bg-muted/30 border border-border rounded-lg p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Users className="w-4 h-4 text-purple" />
-                        <span className="font-semibold text-foreground text-sm">Alignment</span>
-                      </div>
-                      <div className="flex flex-col items-center gap-3">
-                        {/* Score Badge (Top) */}
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg ${
-                          stakeholderAlignmentScore > 70 ? 'bg-green' : stakeholderAlignmentScore >= 50 ? 'bg-yellow' : 'bg-red'
-                        }`}>
-                          {stakeholderAlignmentScore}%
-                        </div>
-                        
-                        {/* Overall Trend */}
-                        <TrendIndicator value={stakeholderAlignmentTrend} size="md" />
-                        
-                        {/* Metrics List (Bottom) - 3 metrics with trends */}
-                        <div className="w-full space-y-1 pt-2 border-t border-border">
-                          {[
-                            { label: 'Capability', value: capabilityPct, trend: capabilityTrend },
-                            { label: 'Message Fit', value: messageFitPct, trend: messageFitTrend },
-                            { label: 'Value Translation', value: valueTranslationPct, trend: valueTranslationTrend },
-                          ].map(m => (
-                            <div key={m.label} className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">{m.label}</span>
-                              <div className="flex items-center gap-2">
-                                <span className={`font-medium ${getScoreColor(m.value)}`}>{m.value}%</span>
-                                <TrendIndicator value={m.trend} size="sm" />
-                              </div>
+                      {/* Two score cards: click for the breakdown */}
+                      <div className="grid grid-cols-2 gap-5">
+                        <ScoreCard title="Win Probability" icon={TrendingUp} score={winProb} trend={winProbTrend} metrics={winMetrics} onOpen={() => setWinProbModalOpen(true)}>
+                          {winChart}
+                        </ScoreCard>
+                        <ScoreCard
+                          title="Alignment"
+                          icon={Users}
+                          score={stakeholderAlignmentScore}
+                          trend={stakeholderAlignmentTrend}
+                          metrics={alignMetrics}
+                          onOpen={() => setAlignmentModalOpen(true)}
+                          badge={stakeholderAlignment.isGuardrailActive && (
+                            <div className="flex items-center gap-1.5 px-2 py-1 bg-warning-subtle rounded-full text-xs font-medium text-warning">
+                              <div className="w-2 h-2 bg-warning rounded-full" />
+                              {stakeholderPrimaryRisk && STAKEHOLDER_METRIC_LABELS[stakeholderPrimaryRisk]} Risk
                             </div>
-                          ))}
-                        </div>
+                          )}
+                        >
+                          {alignChart}
+                        </ScoreCard>
                       </div>
-                    </div>
-                  ) : (
-                    /* Full Stakeholder Alignment Card - Clickable */
-                    <div 
-                      onClick={() => setAlignmentModalOpen(true)}
-                      className="group cursor-pointer rounded-xl transition-all duration-300 ease-out p-5 space-y-5 border border-border bg-card hover:bg-purple/5 hover:border-purple/30 hover:shadow-lg hover:shadow-purple/20"
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => e.key === 'Enter' && setAlignmentModalOpen(true)}
-                    >
-                      {/* Header */}
-                      <div className="flex items-center justify-between pointer-events-none">
-                        <h3 className="font-semibold text-foreground flex items-center gap-2">
-                          <Users className="w-4 h-4 text-purple" />
-                          Alignment
-                        </h3>
-                        {stakeholderAlignment.isGuardrailActive && (
-                          <div className="flex items-center gap-1.5 px-2 py-1 bg-yellow/10 border border-yellow/30 rounded-full text-xs font-medium text-yellow-700">
-                            <div className="w-2 h-2 bg-yellow rounded-full" />
-                            {stakeholderPrimaryRisk && STAKEHOLDER_METRIC_LABELS[stakeholderPrimaryRisk]} Risk
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Donut + Score Bars Group */}
-                      <div className="bg-muted/20 rounded-xl p-5 pointer-events-none">
-                        <div className="flex items-center gap-6">
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="relative w-24 h-24 shrink-0">
-                              <div className="absolute inset-0 rounded-full blur-xl opacity-40 transition-opacity duration-500" style={{ backgroundColor: stakeholderAlignmentScore > 70 ? 'hsl(142 70% 30%)' : stakeholderAlignmentScore >= 50 ? 'hsl(45 90% 40%)' : 'hsl(0 70% 30%)' }} />
-                              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
-                              <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                  <defs>
-                                    <filter id="donutGlow2" x="-50%" y="-50%" width="200%" height="200%">
-                                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                    </filter>
-                                    <linearGradient id="donutGradient2" x1="0" y1="0" x2="1" y2="1">
-                                      <stop offset="0%" stopColor={getDonutColor(stakeholderAlignmentScore)} stopOpacity={1}/>
-                                      <stop offset="100%" stopColor={getDonutColor(stakeholderAlignmentScore)} stopOpacity={0.7}/>
-                                    </linearGradient>
-                                  </defs>
-                                  <Pie data={[{ name: "Alignment", value: stakeholderAlignmentScore }, { name: "Remaining", value: 100 - stakeholderAlignmentScore }]} cx="50%" cy="50%" innerRadius={38} outerRadius={46} paddingAngle={2} dataKey="value" filter="url(#donutGlow2)">
-                                    <Cell fill="url(#donutGradient2)" />
-                                    <Cell fill="hsl(var(--muted)/0.3)" />
-                                  </Pie>
-                                </PieChart>
-                              </ResponsiveContainer>
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className={`text-xl font-bold drop-shadow-lg ${getScoreColor(stakeholderAlignmentScore)}`}>{stakeholderAlignmentScore}%</span>
-                              </div>
-                            </div>
-                            <TrendIndicator value={stakeholderAlignmentTrend} size="md" />
-                          </div>
-                          <div className="flex-1 space-y-3">
-                            <div>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-muted-foreground flex items-center gap-1">Capability<Info className="w-3 h-3 opacity-60" /></span>
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-semibold ${getScoreColor(capabilityPct)}`}>{capabilityPct}%</span>
-                                  <TrendIndicator value={capabilityTrend} size="sm" />
-                                </div>
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground flex items-center gap-1">Message Fit<Info className="w-3 h-3 opacity-60" /></span>
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-semibold ${getScoreColor(messageFitPct)}`}>{messageFitPct}%</span>
-                                  <TrendIndicator value={messageFitTrend} size="sm" />
-                                </div>
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground flex items-center gap-1">Value Translation<Info className="w-3 h-3 opacity-60" /></span>
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-semibold ${getScoreColor(valueTranslationPct)}`}>{valueTranslationPct}%</span>
-                                  <TrendIndicator value={valueTranslationTrend} size="sm" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Trend Chart Group */}
-                      <div className="bg-muted/20 rounded-xl p-5 pointer-events-none">
-                        <p className="text-sm text-muted-foreground mb-3">Trend since deal start</p>
-                        <div className="h-28">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={alignmentTrendData}>
-                              <defs>
-                                <linearGradient id="gradCapability" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--purple))" stopOpacity={0.6}/>
-                                  <stop offset="50%" stopColor="hsl(var(--purple))" stopOpacity={0.3}/>
-                                  <stop offset="100%" stopColor="hsl(var(--purple))" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <linearGradient id="gradMsgFit" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5}/>
-                                  <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.25}/>
-                                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <linearGradient id="gradValueTrans" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--green))" stopOpacity={0.5}/>
-                                  <stop offset="50%" stopColor="hsl(var(--green))" stopOpacity={0.2}/>
-                                  <stop offset="100%" stopColor="hsl(var(--green))" stopOpacity={0.05}/>
-                                </linearGradient>
-                                <filter id="lineGlow2" x="-20%" y="-20%" width="140%" height="140%">
-                                  <feGaussianBlur stdDeviation="2" result="blur"/>
-                                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                </filter>
-                              </defs>
-                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                              <YAxis hide domain={[0, 100]} />
-                              <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} />
-                              <Area type="natural" dataKey="capability" name="Capability" stroke="hsl(var(--purple))" strokeWidth={2.5} fill="url(#gradCapability)" dot={false} activeDot={{ r: 6, fill: 'hsl(var(--purple))', stroke: 'white', strokeWidth: 2 }} filter="url(#lineGlow2)" />
-                              <Area type="natural" dataKey="messageFit" name="Message Fit" stroke="#3b82f6" strokeWidth={2} fill="url(#gradMsgFit)" dot={false} activeDot={{ r: 6, fill: '#3b82f6', stroke: 'white', strokeWidth: 2 }} />
-                              <Area type="natural" dataKey="valueTranslation" name="Value Translation" stroke="hsl(var(--green))" strokeWidth={2} fill="url(#gradValueTrans)" dot={false} activeDot={{ r: 6, fill: 'hsl(var(--green))', stroke: 'white', strokeWidth: 2 }} />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-                        <div className="flex items-center justify-center gap-4 mt-3 flex-wrap">
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-purple rounded" /><span className="text-xs text-muted-foreground">Capability</span></div>
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-blue-500 rounded" /><span className="text-xs text-muted-foreground">Message Fit</span></div>
-                          <div className="flex items-center gap-2"><div className="w-4 h-1 bg-green rounded" /><span className="text-xs text-muted-foreground">Value Translation</span></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
 
-                {/* Actions Section */}
-                {dealActions.length > 0 && (() => {
-                  const sortedActions = [...dealActions].sort((a, b) => {
-                    const priorityOrder = { high: 0, medium: 1, low: 2 };
-                    return priorityOrder[a.priority] - priorityOrder[b.priority];
-                  });
-                  
-                  const totalPages = Math.ceil(sortedActions.length / ACTIONS_PER_PAGE);
-                  const startIndex = (actionsPage - 1) * ACTIONS_PER_PAGE;
-                  const paginatedActions = sortedActions.slice(startIndex, startIndex + ACTIONS_PER_PAGE);
-                  
-                  const getPriorityBorderColor = (priority: string) => {
-                    switch (priority) {
-                      case 'high': return 'border-l-red-500';
-                      case 'medium': return 'border-l-yellow-500';
-                      default: return 'border-l-green-500';
-                    }
-                  };
-
-                  return (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-foreground flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-purple" />
-                          Actions ({sortedActions.length})
-                        </h3>
-                        <Link to={`/action-hub?deal=${encodeURIComponent(deal.name)}`}>
-                          <Button size="sm" className="bg-purple hover:bg-gradient-to-r hover:from-purple hover:to-violet-500 text-white">
-                            <Zap className="w-4 h-4" />
-                            Actions
-                            <ChevronRight className="w-4 h-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                      
-                      <div className={`grid gap-3 ${isTabletCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}`}>
-                        {paginatedActions.map((action) => {
-                          const primaryStakeholder = stakeholders.find(s => action.stakeholderIds.includes(s.id));
-                          const deadlineDate = new Date(action.deadline);
-                          const formattedDeadline = `${String(deadlineDate.getMonth() + 1).padStart(2, '0')}.${String(deadlineDate.getDate()).padStart(2, '0')}`;
-                          
-                          return (
-                            <button
-                              key={action.id}
-                              onClick={() => {
-                                setCrossSellData(null);
-                                setSelectedAction({
-                                  id: action.id,
-                                  stakeholderIds: action.stakeholderIds,
-                                  stakeholderName: primaryStakeholder?.name || "Unknown",
-                                  stakeholderRole: primaryStakeholder?.role || "Unknown",
-                                  artifact: action.artifact,
-                                  basedOn: action.basedOn,
-                                  priority: action.priority,
-                                });
-                                if (action.type === 'email') {
-                                  setEmailDialogOpen(true);
-                                } else {
-                                  setMeetingDialogOpen(true);
-                                }
-                              }}
-                              className={`bg-card border border-border ${getPriorityBorderColor(action.priority)} border-l-[3px] rounded-lg p-3 text-left hover:bg-muted/50 transition-colors group`}
-                            >
-                              <div className="flex items-start gap-2">
-                                <div className="p-1.5 rounded bg-muted/50 shrink-0">
-                                  {action.type === 'email' ? (
-                                    <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                                  ) : (
-                                    <Video className="w-3.5 h-3.5 text-muted-foreground" />
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0 space-y-1.5">
-                                  <p className="text-xs font-medium text-foreground line-clamp-2 leading-tight">{action.title}</p>
-                                  <div className="flex items-center gap-2">
-                                    {primaryStakeholder && (
-                                      <div className="flex items-center gap-1">
-                                        <Avatar className="w-4 h-4">
-                                          <AvatarImage src={primaryStakeholder.avatar} alt={primaryStakeholder.name} />
-                                          <AvatarFallback className="text-xxs text-white" style={{ backgroundColor: avatarColors[(primaryStakeholder.id - 1) % avatarColors.length] }}>
-                                            {primaryStakeholder.name.split(' ').map(n => n[0]).join('')}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        <span className="text-xxs text-muted-foreground truncate max-w-[60px]">{primaryStakeholder.name.split(' ')[0]}</span>
-                                      </div>
-                                    )}
-                                    <span className="text-xxs text-muted-foreground">{formattedDeadline}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                      
-                      {totalPages > 1 && (
-                        <div className="flex items-center justify-center pt-2">
-                          <Pagination>
-                            <PaginationContent className="gap-1">
-                              <PaginationItem>
-                                <PaginationPrevious onClick={() => setActionsPage(p => Math.max(1, p - 1))} className={`h-7 text-xs ${actionsPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`} />
-                              </PaginationItem>
-                              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                <PaginationItem key={page}>
-                                  <PaginationLink onClick={() => setActionsPage(page)} isActive={actionsPage === page} className="h-7 w-7 text-xs cursor-pointer">{page}</PaginationLink>
-                                </PaginationItem>
-                              ))}
-                              <PaginationItem>
-                                <PaginationNext onClick={() => setActionsPage(p => Math.min(totalPages, p + 1))} className={`h-7 text-xs ${actionsPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`} />
-                              </PaginationItem>
-                            </PaginationContent>
-                          </Pagination>
+                      {/* Actions */}
+                      {sortedActions.length > 0 && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-foreground flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-primary" />
+                              Actions ({sortedActions.length})
+                            </h3>
+                            <Button asChild size="sm">
+                              <Link to={actionHubLink}>
+                                <Zap className="w-4 h-4" />
+                                Actions
+                                <ChevronRight className="w-4 h-4" />
+                              </Link>
+                            </Button>
+                          </div>
+                          {actionList}
                         </div>
                       )}
                     </div>
-                  );
-                })()}
-
-              </CollapsibleContent>
-            </section>
-          </Collapsible>
-
-              {/* Section 2: Signals & Risks - hidden in tablet compact */}
-              {!isTabletCompact && (
-              <SignalsRisksSection
-                dealId={dealId}
-                dealName={deal.name}
-                isOpen={isSignalsRisksOpen}
-                onToggle={() => setIsSignalsRisksOpen(!isSignalsRisksOpen)}
-              />
+                  </DealSection>
+                  {sections}
+                </>
               )}
-
-              {/* Section 3: Recommended Offerings */}
-              {!isTabletCompact && (
-                <RecommendedOfferingsSection
-                  isOpen={isRecommendedOfferingsOpen}
-                  onToggle={() => setIsRecommendedOfferingsOpen(!isRecommendedOfferingsOpen)}
-                  onCreateAction={handleCreateCrossSellAction}
-                />
-              )}
-
-              {/* Section 4: Stakeholders */}
-              <Collapsible open={isStakeholdersOpen} onOpenChange={setIsStakeholdersOpen}>
-                <section className="space-y-4">
-                  {/* Section Header Card with Engagement Indicators */}
-                  <CollapsibleTrigger asChild>
-                    <Card className="p-4 bg-gradient-to-r from-purple/5 to-transparent border-l-4 border-l-purple cursor-pointer hover:bg-purple/5 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 rounded-lg bg-purple/10">
-                          <Users className="w-5 h-5 text-purple" />
-                        </div>
-                        <div>
-                          <h2 className="text-lg font-semibold text-foreground">Stakeholders</h2>
-                        </div>
-                        {/* Engagement indicators with avatars - hide in tablet compact */}
-                        {!isTabletCompact && (
-                          <div className="flex items-center gap-5 ml-auto">
-                            {/* Engaged */}
-                            <div className="flex items-center gap-2">
-                              <div className="w-2.5 h-2.5 rounded-full bg-green" />
-                              <span className="text-sm text-muted-foreground">Engaged</span>
-                              <div className="flex -space-x-2">
-                                {engagedStakeholders.slice(0, 4).map(s => (
-                                  <Tooltip key={s.id}>
-                                    <TooltipTrigger asChild>
-                                      <Avatar 
-                                        className="w-7 h-7 border-2 border-card ring-2 ring-green/30 cursor-pointer hover:scale-110 transition-transform"
-                                        onClick={(e) => { e.stopPropagation(); openPopup(s); }}
-                                      >
-                                        <AvatarImage src={s.avatar} />
-                                        <AvatarFallback className={`${getAvatarColor(s.id)} text-xs`}>
-                                          {s.name.split(" ").map(n => n[0]).join("")}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="font-medium">{s.name}</p>
-                                      <p className="text-xs text-muted-foreground">{s.role}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                ))}
-                                {engagedStakeholders.length > 4 && (
-                                  <div className="w-7 h-7 rounded-full bg-muted border-2 border-card flex items-center justify-center text-xs font-medium">
-                                    +{engagedStakeholders.length - 4}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            {/* Silent */}
-                            {silentStakeholders.length > 0 && (
-                              <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-full bg-yellow" />
-                                <span className="text-sm text-muted-foreground">Silent</span>
-                                <div className="flex -space-x-2">
-                                  {silentStakeholders.slice(0, 3).map(s => (
-                                    <Tooltip key={s.id}>
-                                      <TooltipTrigger asChild>
-                                        <Avatar 
-                                          className="w-7 h-7 border-2 border-card ring-2 ring-yellow/30 cursor-pointer hover:scale-110 transition-transform"
-                                          onClick={(e) => { e.stopPropagation(); openPopup(s); }}
-                                        >
-                                          <AvatarImage src={s.avatar} />
-                                          <AvatarFallback className={`${getAvatarColor(s.id)} text-xs`}>
-                                            {s.name.split(" ").map(n => n[0]).join("")}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p className="font-medium">{s.name}</p>
-                                        <p className="text-xs text-muted-foreground">{s.role}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  ))}
-                                  {silentStakeholders.length > 3 && (
-                                    <div className="w-7 h-7 rounded-full bg-muted border-2 border-card flex items-center justify-center text-xs font-medium">
-                                      +{silentStakeholders.length - 3}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                            {/* Hidden */}
-                            {hiddenStakeholders.length > 0 && (
-                              <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-full bg-red" />
-                                <span className="text-sm text-muted-foreground">Hidden</span>
-                                <div className="flex -space-x-2">
-                                  {hiddenStakeholders.slice(0, 2).map(s => (
-                                    <Tooltip key={s.id}>
-                                      <TooltipTrigger asChild>
-                                        <Avatar 
-                                          className="w-7 h-7 border-2 border-card ring-2 ring-red/30 cursor-pointer hover:scale-110 transition-transform"
-                                          onClick={(e) => { e.stopPropagation(); openPopup(s); }}
-                                        >
-                                          <AvatarImage src={s.avatar} />
-                                          <AvatarFallback className={`${getAvatarColor(s.id)} text-xs`}>
-                                            {s.name.split(" ").map(n => n[0]).join("")}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p className="font-medium">{s.name}</p>
-                                        <p className="text-xs text-muted-foreground">{s.role}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  ))}
-                                  {hiddenStakeholders.length > 2 && (
-                                    <div className="w-7 h-7 rounded-full bg-muted border-2 border-card flex items-center justify-center text-xs font-medium">
-                                      +{hiddenStakeholders.length - 2}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {isStakeholdersOpen ? (
-                          <ChevronUp className="w-5 h-5 text-muted-foreground ml-auto" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-muted-foreground ml-auto" />
-                        )}
-                      </div>
-                    </Card>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    {/* Stakeholder Cards Grid */}
-                    <div className={`grid gap-4 pt-4 ${isTabletCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'}`}>
-                      {stakeholders.map(stakeholder => (
-                        <StakeholderCardExtended 
-                          key={stakeholder.id} 
-                          stakeholder={stakeholder}
-                          deal={deal}
-                          actions={dealActions.filter(a => a.stakeholderIds.includes(stakeholder.id))}
-                        />
-                      ))}
-                    </div>
-                  </CollapsibleContent>
-                </section>
-              </Collapsible>
-
-              {/* Section 3: Win Path - hidden in tablet compact */}
-              {!isTabletCompact && (
-              <Collapsible open={isWinPathOpen} onOpenChange={setIsWinPathOpen}>
-                <section className="space-y-4">
-                  {/* Section Header Card */}
-                  <CollapsibleTrigger asChild>
-                    <Card className="p-4 bg-gradient-to-r from-purple/5 to-transparent border-l-4 border-l-purple cursor-pointer hover:bg-purple/5 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-purple/10">
-                          <Target className="w-5 h-5 text-purple" />
-                        </div>
-                        <div className="flex-1">
-                          <h2 className="text-lg font-semibold text-foreground">Win Path</h2>
-                          <p className="text-sm text-muted-foreground">
-                            Track progress through each stage of the deal lifecycle
-                          </p>
-                        </div>
-                        {isWinPathOpen ? (
-                          <ChevronUp className="w-5 h-5 text-muted-foreground ml-auto" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-muted-foreground ml-auto" />
-                        )}
-                      </div>
-                    </Card>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <WinPathSection 
-                      deal={deal} 
-                      stakeholders={stakeholders}
-                      winProbability={winProb}
-                      alignmentScore={stakeholderAlignmentScore}
-                    />
-                  </CollapsibleContent>
-                </section>
-              </Collapsible>
-              )}
-
-              {/* Section 4: Buyer Profile - hidden in tablet compact */}
-              {!isTabletCompact && (
-              <Collapsible open={isBuyerProfileOpen} onOpenChange={setIsBuyerProfileOpen}>
-                <section className="space-y-4">
-                  {/* Section Header Card */}
-                  <CollapsibleTrigger asChild>
-                    <Card className="p-4 bg-gradient-to-r from-orange/5 to-transparent border-l-4 border-l-orange cursor-pointer hover:bg-orange/5 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-orange/10">
-                          <Target className="w-5 h-5 text-orange" />
-                        </div>
-                        <div className="flex-1">
-                          <h2 className="text-lg font-semibold text-foreground">Buyer Profile</h2>
-                          <p className="text-sm text-muted-foreground">
-                            BVM/SVM alignment, value drivers, and capability mapping
-                          </p>
-                        </div>
-                        {isBuyerProfileOpen ? (
-                          <ChevronUp className="w-5 h-5 text-muted-foreground ml-auto" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-muted-foreground ml-auto" />
-                        )}
-                      </div>
-                    </Card>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <BuyerProfileSection dealId={dealId} />
-                  </CollapsibleContent>
-                </section>
-              </Collapsible>
-              )}
-
             </main>
           </Card>
+          </div>
 
           {/* AI Chat Sidebar - ONLY tablet/desktop */}
           {!isMobile && (
@@ -1356,9 +924,11 @@ interface StakeholderCardProps {
   stakeholder: Stakeholder;
   deal: Deal;
   actions: Action[];
+  /** Phones: drop the focus pills and trend chart (the popup has the detail). */
+  compact: boolean;
 }
 
-const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCardProps) => {
+const StakeholderCardExtended = ({ stakeholder, deal, actions, compact }: StakeholderCardProps) => {
   const [showAllActions, setShowAllActions] = useState(false);
   const [selectedAction, setSelectedAction] = useState<Action | null>(null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
@@ -1388,14 +958,6 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
     };
   };
   
-  const getLocalStatusColor = (status: "positive" | "neutral" | "negative") => {
-    switch (status) {
-      case "positive": return "bg-green/10 text-green border-green/20";
-      case "neutral": return "bg-yellow/10 text-yellow border-yellow/20";
-      case "negative": return "bg-red/10 text-red border-red/20";
-    }
-  };
-
   // Generate truly wavy trend data with significant variation
   const generateWavyTrends = () => {
     const numPoints = 12;
@@ -1448,31 +1010,26 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
   const hasMoreActions = actions.length > 2;
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-purple/10 hover:border-purple/40 hover:-translate-y-0.5">
-      {/* Subtle glow effect on hover */}
-      <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-purple/20 via-primary/10 to-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
-      
+    <Card className="group relative overflow-hidden transition-shadow hover:shadow-md">
       <div 
         className="p-4 space-y-3 cursor-pointer"
         onClick={() => openPopup(stakeholder)}
       >
         {/* Header - same as base StakeholderCard */}
         <div className="flex items-center gap-3">
-          <Avatar 
-            className="w-9 h-9 transition-all duration-300 group-hover:scale-110 group-hover:ring-2 group-hover:ring-purple/30 group-hover:ring-offset-2 group-hover:ring-offset-card"
-          >
+          <Avatar className="w-9 h-9">
             <AvatarImage src={stakeholder.avatar} />
-            <AvatarFallback className={`${getAvatarColor(stakeholder.id)} text-xs font-medium`}>
+            <AvatarFallback className={`${avatarFallback} text-xs font-medium`}>
               {stakeholder.name.split(" ").map(n => n[0]).join("")}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-foreground text-sm truncate transition-colors duration-200 group-hover:text-purple">
+            <p className="font-medium text-foreground text-sm truncate transition-colors group-hover:text-primary">
               {stakeholder.name}
             </p>
             <p className="text-xs text-muted-foreground truncate">{stakeholder.role}</p>
           </div>
-          <span className={`px-2 py-0.5 rounded text-xs font-medium border transition-all duration-200 group-hover:scale-105 ${getLocalStatusColor(stakeholder.status)}`}>
+          <span className={`px-2 py-0.5 rounded text-xs font-medium ${sentimentBadge(stakeholder.status)}`}>
             {stakeholder.status}
           </span>
         </div>
@@ -1481,28 +1038,25 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Priority</span>
-            <span className={`text-xs font-semibold ${getProgressColor(stakeholder.priority).replace('bg-', 'text-')}`}>{stakeholder.priority}%</span>
+            <span className={`text-xs font-semibold ${scoreText(stakeholder.priority)}`}>{stakeholder.priority}%</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Sentiment</span>
-            <span className={`text-xs font-semibold ${getProgressColor(stakeholder.sentiment).replace('bg-', 'text-')}`}>{stakeholder.sentiment}%</span>
+            <span className={`text-xs font-semibold ${scoreText(stakeholder.sentiment)}`}>{stakeholder.sentiment}%</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Engagement</span>
-            <span className={`text-xs font-semibold ${getProgressColor(stakeholder.engagement).replace('bg-', 'text-')}`}>{stakeholder.engagement}%</span>
+            <span className={`text-xs font-semibold ${scoreText(stakeholder.engagement)}`}>{stakeholder.engagement}%</span>
           </div>
         </div>
 
+        {!compact && (<>
         {/* Focus Area Pills */}
         <div className="flex flex-wrap gap-1.5 pt-1">
           {getPrimitivesForRole(stakeholder.role).slice(0, 3).map((p) => {
             const primitive = getPrimitiveById(p.primitiveId);
             if (!primitive) return null;
-            const pillStyles = p.weight > 70 
-              ? 'bg-purple text-white' 
-              : p.weight >= 40 
-                ? 'bg-purple/20 text-foreground' 
-                : 'bg-muted text-muted-foreground';
+            const pillStyles = p.weight > 70 ? selectedChip : categoryBadge;
             return (
               <span key={p.primitiveId} className={`px-2 py-0.5 rounded-full text-xs font-medium ${pillStyles}`}>
                 {primitive.shortLabel}
@@ -1517,73 +1071,41 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
           <div className="h-20">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trendsData}>
-                <defs>
-                  <linearGradient id={`gradSHAlign${stakeholder.id}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--purple))" stopOpacity={0.5}/>
-                    <stop offset="50%" stopColor="hsl(var(--purple))" stopOpacity={0.25}/>
-                    <stop offset="100%" stopColor="hsl(var(--purple))" stopOpacity={0.05}/>
-                  </linearGradient>
-                  <linearGradient id={`gradSHPriority${stakeholder.id}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--yellow))" stopOpacity={0.5}/>
-                    <stop offset="50%" stopColor="hsl(var(--yellow))" stopOpacity={0.2}/>
-                    <stop offset="100%" stopColor="hsl(var(--yellow))" stopOpacity={0.05}/>
-                  </linearGradient>
-                  <linearGradient id={`gradSHSentiment${stakeholder.id}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ec4899" stopOpacity={0.45}/>
-                    <stop offset="50%" stopColor="#ec4899" stopOpacity={0.2}/>
-                    <stop offset="100%" stopColor="#ec4899" stopOpacity={0.05}/>
-                  </linearGradient>
-                  <filter id={`shGlow${stakeholder.id}`} x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="1.5" result="blur"/>
-                    <feMerge>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
                 <XAxis 
                   dataKey="date" 
-                  tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} 
+                  tick={chartTick} 
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis hide domain={[0, 100]} />
                 <RechartsTooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    padding: '6px 10px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                  }} 
+                  contentStyle={chartTooltip} 
                 />
                 <Area 
                   type="natural" 
                   dataKey="alignment" 
                   name="Alignment"
-                  stroke="hsl(var(--purple))" 
+                  stroke="hsl(var(--chart-1))" 
                   strokeWidth={2} 
-                  fill={`url(#gradSHAlign${stakeholder.id})`}
+                  fill="none"
                   dot={false}
-                  filter={`url(#shGlow${stakeholder.id})`}
                 />
                 <Area 
                   type="natural" 
                   dataKey="priority" 
                   name="Priority"
-                  stroke="hsl(var(--yellow))" 
+                  stroke="hsl(var(--chart-2))" 
                   strokeWidth={1.5} 
-                  fill={`url(#gradSHPriority${stakeholder.id})`}
+                  fill="none"
                   dot={false}
                 />
                 <Area 
                   type="natural" 
                   dataKey="sentiment" 
                   name="Sentiment"
-                  stroke="#ec4899" 
+                  stroke="hsl(var(--chart-3))" 
                   strokeWidth={1.5} 
-                  fill={`url(#gradSHSentiment${stakeholder.id})`}
+                  fill="none"
                   dot={false}
                 />
               </AreaChart>
@@ -1592,19 +1114,20 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
           {/* Chart Legend */}
           <div className="flex items-center justify-center gap-4 mt-2">
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-1 bg-purple rounded" />
+              <div className="w-3 h-1 bg-chart-1 rounded" />
               <span className="text-xxs text-muted-foreground">Alignment</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-1 bg-yellow rounded" />
+              <div className="w-3 h-1 bg-chart-2 rounded" />
               <span className="text-xxs text-muted-foreground">Priority</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-1 bg-pink-500 rounded" />
+              <div className="w-3 h-1 bg-chart-3 rounded" />
               <span className="text-xxs text-muted-foreground">Sentiment</span>
             </div>
           </div>
         </div>
+        </>)}
       </div>
 
         {/* Extended: Actions - outside clickable area */}
@@ -1613,18 +1136,18 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Actions</p>
             <div className="space-y-1.5">
               {visibleActions.map(action => {
-                const borderColor = action.priority === 'high' ? 'border-l-red' : action.priority === 'medium' ? 'border-l-yellow' : 'border-l-muted-foreground';
                 return (
                   <button 
                     key={action.id}
                     onClick={(e) => handleActionClick(action, e)}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-card border border-border hover:bg-purple/10 hover:border-purple/30 border-l-[3px] ${borderColor} transition-all group w-full text-left`}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors group w-full text-left"
                   >
-                    <span className="text-xs text-foreground truncate flex-1 group-hover:text-purple transition-colors">{action.title}</span>
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${priorityDot(action.priority)}`} />
+                    <span className="text-xs text-foreground truncate flex-1 group-hover:text-primary transition-colors">{action.title}</span>
                     {action.type === "email" ? (
-                      <Mail className="w-3.5 h-3.5 text-muted-foreground group-hover:text-purple shrink-0" />
+                      <Mail className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary shrink-0" />
                     ) : (
-                      <Video className="w-3.5 h-3.5 text-muted-foreground group-hover:text-purple shrink-0" />
+                      <Video className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary shrink-0" />
                     )}
                   </button>
                 );
@@ -1632,7 +1155,7 @@ const StakeholderCardExtended = ({ stakeholder, deal, actions }: StakeholderCard
               {hasMoreActions && !showAllActions && (
                 <button 
                   onClick={() => setShowAllActions(true)}
-                  className="flex items-center gap-1.5 text-xs text-purple hover:text-purple/80 font-medium"
+                  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium"
                 >
                   <MoreHorizontal className="w-3.5 h-3.5" />
                   +{actions.length - 2} more

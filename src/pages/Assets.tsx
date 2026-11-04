@@ -6,11 +6,10 @@ import Header from "@/components/dashboard/Header";
 import TabNavigation from "@/components/dashboard/TabNavigation";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ChevronLeft, ChevronRight, Upload, Filter, Eye, Download, Trash2, FileText, Video, FileSpreadsheet, File, Image, FolderOpen, ArrowUpDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Upload, Download, Trash2, FileText, Video, FileSpreadsheet, File, Image, FolderOpen, SlidersHorizontal } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Disclosure } from "@/components/ui/disclosure";
 import {
   Select,
   SelectContent,
@@ -31,57 +30,29 @@ import {
 import { useAssetsStore, Asset, AssetType, ASSET_CATEGORIES } from "@/stores/assetsStore";
 import { toast } from "@/hooks/use-toast";
 import { deals as dealData, getCompanyById } from "@/data/dealData";
+import { selectedChip, unselectedChip } from "@/lib/tone";
+import Logo from "@/components/Logo";
 
-// Get icon and color based on asset type
+// Icon per asset type (types are categories, so they stay neutral)
 const getAssetIcon = (type: AssetType) => {
   switch (type) {
-    case "PDF":
-      return { icon: FileText, color: "text-red-500", bg: "bg-red-50" };
     case "VIDEO":
-      return { icon: Video, color: "text-purple", bg: "bg-purple/10" };
+      return Video;
     case "XLSX":
-      return { icon: FileSpreadsheet, color: "text-green", bg: "bg-green/10" };
+      return FileSpreadsheet;
+    case "PDF":
     case "DOCX":
-      return { icon: FileText, color: "text-blue-500", bg: "bg-blue-50" };
     case "PPTX":
-      return { icon: FileText, color: "text-orange-500", bg: "bg-orange-50" };
+      return FileText;
     case "IMG":
-      return { icon: Image, color: "text-pink-500", bg: "bg-pink-50" };
+      return Image;
     default:
-      return { icon: File, color: "text-muted-foreground", bg: "bg-muted" };
+      return File;
   }
 };
 
-// Get category badge color
-const getCategoryColor = (category: string) => {
-  const colors: Record<string, string> = {
-    "Presentations": "bg-purple/10 text-purple border-purple/20",
-    "Marketing": "bg-pink-50 text-pink-600 border-pink-200",
-    "Case Studies": "bg-blue-50 text-blue-600 border-blue-200",
-    "Tools": "bg-green/10 text-green border-green/20",
-    "Branding": "bg-orange-50 text-orange-600 border-orange-200",
-    "Compliance": "bg-red-50 text-red-600 border-red-200",
-    "Documentation": "bg-slate-100 text-slate-600 border-slate-200",
-    "Templates": "bg-indigo-50 text-indigo-600 border-indigo-200",
-    "Proposals": "bg-cyan-50 text-cyan-600 border-cyan-200",
-    "Security": "bg-amber-50 text-amber-700 border-amber-200",
-    "Contracts": "bg-violet-50 text-violet-600 border-violet-200",
-    "Financial": "bg-emerald-50 text-emerald-600 border-emerald-200",
-    "Technical": "bg-zinc-100 text-zinc-600 border-zinc-200",
-  };
-  return colors[category] || "bg-muted text-muted-foreground border-border";
-};
-
-// Format date
-const formatDate = (date: Date): string => {
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'numeric',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
-
 type SortOption = "newest" | "oldest" | "name" | "size";
+const SORT_LABEL: Record<SortOption, string> = { newest: "Newest", oldest: "Oldest", name: "Name", size: "Size" };
 
 const Assets = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -215,14 +186,14 @@ const Assets = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-screen flex flex-col bg-background bg-canvas bg-cover overflow-hidden">
       {/* Header - hides on scroll */}
       <div className={`transition-all duration-200 ${isScrolled ? "h-0 opacity-0 overflow-hidden" : ""}`}>
         <Header isScrolled={isScrolled} />
       </div>
       
       {/* Tab Navigation + AI Header - side by side */}
-      <div className="flex border-b border-border bg-white">
+      <div className="flex border-b border-border bg-card max-lg:hidden">
         <div className="flex-1">
           <TabNavigation isScrolled={isScrolled} activeTab="Assets" />
         </div>
@@ -232,8 +203,8 @@ const Assets = () => {
           <div className={`flex items-center gap-2 px-2 md:px-4 border-l border-border transition-all duration-200 ${isAIPanelOpen ? "w-64 md:w-80" : "w-10 md:w-12"}`}>
             {isAIPanelOpen && (
               <>
-                <img src="/assets/loomik-icon.svg" alt="Loomik" className="h-4 md:h-5 w-auto" />
-                <div className="w-2 h-2 bg-green rounded-full" />
+                <Logo className="h-4 md:h-5" />
+                <div className="w-2 h-2 bg-success rounded-full" />
               </>
             )}
             <button 
@@ -248,144 +219,95 @@ const Assets = () => {
       
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content - scrollable, full width on mobile */}
-        <main id="main-scroll" className={`flex-1 overflow-y-auto ${isMobile ? 'pb-20' : ''}`}>
-          {/* Filter Bar - Single line normally, 2 lines when AI panel open on tablet */}
-          <div className={`px-4 py-2 border-b border-border bg-white ${isAIPanelOpen ? 'md:flex-col md:space-y-2 lg:flex-row lg:space-y-0' : ''} flex items-center justify-between gap-3`}>
-            {/* Left: Filters */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <Filter className="w-4 h-4 text-muted-foreground" />
-              
-              {/* Deal Filter */}
-              <Select value={dealFilter} onValueChange={setDealFilter}>
-                <SelectTrigger className="w-[120px] h-8 text-xs">
-                  <SelectValue placeholder="All Deals" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Deals</SelectItem>
-                  {deals.map(deal => (
-                    <SelectItem key={deal.id} value={deal.id}>{deal.company}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Category Filter */}
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[120px] h-8 text-xs">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {ASSET_CATEGORIES.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <span className="text-xs text-muted-foreground hidden xl:inline">
-                Showing {filteredAssets.length} of {assets.length} assets
-              </span>
-            </div>
-            
-            {/* Right: Sort + Upload */}
-            <div className={`flex items-center gap-2 ${isAIPanelOpen ? 'md:w-full md:justify-between lg:w-auto lg:justify-end' : ''}`}>
-              {/* Sort */}
-              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                <SelectTrigger className="w-[100px] h-8 text-xs">
-                  <ArrowUpDown className="w-3 h-3 mr-1" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="oldest">Oldest</SelectItem>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="size">Size</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Upload Button */}
-              <Button 
-                onClick={handleUpload}
-                size="sm"
-                className="bg-gradient-to-r from-purple to-orange hover:opacity-90 text-white gap-1.5 h-8"
-              >
-                <Upload className="w-3.5 h-3.5" />
+        <main id="main-scroll" className="flex-1 overflow-y-auto pb-20">
+          {/* Filters: category chips + upload, deal and sort folded */}
+          <div className="border-b border-border bg-card px-4 pt-3">
+            <div className="flex items-center gap-2">
+              <div className="-ml-4 flex flex-1 gap-2 overflow-x-auto pl-4">
+                {["all", ...ASSET_CATEGORIES].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setCategoryFilter(cat)}
+                    className={`h-8 px-3 shrink-0 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${categoryFilter === cat ? selectedChip : `border border-border ${unselectedChip}`}`}
+                  >
+                    {cat === "all" ? "All" : cat}
+                  </button>
+                ))}
+              </div>
+              <Button onClick={handleUpload} size="sm" className="h-9 shrink-0 gap-1.5" aria-label="Upload">
+                <Upload className="w-4 h-4" />
                 <span className="hidden sm:inline">Upload</span>
               </Button>
             </div>
+            <Disclosure
+              title="Filters"
+              icon={SlidersHorizontal}
+              summary={`${dealFilter === "all" ? "All deals" : deals.find((d) => d.id === dealFilter)?.company} · ${SORT_LABEL[sortBy]} · ${filteredAssets.length} of ${assets.length}`}
+            >
+              <div className="grid grid-cols-2 gap-2 sm:flex">
+                <Select value={dealFilter} onValueChange={setDealFilter}>
+                  <SelectTrigger className="h-10 sm:w-48">
+                    <SelectValue placeholder="All deals" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All deals</SelectItem>
+                    {deals.map((deal) => (
+                      <SelectItem key={deal.id} value={deal.id}>{deal.company}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                  <SelectTrigger className="h-10 sm:w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SORT_LABEL).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </Disclosure>
           </div>
 
-          {/* Content - Cards Only */}
+          {/* Assets: compact cards, actions always visible (no hover on touch) */}
           <div className="p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
               {filteredAssets.map((asset) => {
-                const { icon: Icon, color, bg } = getAssetIcon(asset.type);
-                // Border color based on file type
-                const borderColor = asset.type === "PDF" ? "border-l-red-500" 
-                  : asset.type === "VIDEO" ? "border-l-purple" 
-                  : asset.type === "XLSX" ? "border-l-green" 
-                  : asset.type === "DOCX" ? "border-l-blue-500" 
-                  : "border-l-muted-foreground/30";
-                
+                const Icon = getAssetIcon(asset.type);
                 return (
-                  <Card 
-                    key={asset.id} 
-                    className={`group p-2 border-l-4 ${borderColor} interactive-card interactive-card-gradient flex flex-col relative cursor-pointer`}
+                  <Card
+                    key={asset.id}
+                    className="flex items-center gap-3 p-3 interactive-card"
                     onClick={() => handleView(asset)}
                   >
-                    {/* Ambient glow effect */}
-                    <div className="absolute -inset-px rounded-lg bg-gradient-to-r from-purple/20 via-primary/10 to-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
-                    
-                    {/* Header: Icon + Type */}
-                    <div className="flex items-center justify-between mb-1">
-                      <div className={`w-6 h-6 rounded ${bg} flex items-center justify-center shrink-0`}>
-                        <Icon className={`w-3 h-3 ${color}`} />
-                      </div>
-                      <span className="text-xxs text-muted-foreground uppercase">{asset.type}</span>
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                      <Icon className="w-4 h-4 text-muted-foreground" />
                     </div>
-
-                    {/* Name */}
-                    <p className="font-medium text-xs text-foreground truncate mb-0.5" title={asset.name}>
-                      {asset.name}
-                    </p>
-                    
-                    {/* Size */}
-                    <p className="text-xxs text-muted-foreground mb-1">{asset.size}</p>
-
-                    {/* Category Badge */}
-                    <Badge variant="outline" className={`text-xxs px-1 py-0 w-fit ${getCategoryColor(asset.category)}`}>
-                      {asset.category}
-                    </Badge>
-
-                    {/* Actions Footer */}
-                    <div className="flex items-center gap-0.5 mt-auto pt-1.5 border-t border-border opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5"
-                        onClick={(e) => { e.stopPropagation(); handleView(asset); }}
-                        title="View"
-                      >
-                        <Eye className="w-3 h-3" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5"
-                        onClick={(e) => handleDownload(asset, e)}
-                        title="Download"
-                      >
-                        <Download className="w-3 h-3" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 text-red-500 hover:text-red-600 hover:bg-red-50"
-                        onClick={(e) => handleDeleteClick(asset, e)}
-                        title="Delete"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground" title={asset.name}>{asset.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {asset.type} · {asset.size} · {asset.category}
+                      </p>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 shrink-0 text-muted-foreground"
+                      onClick={(e) => handleDownload(asset, e)}
+                      aria-label="Download"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 shrink-0 text-muted-foreground hover:text-danger hover:bg-danger-subtle"
+                      onClick={(e) => handleDeleteClick(asset, e)}
+                      aria-label="Move to trash"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </Card>
                 );
               })}
@@ -436,7 +358,7 @@ const Assets = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-danger text-danger-foreground hover:bg-danger/90"
             >
               Move to Trash
             </AlertDialogAction>

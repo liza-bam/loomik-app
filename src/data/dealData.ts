@@ -128,26 +128,26 @@ export const stageConfig: Record<DealStage, {
   diagnose: {
     label: "Diagnose",
     tooltip: "Discovering buyer needs, pain points, and decision criteria",
-    colorClass: "bg-blue-100 text-blue-700 border-blue-200",
-    dotColor: "bg-blue-500"
+    colorClass: "bg-card text-foreground border-border",
+    dotColor: "bg-stage-diagnose"
   },
   validate: {
     label: "Validate",
     tooltip: "Confirming fit between solution capabilities and buyer requirements",
-    colorClass: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    dotColor: "bg-yellow-500"
+    colorClass: "bg-card text-foreground border-border",
+    dotColor: "bg-stage-validate"
   },
   align: {
     label: "Align",
     tooltip: "Building consensus across stakeholders and aligning on value",
-    colorClass: "bg-orange-100 text-orange-700 border-orange-200",
-    dotColor: "bg-orange-500"
+    colorClass: "bg-card text-foreground border-border",
+    dotColor: "bg-stage-align"
   },
   commit: {
     label: "Commit",
     tooltip: "Finalizing terms, addressing objections, and closing the deal",
-    colorClass: "bg-green-100 text-green-700 border-green-200",
-    dotColor: "bg-green-500"
+    colorClass: "bg-card text-foreground border-border",
+    dotColor: "bg-stage-commit"
   }
 };
 
@@ -170,22 +170,6 @@ export const buyerValueConfig = {
     tooltip: "Time to implementation and ROI realization. Higher % = stronger interest"
   }
 };
-
-// ==================== AVATAR COLORS ====================
-
-export const avatarColors = [
-  "bg-slate-200 text-slate-600",
-  "bg-zinc-200 text-zinc-600",
-  "bg-stone-200 text-stone-600",
-  "bg-blue-100 text-blue-600",
-  "bg-violet-100 text-violet-600",
-  "bg-amber-100 text-amber-700",
-  "bg-cyan-100 text-cyan-600",
-  "bg-purple-100 text-purple-600",
-];
-
-export const getAvatarColor = (id: number): string => 
-  avatarColors[id % avatarColors.length];
 
 // ==================== COMPANIES DATA ====================
 
@@ -235,6 +219,13 @@ export const companies: Company[] = [
 ];
 
 // ==================== DEALS DATA ====================
+
+// Compact money label: 2400000 -> "$2.4M", 950000 -> "$950K"
+export const formatCompactValue = (value: number): string =>
+  value >= 1000000 ? `$${(value / 1000000).toFixed(1)}M`.replace(".0M", "M") : `$${Math.round(value / 1000)}K`;
+
+// Pipeline-level scores shown in the header and the dashboard hero (week-over-week change)
+export const pipelineSummary = { winRate: 63, winRateChange: -3, alignment: 72, alignmentChange: 5 };
 
 export const deals: Deal[] = [
   {
@@ -1495,35 +1486,6 @@ export const getCompanyForDeal = (dealId: number): Company | undefined => {
 
 export const getDealsForCompany = (companyId: number): Deal[] => 
   deals.filter(d => d.companyId === companyId);
-
-export const getProgressColor = (value: number): string => {
-  if (value > 70) return "bg-green";
-  if (value >= 50) return "bg-yellow";
-  return "bg-red";
-};
-
-// Get HSL color string for charts based on score thresholds
-export const getDonutColor = (value: number): string => {
-  if (value > 70) return "hsl(var(--green))";
-  if (value >= 50) return "hsl(var(--yellow))";
-  return "hsl(var(--red))";
-};
-
-// Helper for trend indicator color based on value change
-export const getTrendColor = (change: number): string => {
-  if (change > 0) return "text-green";
-  if (change < 0) return "text-red";
-  return "text-yellow";
-};
-
-export const getStatusColor = (status: StakeholderStatus): string => {
-  switch (status) {
-    case "positive": return "bg-green text-white";
-    case "neutral": return "bg-yellow text-foreground";
-    case "negative": return "bg-red text-white";
-    default: return "bg-muted text-foreground";
-  }
-};
 
 // Helper to get action with populated stakeholder and company data
 export interface ActionWithStakeholders extends Omit<Action, 'stakeholderIds'> {

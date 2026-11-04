@@ -1,11 +1,12 @@
 // Win Path Section - Shows deal stages with tabs
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, Search, BadgeCheck, Users, Flag, LucideIcon, Pencil, Check, X, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Search, BadgeCheck, Users, Flag, LucideIcon, Pencil, Check, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { scoreText, scoreFill, selectedChip, unselectedChip } from "@/lib/tone";
 import type { Deal, Stakeholder } from "@/data/dealData";
 
 interface WinPathSectionProps {
@@ -36,12 +37,6 @@ interface StageData {
   icon: LucideIcon;
   items: StageItem[];
 }
-
-const getProgressTextColor = (progress: number, status: string) => {
-  if (status === 'pending' || progress < 40) return 'text-red';
-  if (progress < 70) return 'text-orange';
-  return 'text-green';
-};
 
 export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentScore }: WinPathSectionProps) => {
   const [activeStage, setActiveStage] = useState<StageKey>(deal.stage as StageKey);
@@ -312,7 +307,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
             <Textarea
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
-              className="text-sm min-h-[60px] resize-none"
+              className="text-sm min-h-15 resize-none"
               autoFocus
             />
           ) : (
@@ -361,7 +356,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
   return (
     <div className="space-y-3">
       {/* Stage Pills */}
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center gap-1.5 overflow-x-auto">
         {stages.map((stage) => {
           const isActive = activeStage === stage.key;
           const StageIcon = stage.icon;
@@ -371,11 +366,9 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
               key={stage.key}
               onClick={() => setActiveStage(stage.key)}
               className={cn(
-                "inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium transition-all",
+                "inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                isActive
-                  ? "bg-purple text-white shadow-sm"
-                  : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                isActive ? selectedChip : unselectedChip
               )}
             >
               {stage.hasAlert ? (
@@ -386,7 +379,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
               <span>{stage.name}</span>
               <span className={cn(
                 "font-semibold",
-                isActive ? "text-white/90" : getProgressTextColor(stage.progress, stage.status)
+                !isActive && scoreText(stage.progress)
               )}>
                 {stage.progress}%
               </span>
@@ -395,26 +388,22 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
         })}
       </div>
       
-      {/* Summary Box - matches Win Probability style */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple" />
-          Summary
-        </h3>
+      {/* Stage summary */}
+      <div>
         <div className="bg-muted/30 rounded-lg p-4">
           <div className="space-y-3">
-            <p className="text-base text-foreground leading-relaxed">{activeStageData.description}</p>
+            <p className="text-sm sm:text-base text-foreground leading-relaxed">{activeStageData.description}</p>
             <div className="flex items-center gap-3">
               <div className="h-2 w-32 bg-muted rounded-full overflow-hidden">
                 <div 
                   className={cn(
                     "h-full rounded-full transition-all",
-                    activeStageData.progress < 40 ? "bg-red" : activeStageData.progress < 70 ? "bg-orange" : "bg-green"
+                    scoreFill(activeStageData.progress)
                   )}
                   style={{ width: `${activeStageData.progress}%` }}
                 />
               </div>
-              <span className={cn("text-sm font-semibold", getProgressTextColor(activeStageData.progress, activeStageData.status))}>
+              <span className={cn("text-sm font-semibold", scoreText(activeStageData.progress))}>
                 {activeStageData.progress}%
               </span>
             </div>
@@ -426,7 +415,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
       <Card className="overflow-hidden">
         {/* Items Table */}
         <div className="divide-y divide-border">
-          <div className="grid grid-cols-[1fr_2fr_1fr_80px] gap-4 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
+          <div className="hidden sm:grid grid-cols-win-path gap-4 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
             <span>Item</span>
             <span>Description</span>
             <span>Source</span>
@@ -435,7 +424,7 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
           {activeStageData.items.map((item) => (
             <div 
               key={item.id}
-              className="grid grid-cols-[1fr_2fr_1fr_80px] gap-4 px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors"
+              className="grid gap-1 sm:grid-cols-win-path sm:gap-4 px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors"
             >
               <EditableField 
                 id={item.id} 
@@ -453,9 +442,9 @@ export const WinPathSection = ({ deal, stakeholders, winProbability, alignmentSc
                 field="source" 
                 value={getItemValue(item, 'source')} 
               />
-              <div className="flex justify-center">
+              <div className="flex sm:justify-center">
                 {item.status === 'complete' ? (
-                  <CheckCircle2 className="w-4 h-4 text-green" />
+                  <CheckCircle2 className="w-4 h-4 text-success" />
                 ) : (
                   <span className="text-xs text-muted-foreground">Pending</span>
                 )}

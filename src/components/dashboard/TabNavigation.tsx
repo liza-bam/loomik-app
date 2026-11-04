@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useSearchStore } from "@/stores/searchStore";
 import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
 import { MobileSearchModal } from "@/components/MobileSearchModal";
+import { selectedChip, unselectedChip } from "@/lib/tone";
 
 interface TabNavigationProps {
   isScrolled?: boolean;
@@ -61,9 +62,7 @@ const TabNavigation = ({ isScrolled = false, activeTab }: TabNavigationProps) =>
                   ? "p-2.5" 
                   : "px-3 py-1 text-xs"
               } ${
-                isActive(tab)
-                  ? "bg-gradient-to-r from-purple to-orange text-white"
-                  : "text-muted-foreground hover:text-foreground"
+                isActive(tab) ? selectedChip : unselectedChip
               }`}
               title={tab.label}
             >
